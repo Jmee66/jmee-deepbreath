@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jmee DeepBreath — Respiration, Visualisation, Apnée</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Audio Controls (Ocean Sound + Voice Guide + Breath Sounds) -->
+    <div class="audio-controls" id="audioControls">
+        <button class="offline-toggle" id="offlineToggle" aria-label="Toggle offline mode" title="Mode hors-ligne">
+            <svg class="online-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+                <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                <circle cx="12" cy="20" r="1" fill="currentColor"/>
+            </svg>
+            <svg class="offline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+                <line x1="1" y1="1" x2="23" y2="23"/>
+                <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+                <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+                <path d="M10.71 5.05A16 16 0 0 1 22.58 9"/>
+                <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                <circle cx="12" cy="20" r="1" fill="currentColor"/>
+            </svg>
+        </button>
+        <button class="voice-toggle active" id="voiceToggle" aria-label="Toggle voice guide" title="Guidage vocal">
+            <svg class="voice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+        </button>
+        <button class="audio-btn active" id="breathSoundToggle" title="Sons de respiration">B</button>
+        <button class="audio-btn" id="soundToggle" title="Son océan">O</button>
+        <div class="volume-sliders" id="volumeSliders">
+            <input type="range" min="0" max="100" value="70" id="breathVolumeRange" title="Volume respiration">
+            <input type="range" min="0" max="100" value="50" id="volumeRange" title="Volume océan">
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-brand">
+            <svg class="logo" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+                <path d="M20 8 Q28 20 20 32 Q12 20 20 8" fill="currentColor" opacity="0.6"/>
+            </svg>
+            <span>Jmee DeepBreath</span>
+        </div>
+        <div class="nav-links">
+            <button class="nav-link active" data-section="home">Accueil</button>
+            <button class="nav-link" data-section="respiration">Respiration</button>
+            <button class="nav-link" data-section="visualisation">Visualisation</button>
+            <button class="nav-link" data-section="apnee">Apnée</button>
+            <button class="nav-link" data-section="multitimer">Multi Timer</button>
+            <button class="nav-link nav-urgence" data-section="urgence">Urgence</button>
+            <button class="nav-link" data-section="preperformance">Pré-Perf</button>
+            <button class="nav-link nav-hypnose" data-section="autohypnose">Hypnose</button>
+            <button class="nav-link nav-settings" data-section="settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Section -->
+        <section class="section active" id="home">
+            <div class="hero">
+                <h1 class="hero-title">Maîtrisez votre souffle</h1>
+                <p class="hero-subtitle">Techniques avancées basées sur les dernières recherches scientifiques</p>
+
+                <div class="feature-cards">
+                    <div class="feature-card" data-goto="respiration">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="24" cy="24" r="20" opacity="0.3"/>
+                                <path d="M24 12v24M16 20l8-8 8 8M16 28l8 8 8-8"/>
+                            </svg>
+                        </div>
+                        <h3>Respiration</h3>
+                        <p>Cyclic sighing, cohérence cardiaque, box breathing et techniques Wim Hof</p>
+                    </div>
+
+                    <div class="feature-card" data-goto="visualisation">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="24" cy="24" r="20" opacity="0.3"/>
+                                <circle cx="24" cy="24" r="8"/>
+                                <circle cx="24" cy="24" r="3" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <h3>Visualisation</h3>
+                        <p>Protocoles PETTLEP, body scan et relaxation dynamique sophrologique</p>
+                    </div>
+
+                    <div class="feature-card" data-goto="apnee">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="24" cy="24" r="20" opacity="0.3"/>
+                                <path d="M12 24h24M24 14v20"/>
+                                <circle cx="24" cy="24" r="6"/>
+                            </svg>
+                        </div>
+                        <h3>Apnée</h3>
+                        <p>Tables O2/CO2, réflexe de plongée et entraînement progressif</p>
+                    </div>
+
+                    <div class="feature-card" data-goto="multitimer">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="24" cy="24" r="20" opacity="0.3"/>
+                                <circle cx="24" cy="24" r="12"/>
+                                <polyline points="24,16 24,24 30,27"/>
+                                <circle cx="38" cy="14" r="6" opacity="0.5"/>
+                                <polyline points="38,11 38,14 40,15" opacity="0.5"/>
+                            </svg>
+                        </div>
+                        <h3>Multi Timer</h3>
+                        <p>Séquences personnalisables, intervalles et chronomètres pour vos entraînements</p>
+                    </div>
+
+                    <div class="feature-card feature-card-urgence" data-goto="urgence">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="24" cy="24" r="20" opacity="0.3"/>
+                                <path d="M24 14v12M24 30v2"/>
+                                <circle cx="24" cy="24" r="10"/>
+                            </svg>
+                        </div>
+                        <h3>Urgence</h3>
+                        <p>Exercices rapides pour calmer panique, anxiété et stress soudain</p>
+                    </div>
+
+                    <div class="feature-card feature-card-preperf" data-goto="preperformance">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="24" cy="24" r="20" opacity="0.3"/>
+                                <polygon points="24,10 28,22 24,20 20,22"/>
+                                <circle cx="24" cy="30" r="6"/>
+                                <path d="M20 28l4 4 4-4"/>
+                            </svg>
+                        </div>
+                        <h3>Pré-Performance</h3>
+                        <p>Protocole de 5 minutes avant plongée, chasse sous-marine ou compétition</p>
+                    </div>
+
+                    <div class="feature-card feature-card-hypnose" data-goto="autohypnose">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="24" cy="24" r="20" opacity="0.3"/>
+                                <circle cx="24" cy="24" r="14" opacity="0.2"/>
+                                <circle cx="24" cy="24" r="8" opacity="0.4"/>
+                                <circle cx="24" cy="24" r="3" fill="currentColor"/>
+                                <path d="M24 6v4M24 38v4M6 24h4M38 24h4" opacity="0.5"/>
+                            </svg>
+                        </div>
+                        <h3>Auto-Hypnose</h3>
+                        <p>Techniques VAKOG, flow-state et gestion des spasmes pour apnéistes</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Respiration Section -->
+        <section class="section" id="respiration">
+            <div class="section-header">
+                <h2>Respiration</h2>
+                <p>Techniques validées scientifiquement pour optimiser votre système nerveux</p>
+            </div>
+
+            <div class="exercise-grid">
+                <!-- Cyclic Sighing -->
+                <div class="exercise-card" data-exercise="cyclic-sighing">
+                    <div class="exercise-badge">Stanford 2023</div>
+                    <h3>Cyclic Sighing</h3>
+                    <p>Double inspiration suivie d'une expiration prolongée. Réduction du stress 56% plus efficace que la méditation.</p>
+                    <div class="exercise-meta">
+                        <span>5 min</span>
+                        <span>•</span>
+                        <span>Stress & Humeur</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="cyclic-sighing">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Coherent Breathing -->
+                <div class="exercise-card" data-exercise="coherent">
+                    <div class="exercise-badge">Cohérence HRV</div>
+                    <h3>Respiration Cohérente</h3>
+                    <p>5.5 respirations par minute pour synchroniser cœur et respiration. Optimise la variabilité cardiaque.</p>
+                    <div class="exercise-meta">
+                        <span>10-20 min</span>
+                        <span>•</span>
+                        <span>Équilibre ANS</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="coherent">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Box Breathing -->
+                <div class="exercise-card" data-exercise="box">
+                    <div class="exercise-badge">Navy SEALs</div>
+                    <h3>Box Breathing</h3>
+                    <p>Technique 4-4-4-4 utilisée par les forces spéciales. Augmente le tonus vagal et la concentration.</p>
+                    <div class="exercise-meta">
+                        <span class="exercise-duration" data-show="duration">5 min</span>
+                        <span>•</span>
+                        <span class="exercise-timing" data-show="boxTime">4-4-4-4</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Wim Hof -->
+                <div class="exercise-card" data-exercise="wimhof">
+                    <div class="exercise-badge">Étude 2024</div>
+                    <h3>Méthode Wim Hof</h3>
+                    <p>Hyperventilation contrôlée suivie de rétentions. Améliore énergie, clarté mentale et tolérance au froid.</p>
+                    <div class="exercise-meta">
+                        <span>15-20 min</span>
+                        <span>•</span>
+                        <span>Énergie & Résilience</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="wimhof">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CO2 Tolerance -->
+                <div class="exercise-card" data-exercise="co2-tolerance">
+                    <div class="exercise-badge">Performance</div>
+                    <h3>Tolérance CO2</h3>
+                    <p>Expirations prolongées pour augmenter la tolérance au CO2. Réduit l'essoufflement et améliore l'endurance.</p>
+                    <div class="exercise-meta">
+                        <span>5-10 min</span>
+                        <span>•</span>
+                        <span>Endurance</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="co2-tolerance">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4-7-8 Relaxation -->
+                <div class="exercise-card" data-exercise="relaxation">
+                    <div class="exercise-badge">Sommeil</div>
+                    <h3>Respiration 4-7-8</h3>
+                    <p>Technique Dr. Andrew Weil pour l'endormissement. Activation parasympathique profonde.</p>
+                    <div class="exercise-meta">
+                        <span>4 cycles</span>
+                        <span>•</span>
+                        <span>Relaxation</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="relaxation">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Visualisation Section -->
+        <section class="section" id="visualisation">
+            <div class="section-header">
+                <h2>Visualisation</h2>
+                <p>Protocoles de sophrologie et d'imagerie mentale utilisés par les athlètes olympiques</p>
+            </div>
+
+            <div class="exercise-grid">
+                <!-- Body Scan -->
+                <div class="exercise-card" data-exercise="body-scan">
+                    <div class="exercise-badge">Mindfulness</div>
+                    <h3>Body Scan</h3>
+                    <p>Parcours attentionnel systématique du corps. Améliore la conscience corporelle et active le système parasympathique.</p>
+                    <div class="exercise-meta">
+                        <span>15-20 min</span>
+                        <span>•</span>
+                        <span>Conscience corporelle</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="body-scan">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PETTLEP Visualization -->
+                <div class="exercise-card" data-exercise="pettlep">
+                    <div class="exercise-badge">Olympique</div>
+                    <h3>Visualisation PETTLEP</h3>
+                    <p>Protocole en 7 points utilisé par 70-90% des olympiens. Imagerie motrice complète multi-sensorielle.</p>
+                    <div class="exercise-meta">
+                        <span>10-15 min</span>
+                        <span>•</span>
+                        <span>Performance</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="pettlep">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dynamic Relaxation -->
+                <div class="exercise-card" data-exercise="sophro">
+                    <div class="exercise-badge">Sophrologie</div>
+                    <h3>Relaxation Dynamique</h3>
+                    <p>Méthode IRTER : Inspiration-Rétention-Tension-Expiration-Relâchement. Niveau 1 de sophrologie.</p>
+                    <div class="exercise-meta">
+                        <span>20 min</span>
+                        <span>•</span>
+                        <span>Relaxation profonde</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="sophro">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PMR -->
+                <div class="exercise-card" data-exercise="pmr">
+                    <div class="exercise-badge">Jacobson</div>
+                    <h3>Relaxation Musculaire Progressive</h3>
+                    <p>Contraction-relâchement systématique. Validée sur 3400+ participants pour réduire stress et anxiété.</p>
+                    <div class="exercise-meta">
+                        <span>15-30 min</span>
+                        <span>•</span>
+                        <span>Tension musculaire</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="pmr">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Focus Training -->
+                <div class="exercise-card" data-exercise="focus">
+                    <div class="exercise-badge">Concentration</div>
+                    <h3>Entraînement Focus</h3>
+                    <p>Technique du spotlight : visualiser un faisceau de lumière sur l'objet d'attention. Améliore la concentration.</p>
+                    <div class="exercise-meta">
+                        <span>10 min</span>
+                        <span>•</span>
+                        <span>Attention</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="focus">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pre-dive Visualization -->
+                <div class="exercise-card" data-exercise="predive">
+                    <div class="exercise-badge">Apnéiste</div>
+                    <h3>Visualisation Pré-Plongée</h3>
+                    <p>Routine mentale complète de l'apnéiste : descente, fond, remontée. Réduit l'anxiété de 20%.</p>
+                    <div class="exercise-meta">
+                        <span>10 min</span>
+                        <span>•</span>
+                        <span>Préparation mentale</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="predive">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sleep Protocol -->
+                <div class="exercise-card exercise-card-sleep" data-exercise="sleep-descent">
+                    <div class="exercise-badge">Sommeil</div>
+                    <h3>Descente vers le Sommeil</h3>
+                    <p>Protocole d'endormissement en 7 minutes combinant relaxation progressive, 4-7-8 et imagerie hypnagogique.</p>
+                    <div class="exercise-meta">
+                        <span>7 min</span>
+                        <span>•</span>
+                        <span>Endormissement</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Apnée Section -->
+        <section class="section" id="apnee">
+            <div class="section-header">
+                <h2>Entraînement Apnée</h2>
+                <p>Protocoles progressifs pour développer votre capacité de rétention respiratoire en sécurité</p>
+            </div>
+
+            <!-- Apnea Test -->
+            <div class="apnea-test-card">
+                <h3>Test de Base</h3>
+                <p>Mesurez votre apnée statique maximale pour personnaliser vos tables d'entraînement</p>
+                <div class="test-result" id="testResult">
+                    <span class="result-label">Votre record</span>
+                    <span class="result-value" id="personalBest">--:--</span>
+                </div>
+                <button class="btn-primary" id="startTest">Faire le test</button>
+            </div>
+
+            <div class="exercise-grid">
+                <!-- CO2 Table -->
+                <div class="exercise-card" data-exercise="co2-table">
+                    <div class="exercise-badge">Tolérance CO2</div>
+                    <h3>Table CO2</h3>
+                    <p>Apnées constantes avec repos décroissant. Développe la tolérance à l'accumulation de CO2.</p>
+                    <div class="exercise-meta">
+                        <span>8 cycles</span>
+                        <span>•</span>
+                        <span>~15 min</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="co2-table">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- O2 Table -->
+                <div class="exercise-card" data-exercise="o2-table">
+                    <div class="exercise-badge">Tolérance O2</div>
+                    <h3>Table O2</h3>
+                    <p>Apnées progressives avec repos constant. Adapte le corps aux faibles niveaux d'oxygène.</p>
+                    <div class="exercise-meta">
+                        <span>8 cycles</span>
+                        <span>•</span>
+                        <span>~20 min</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="o2-table">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- No Contraction -->
+                <div class="exercise-card" data-exercise="no-contraction">
+                    <div class="exercise-badge">Débutant</div>
+                    <h3>Table Sans Contraction</h3>
+                    <p>Méthode douce : rester dans le confort pour développer une relation saine avec le CO2.</p>
+                    <div class="exercise-meta">
+                        <span>6-8 cycles</span>
+                        <span>•</span>
+                        <span>Progression douce</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="no-contraction">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dive Reflex -->
+                <div class="exercise-card" data-exercise="dive-reflex">
+                    <div class="exercise-badge">Physiologie</div>
+                    <h3>Réflexe de Plongée</h3>
+                    <p>Exercices pour optimiser la bradycardie et la vasoconstriction périphérique. Utilisez de l'eau froide sur le visage.</p>
+                    <div class="exercise-meta">
+                        <span>10 min</span>
+                        <span>•</span>
+                        <span>Adaptation</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="dive-reflex">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Lung Stretching -->
+                <div class="exercise-card" data-exercise="lung-stretch">
+                    <div class="exercise-badge">Capacité</div>
+                    <h3>Étirements Pulmonaires</h3>
+                    <p>Uddiyana bandha et étirements intercostaux pour augmenter la capacité vitale.</p>
+                    <div class="exercise-meta">
+                        <span>10 min</span>
+                        <span>•</span>
+                        <span>Flexibilité</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="lung-stretch">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Diaphragm Training -->
+                <div class="exercise-card" data-exercise="diaphragm">
+                    <div class="exercise-badge">Fondamental</div>
+                    <h3>Respiration Diaphragmatique</h3>
+                    <p>Maîtrise de la respiration abdominale en 3 temps. Base de tout entraînement apnée.</p>
+                    <div class="exercise-meta">
+                        <span>10 min</span>
+                        <span>•</span>
+                        <span>Technique</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="diaphragm">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Safety Notice -->
+            <div class="safety-notice">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <div>
+                    <strong>Sécurité</strong>
+                    <p>Ne jamais pratiquer l'apnée dans l'eau seul. L'entraînement à sec est plus sûr. Arrêtez en cas de vertiges, picotements ou troubles visuels. Ne pas combiner tables O2 et CO2 le même jour.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Multi Timer Section -->
+        <section class="section" id="multitimer">
+            <div class="section-header">
+                <h2>Multi Timer</h2>
+                <p>Créez des séquences de chronomètres personnalisées pour vos entraînements</p>
+            </div>
+
+            <!-- Saved Sequences -->
+            <div class="sequences-container">
+                <div class="sequences-header">
+                    <h3>Mes séquences</h3>
+                    <button class="btn-primary btn-new-sequence" id="btnNewSequence">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Nouvelle séquence
+                    </button>
+                </div>
+
+                <div class="sequences-grid" id="sequencesGrid">
+                    <!-- Default sequence: Simple Interval -->
+                    <div class="sequence-card" data-sequence="interval-30-30">
+                        <div class="sequence-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12,6 12,12 16,14"/>
+                            </svg>
+                        </div>
+                        <h4>Intervalles 30/30</h4>
+                        <p>30s effort / 30s repos × 8</p>
+                        <div class="sequence-meta">
+                            <span>8 cycles</span>
+                            <span>•</span>
+                            <span>8 min</span>
+                        </div>
+                        <div class="sequence-actions">
+                            <button class="btn-start-sequence">Démarrer</button>
+                            <button class="btn-edit-sequence" title="Modifier">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Default sequence: Tabata -->
+                    <div class="sequence-card" data-sequence="tabata">
+                        <div class="sequence-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
+                            </svg>
+                        </div>
+                        <h4>Tabata</h4>
+                        <p>20s effort / 10s repos × 8</p>
+                        <div class="sequence-meta">
+                            <span>8 cycles</span>
+                            <span>•</span>
+                            <span>4 min</span>
+                        </div>
+                        <div class="sequence-actions">
+                            <button class="btn-start-sequence">Démarrer</button>
+                            <button class="btn-edit-sequence" title="Modifier">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Default sequence: Pyramide -->
+                    <div class="sequence-card" data-sequence="pyramid">
+                        <div class="sequence-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="12,2 22,22 2,22"/>
+                            </svg>
+                        </div>
+                        <h4>Pyramide</h4>
+                        <p>10-20-30-40-30-20-10s</p>
+                        <div class="sequence-meta">
+                            <span>7 phases</span>
+                            <span>•</span>
+                            <span>5.5 min</span>
+                        </div>
+                        <div class="sequence-actions">
+                            <button class="btn-start-sequence">Démarrer</button>
+                            <button class="btn-edit-sequence" title="Modifier">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Placeholder for user sequences -->
+                    <div class="sequence-card sequence-card-add" id="addSequenceCard">
+                        <div class="sequence-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                        </div>
+                        <h4>Créer une séquence</h4>
+                        <p>Personnalisez vos intervalles</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Timer -->
+            <div class="quick-timer-section">
+                <h3>Timer rapide</h3>
+                <p>Chronomètre simple avec alarme</p>
+
+                <div class="quick-timer-container">
+                    <div class="quick-timer-inputs">
+                        <div class="timer-input-group">
+                            <input type="number" id="quickTimerMinutes" min="0" max="99" value="1" class="timer-input-large">
+                            <span>min</span>
+                        </div>
+                        <span class="timer-separator-large">:</span>
+                        <div class="timer-input-group">
+                            <input type="number" id="quickTimerSeconds" min="0" max="59" value="0" class="timer-input-large">
+                            <span>sec</span>
+                        </div>
+                    </div>
+
+                    <div class="quick-timer-presets">
+                        <button class="preset-btn" data-time="30">30s</button>
+                        <button class="preset-btn" data-time="60">1min</button>
+                        <button class="preset-btn" data-time="120">2min</button>
+                        <button class="preset-btn" data-time="180">3min</button>
+                        <button class="preset-btn" data-time="300">5min</button>
+                    </div>
+
+                    <div class="quick-timer-display" id="quickTimerDisplay">
+                        <span class="timer-value" id="quickTimerValue">1:00</span>
+                        <span class="timer-status" id="quickTimerStatus">Prêt</span>
+                    </div>
+
+                    <div class="quick-timer-controls">
+                        <button class="btn-timer-control btn-timer-start" id="btnQuickTimerStart">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <polygon points="5,3 19,12 5,21"/>
+                            </svg>
+                            Démarrer
+                        </button>
+                        <button class="btn-timer-control btn-timer-pause" id="btnQuickTimerPause" style="display: none;">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <rect x="6" y="4" width="4" height="16"/>
+                                <rect x="14" y="4" width="4" height="16"/>
+                            </svg>
+                            Pause
+                        </button>
+                        <button class="btn-timer-control btn-timer-reset" id="btnQuickTimerReset">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                <path d="M3 3v5h5"/>
+                            </svg>
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Urgence Section -->
+        <section class="section" id="urgence">
+            <div class="section-header section-header-urgence">
+                <h2>Urgence</h2>
+                <p>Exercices rapides pour retrouver le calme en cas de panique, anxiété ou stress soudain</p>
+            </div>
+
+            <div class="urgence-intro">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 8v4M12 16h.01"/>
+                </svg>
+                <div>
+                    <strong>En cas de crise</strong>
+                    <p>Ces exercices sont conçus pour être utilisés immédiatement lors d'un pic d'anxiété ou de panique. Commencez par le premier exercice et passez au suivant si nécessaire.</p>
+                </div>
+            </div>
+
+            <div class="exercise-grid">
+                <!-- Physiological Sigh - Fastest -->
+                <div class="exercise-card exercise-card-urgence" data-exercise="physiological-sigh">
+                    <div class="exercise-badge urgence-badge">30 sec</div>
+                    <h3>Soupir Physiologique</h3>
+                    <p>Le plus rapide : double inspiration + longue expiration. Effet immédiat sur le système nerveux.</p>
+                    <div class="exercise-meta">
+                        <span>30 sec</span>
+                        <span>•</span>
+                        <span>Effet immédiat</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-urgence">Commencer</button>
+                    </div>
+                </div>
+
+                <!-- 5-5-5 Grounding -->
+                <div class="exercise-card exercise-card-urgence" data-exercise="grounding-555">
+                    <div class="exercise-badge urgence-badge">1-2 min</div>
+                    <h3>Ancrage 5-5-5</h3>
+                    <p>Technique de grounding : 5 choses vues, 5 entendues, 5 sensations tactiles. Reconnexion au présent.</p>
+                    <div class="exercise-meta">
+                        <span>1-2 min</span>
+                        <span>•</span>
+                        <span>Dissociation</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-urgence">Commencer</button>
+                    </div>
+                </div>
+
+                <!-- Extended Exhale -->
+                <div class="exercise-card exercise-card-urgence" data-exercise="extended-exhale">
+                    <div class="exercise-badge urgence-badge">2 min</div>
+                    <h3>Expiration Prolongée</h3>
+                    <p>Inspiration 4s, expiration 8s. Active rapidement le nerf vague et le système parasympathique.</p>
+                    <div class="exercise-meta">
+                        <span>2 min</span>
+                        <span>•</span>
+                        <span>Calme rapide</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-urgence">Commencer</button>
+                    </div>
+                </div>
+
+                <!-- Box Breathing Quick -->
+                <div class="exercise-card exercise-card-urgence" data-exercise="box-quick">
+                    <div class="exercise-badge urgence-badge">2-3 min</div>
+                    <h3>Box Breathing Rapide</h3>
+                    <p>Version courte 4-4-4-4. Reprend le contrôle de la respiration en quelques cycles.</p>
+                    <div class="exercise-meta">
+                        <span>2-3 min</span>
+                        <span>•</span>
+                        <span>Contrôle</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-urgence">Commencer</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pré-Performance Section -->
+        <section class="section" id="preperformance">
+            <div class="section-header section-header-preperf">
+                <h2>Pré-Performance</h2>
+                <p>Protocole de 5 minutes pour optimiser votre état avant une plongée, compétition ou moment important</p>
+            </div>
+
+            <div class="preperf-intro">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12,6 12,12 16,14"/>
+                </svg>
+                <div>
+                    <strong>5 minutes avant</strong>
+                    <p>Ce protocole combine respiration, relaxation et visualisation pour vous mettre dans l'état optimal. Idéal avant une plongée en apnée, une chasse sous-marine ou toute performance.</p>
+                </div>
+            </div>
+
+            <div class="exercise-grid">
+                <!-- Full 5-min Protocol -->
+                <div class="exercise-card exercise-card-preperf exercise-card-featured" data-exercise="preperf-protocol">
+                    <div class="exercise-badge preperf-badge">Protocole complet</div>
+                    <h3>Protocole 5 Minutes</h3>
+                    <p>Séquence complète : relaxation musculaire rapide, cohérence cardiaque, visualisation de succès.</p>
+                    <div class="exercise-meta">
+                        <span>5 min</span>
+                        <span>•</span>
+                        <span>Complet</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-preperf">Commencer</button>
+                    </div>
+                </div>
+
+                <!-- Dive Prep -->
+                <div class="exercise-card exercise-card-preperf" data-exercise="dive-prep">
+                    <div class="exercise-badge preperf-badge">Apnée</div>
+                    <h3>Préparation Plongée</h3>
+                    <p>Breathe-up optimisé : activation du réflexe de plongée, respiration diaphragmatique, visualisation de la descente.</p>
+                    <div class="exercise-meta">
+                        <span>5 min</span>
+                        <span>•</span>
+                        <span>Apnée / Chasse</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-preperf">Commencer</button>
+                    </div>
+                </div>
+
+                <!-- Quick Coherence -->
+                <div class="exercise-card exercise-card-preperf" data-exercise="quick-coherence">
+                    <div class="exercise-badge preperf-badge">3 min</div>
+                    <h3>Cohérence Express</h3>
+                    <p>Cohérence cardiaque en 3 minutes : suffisant pour synchroniser cœur et respiration avant l'action.</p>
+                    <div class="exercise-meta">
+                        <span>3 min</span>
+                        <span>•</span>
+                        <span>Focus</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-preperf">Commencer</button>
+                    </div>
+                </div>
+
+                <!-- Power Visualization -->
+                <div class="exercise-card exercise-card-preperf" data-exercise="power-viz">
+                    <div class="exercise-badge preperf-badge">2 min</div>
+                    <h3>Visualisation Express</h3>
+                    <p>Visualisation rapide de votre performance parfaite. Ancrage de l'état de confiance optimal.</p>
+                    <div class="exercise-meta">
+                        <span>2 min</span>
+                        <span>•</span>
+                        <span>Mental</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-preperf">Commencer</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Auto-Hypnose Section -->
+        <section class="section" id="autohypnose">
+            <div class="section-header section-header-hypnose">
+                <h2>Auto-Hypnose Apnée</h2>
+                <p>Techniques avancées de dissociation sensorielle et de flow-state pour apnéistes</p>
+            </div>
+
+            <div class="hypnose-intro">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="6" opacity="0.5"/>
+                    <circle cx="12" cy="12" r="2"/>
+                </svg>
+                <div>
+                    <strong>Fragmentation Sensorielle VAKOG</strong>
+                    <p>Ces techniques utilisent la dissociation visuelle, auditive, kinesthésique, olfactive et gustative pour modifier votre perception pendant l'apnée. Apprenez à déplacer votre attention et à gérer les spasmes.</p>
+                </div>
+            </div>
+
+            <div class="exercise-grid">
+                <!-- Initiation Auto-Hypnose -->
+                <div class="exercise-card exercise-card-hypnose exercise-card-featured" data-exercise="hypno-apnee-debutant">
+                    <div class="exercise-badge hypnose-badge">Débutant</div>
+                    <h3>Initiation Auto-Hypnose</h3>
+                    <p>Découvrez les bases de l'auto-hypnose : induction progressive, approfondissement et création de votre ancre personnelle.</p>
+                    <div class="exercise-meta">
+                        <span>15 min</span>
+                        <span>•</span>
+                        <span>Fondamental</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-hypnose">Commencer</button>
+                    </div>
+                </div>
+
+                <!-- VAKOG Statique -->
+                <div class="exercise-card exercise-card-hypnose" data-exercise="vakog-static">
+                    <div class="exercise-badge hypnose-badge">Statique</div>
+                    <h3>VAKOG Statique</h3>
+                    <p>Fragmentation sensorielle complète pour apnée statique. Technique de switch pour déplacer l'attention des spasmes.</p>
+                    <div class="exercise-meta">
+                        <span>12 min</span>
+                        <span>•</span>
+                        <span>Gestion spasmes</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-hypnose">Commencer</button>
+                    </div>
+                </div>
+
+                <!-- Scan Sensoriel Circulaire -->
+                <div class="exercise-card exercise-card-hypnose" data-exercise="scan-sensoriel">
+                    <div class="exercise-badge hypnose-badge">Pendant apnée</div>
+                    <h3>Scan Sensoriel Circulaire</h3>
+                    <p>Parcours rapide des zones neutres du corps pour rediriger l'attention. Utilisable pendant l'apnée elle-même.</p>
+                    <div class="exercise-meta">
+                        <span>8 min</span>
+                        <span>•</span>
+                        <span>Dissociation</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-hypnose">Commencer</button>
+                    </div>
+                </div>
+
+                <!-- Flow-State Dynamique -->
+                <div class="exercise-card exercise-card-hypnose" data-exercise="flow-dynamique">
+                    <div class="exercise-badge hypnose-badge">Dynamique</div>
+                    <h3>Flow-State Dynamique</h3>
+                    <p>Dissociation moteur/passager et mantra rythmique pour DNF et monopalme. Passez en mode automatique.</p>
+                    <div class="exercise-meta">
+                        <span>10 min</span>
+                        <span>•</span>
+                        <span>100m mono / DNF</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-hypnose">Commencer</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hypnose-tips">
+                <h4>Conseils d'utilisation</h4>
+                <ul>
+                    <li><strong>Ancre pouce-index :</strong> Pressez légèrement votre pouce contre votre index pour activer instantanément l'état de calme.</li>
+                    <li><strong>Entraînez-vous à sec :</strong> Pratiquez ces techniques hors de l'eau avant de les utiliser en apnée réelle.</li>
+                    <li><strong>Mantra Glisse-Relâche :</strong> Utilisez ce rythme mental pendant vos dynamiques pour entrer en mode automatique.</li>
+                    <li><strong>Switch rapide :</strong> Dès qu'un spasme arrive, déplacez votre attention sur le lobe d'oreille ou le petit orteil.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section class="section" id="settings">
+            <div class="section-header">
+                <h2>Paramètres</h2>
+                <p>Personnalisez tous les exercices selon vos capacités</p>
+            </div>
+
+            <!-- Global Settings -->
+            <div class="settings-card settings-global">
+                <h3>Mode de configuration</h3>
+                <div class="settings-mode-toggle">
+                    <button class="mode-btn active" data-mode="auto">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                        </svg>
+                        <span>Automatique</span>
+                        <small>Basé sur votre apnée max</small>
+                    </button>
+                    <button class="mode-btn" data-mode="manual">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                        </svg>
+                        <span>Manuel</span>
+                        <small>Paramètres personnalisés</small>
+                    </button>
+                </div>
+
+                <!-- Apnea Base Time (always visible) -->
+                <div class="apnea-base-setting-global">
+                    <label>Temps d'apnée maximum de référence</label>
+                    <div class="apnea-input-group">
+                        <div class="time-input">
+                            <input type="number" id="apneaMinutes" min="0" max="10" value="2" class="time-field">
+                            <span>min</span>
+                        </div>
+                        <span class="time-separator">:</span>
+                        <div class="time-input">
+                            <input type="number" id="apneaSeconds" min="0" max="59" value="0" class="time-field">
+                            <span>sec</span>
+                        </div>
+                        <button class="btn-test-inline" id="btnQuickTest">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="5,3 19,12 5,21"/>
+                            </svg>
+                            Tester
+                        </button>
+                    </div>
+                    <p class="setting-hint" id="apneaHint">En mode auto, les exercices seront calculés en % de ce temps</p>
+                </div>
+
+                <!-- Auto Mode: Percentages -->
+                <div class="settings-auto-panel" id="autoPanel">
+                    <div class="auto-percentages">
+                        <h4>Pourcentages utilisés pour les tables d'apnée</h4>
+                        <div class="percentage-grid">
+                            <div class="percentage-item">
+                                <label>Table CO2 (apnée constante)</label>
+                                <div class="range-with-value">
+                                    <input type="range" min="30" max="70" value="50" id="co2HoldPercent">
+                                    <span class="range-value" id="co2HoldValue">50%</span>
+                                </div>
+                                <span class="computed-value" id="co2Computed">= 60 sec</span>
+                            </div>
+                            <div class="percentage-item">
+                                <label>Table O2 (début → fin)</label>
+                                <div class="dual-range">
+                                    <div class="range-with-value">
+                                        <input type="range" min="20" max="50" value="30" id="o2StartPercent">
+                                        <span class="range-value" id="o2StartValue">30%</span>
+                                    </div>
+                                    <span>→</span>
+                                    <div class="range-with-value">
+                                        <input type="range" min="60" max="90" value="75" id="o2EndPercent">
+                                        <span class="range-value" id="o2EndValue">75%</span>
+                                    </div>
+                                </div>
+                                <span class="computed-value" id="o2Computed">= 36 → 90 sec</span>
+                            </div>
+                            <div class="percentage-item">
+                                <label>Table sans contraction</label>
+                                <div class="range-with-value">
+                                    <input type="range" min="20" max="50" value="30" id="noContractionPercent">
+                                    <span class="range-value" id="noContractionValue">30%</span>
+                                </div>
+                                <span class="computed-value" id="noContractionComputed">= 36 sec</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manual Mode Panel -->
+                <div class="settings-manual-panel" id="manualPanel" style="display: none;">
+                    <p class="manual-hint">En mode manuel, définissez les durées exactes dans chaque section ci-dessous.</p>
+                </div>
+            </div>
+
+            <!-- Respiration Settings -->
+            <div class="settings-card">
+                <div class="settings-card-header">
+                    <h3>Respiration</h3>
+                    <button class="btn-expand expanded" data-target="respirationSettings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6,9 12,15 18,9"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="settings-card-body" id="respirationSettings">
+                    <!-- Cyclic Sighing -->
+                    <div class="exercise-settings" data-exercise="cyclic-sighing">
+                        <h4>Cyclic Sighing</h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="30" value="5" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>1ère inspiration</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="10" value="2" step="0.5" data-param="inhale1">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>2ème inspiration</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="0.5" max="5" value="1" step="0.5" data-param="inhale2">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Expiration</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="15" value="6" step="0.5" data-param="exhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coherent Breathing -->
+                    <div class="exercise-settings" data-exercise="coherent">
+                        <h4>Respiration Cohérente</h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="60" value="10" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Inspiration</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="3" max="10" value="5.5" step="0.5" data-param="inhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Expiration</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="3" max="10" value="5.5" step="0.5" data-param="exhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Box Breathing -->
+                    <div class="exercise-settings" data-exercise="box">
+                        <h4>Box Breathing</h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="30" value="5" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Durée de chaque phase</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="10" value="4" data-param="boxTime">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wim Hof -->
+                    <div class="exercise-settings" data-exercise="wimhof">
+                        <h4>Méthode Wim Hof</h4>
+                        <div class="settings-row">
+                            <label>Nombre de rounds</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="5" value="3" data-param="rounds">
+                                <span>rounds</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Respirations par round</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="20" max="50" value="30" data-param="breaths">
+                                <span>resp.</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Récupération</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="10" max="30" value="15" data-param="recovery">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CO2 Tolerance -->
+                    <div class="exercise-settings" data-exercise="co2-tolerance">
+                        <h4>Tolérance CO2</h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="20" value="5" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Inspiration</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="8" value="4" data-param="inhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Expiration</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="4" max="16" value="8" data-param="exhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4-7-8 -->
+                    <div class="exercise-settings" data-exercise="relaxation">
+                        <h4>Respiration 4-7-8</h4>
+                        <div class="settings-row">
+                            <label>Nombre de cycles</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="10" value="4" data-param="cycles">
+                                <span>cycles</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Inspiration</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="8" value="4" data-param="inhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Rétention</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="4" max="14" value="7" data-param="hold">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Expiration</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="4" max="16" value="8" data-param="exhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualisation Settings -->
+            <div class="settings-card">
+                <div class="settings-card-header">
+                    <h3>Visualisation</h3>
+                    <button class="btn-expand expanded" data-target="visualisationSettings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6,9 12,15 18,9"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="settings-card-body" id="visualisationSettings">
+                    <!-- Body Scan -->
+                    <div class="exercise-settings" data-exercise="body-scan">
+                        <h4>Body Scan</h4>
+                        <div class="settings-row">
+                            <label>Durée par zone</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="30" max="180" value="60" data-param="zoneDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PETTLEP -->
+                    <div class="exercise-settings" data-exercise="pettlep">
+                        <h4>Visualisation PETTLEP</h4>
+                        <div class="settings-row">
+                            <label>Durée par phase</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="30" max="180" value="60" data-param="phaseDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sophro -->
+                    <div class="exercise-settings" data-exercise="sophro">
+                        <h4>Relaxation Dynamique</h4>
+                        <div class="settings-row">
+                            <label>Durée par segment</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="45" max="180" value="90" data-param="segmentDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PMR -->
+                    <div class="exercise-settings" data-exercise="pmr">
+                        <h4>Relaxation Musculaire</h4>
+                        <div class="settings-row">
+                            <label>Durée par muscle</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="20" max="90" value="45" data-param="muscleDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Focus -->
+                    <div class="exercise-settings" data-exercise="focus">
+                        <h4>Entraînement Focus</h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="5" max="30" value="10" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pre-dive -->
+                    <div class="exercise-settings" data-exercise="predive">
+                        <h4>Visualisation Pré-Plongée</h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="5" max="20" value="10" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Apnea Settings -->
+            <div class="settings-card">
+                <div class="settings-card-header">
+                    <h3>Apnée</h3>
+                    <button class="btn-expand expanded" data-target="apneaSettings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6,9 12,15 18,9"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="settings-card-body" id="apneaSettings">
+                    <!-- CO2 Table -->
+                    <div class="exercise-settings" data-exercise="co2-table">
+                        <h4>Table CO2</h4>
+                        <div class="settings-row">
+                            <label>Nombre de cycles</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="4" max="12" value="8" data-param="cycles">
+                                <span>cycles</span>
+                            </div>
+                        </div>
+                        <div class="settings-row manual-only">
+                            <label>Durée d'apnée</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="15" max="180" value="60" data-param="holdTime">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Repos initial</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="30" max="180" value="105" data-param="restStart">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Repos final</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="10" max="60" value="15" data-param="restEnd">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- O2 Table -->
+                    <div class="exercise-settings" data-exercise="o2-table">
+                        <h4>Table O2</h4>
+                        <div class="settings-row">
+                            <label>Nombre de cycles</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="4" max="12" value="8" data-param="cycles">
+                                <span>cycles</span>
+                            </div>
+                        </div>
+                        <div class="settings-row manual-only">
+                            <label>Apnée initiale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="15" max="120" value="36" data-param="holdStart">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row manual-only">
+                            <label>Apnée finale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="30" max="240" value="90" data-param="holdEnd">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Temps de repos</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="60" max="180" value="120" data-param="restTime">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- No Contraction -->
+                    <div class="exercise-settings" data-exercise="no-contraction">
+                        <h4>Table Sans Contraction</h4>
+                        <div class="settings-row">
+                            <label>Nombre de cycles</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="4" max="10" value="6" data-param="cycles">
+                                <span>cycles</span>
+                            </div>
+                        </div>
+                        <div class="settings-row manual-only">
+                            <label>Durée d'apnée</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="15" max="120" value="36" data-param="holdTime">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Temps de repos</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="30" max="120" value="60" data-param="restTime">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Diaphragm -->
+                    <div class="exercise-settings" data-exercise="diaphragm">
+                        <h4>Respiration Diaphragmatique</h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="5" max="20" value="10" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save/Reset Buttons -->
+            <div class="settings-actions">
+                <button class="btn-secondary" id="btnResetSettings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                    </svg>
+                    Réinitialiser
+                </button>
+                <button class="btn-primary" id="btnSaveSettings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17,21 17,13 7,13 7,21"/>
+                        <polyline points="7,3 7,8 15,8"/>
+                    </svg>
+                    Enregistrer
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Exercise Modal -->
+    <div class="modal" id="exerciseModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+
+            <div class="exercise-display">
+                <h2 class="exercise-title" id="exerciseTitle">Exercise</h2>
+                <p class="exercise-instruction" id="exerciseInstruction">Instructions will appear here</p>
+
+                <!-- Breathing Circle Animation -->
+                <div class="breath-circle-container">
+                    <div class="breath-circle" id="breathCircle">
+                        <div class="breath-inner">
+                            <span class="breath-phase" id="breathPhase">Prêt</span>
+                            <span class="breath-timer" id="breathTimer">0:00</span>
+                        </div>
+                    </div>
+                    <svg class="breath-progress" viewBox="0 0 200 200">
+                        <circle class="progress-bg" cx="100" cy="100" r="90"/>
+                        <circle class="progress-bar" id="progressBar" cx="100" cy="100" r="90"/>
+                    </svg>
+                </div>
+
+                <!-- Cycle Counter -->
+                <div class="cycle-info">
+                    <span id="cycleCounter">Cycle 0 / 0</span>
+                </div>
+
+                <!-- Controls -->
+                <div class="exercise-controls">
+                    <button class="btn-control" id="btnReset" title="Recommencer">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                        </svg>
+                    </button>
+                    <button class="btn-control" id="btnPause">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="4" width="4" height="16"/>
+                            <rect x="14" y="4" width="4" height="16"/>
+                        </svg>
+                    </button>
+                    <button class="btn-control btn-stop" id="btnStop">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="6" width="12" height="12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sequence Editor Modal -->
+    <div class="modal" id="sequenceEditorModal">
+        <div class="modal-content modal-large">
+            <button class="modal-close" id="sequenceEditorClose">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+
+            <div class="sequence-editor">
+                <h2 id="sequenceEditorTitle">Nouvelle séquence</h2>
+
+                <div class="sequence-form">
+                    <div class="form-group">
+                        <label>Nom de la séquence</label>
+                        <input type="text" id="sequenceName" placeholder="Ma séquence" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Type de séquence</label>
+                        <div class="sequence-type-selector">
+                            <button class="type-btn active" data-type="interval">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="7" height="7"/>
+                                    <rect x="14" y="3" width="7" height="7"/>
+                                    <rect x="3" y="14" width="7" height="7"/>
+                                    <rect x="14" y="14" width="7" height="7"/>
+                                </svg>
+                                <span>Intervalles</span>
+                            </button>
+                            <button class="type-btn" data-type="custom">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="4" y1="21" x2="4" y2="14"/>
+                                    <line x1="4" y1="10" x2="4" y2="3"/>
+                                    <line x1="12" y1="21" x2="12" y2="12"/>
+                                    <line x1="12" y1="8" x2="12" y2="3"/>
+                                    <line x1="20" y1="21" x2="20" y2="16"/>
+                                    <line x1="20" y1="12" x2="20" y2="3"/>
+                                    <circle cx="4" cy="12" r="2"/>
+                                    <circle cx="12" cy="10" r="2"/>
+                                    <circle cx="20" cy="14" r="2"/>
+                                </svg>
+                                <span>Personnalisé</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Interval Mode Settings -->
+                    <div class="interval-settings" id="intervalSettings">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Durée effort</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="intervalWork" min="5" max="300" value="30">
+                                    <span>sec</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Durée repos</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="intervalRest" min="5" max="300" value="30">
+                                    <span>sec</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Répétitions</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="intervalReps" min="1" max="50" value="8">
+                                    <span>×</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Labels des phases</label>
+                            <div class="form-row">
+                                <input type="text" id="labelWork" placeholder="Effort" value="Effort" class="form-input form-input-sm">
+                                <input type="text" id="labelRest" placeholder="Repos" value="Repos" class="form-input form-input-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Mode Settings -->
+                    <div class="custom-settings" id="customSettings" style="display: none;">
+                        <div class="phases-list" id="phasesList">
+                            <div class="phase-item" data-index="0">
+                                <input type="text" class="phase-label" value="Phase 1" placeholder="Nom">
+                                <div class="input-with-unit">
+                                    <input type="number" class="phase-duration" min="1" max="600" value="30">
+                                    <span>sec</span>
+                                </div>
+                                <select class="phase-color">
+                                    <option value="blue">Bleu</option>
+                                    <option value="green">Vert</option>
+                                    <option value="orange">Orange</option>
+                                    <option value="red">Rouge</option>
+                                    <option value="purple">Violet</option>
+                                </select>
+                                <button class="btn-remove-phase" title="Supprimer">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="6" x2="6" y2="18"/>
+                                        <line x1="6" y1="6" x2="18" y2="18"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <button class="btn-add-phase" id="btnAddPhase">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            Ajouter une phase
+                        </button>
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="sequence-preview">
+                        <h4>Aperçu</h4>
+                        <div class="preview-timeline" id="previewTimeline"></div>
+                        <div class="preview-stats">
+                            <span>Durée totale: <strong id="previewDuration">8:00</strong></span>
+                            <span>Phases: <strong id="previewPhases">16</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sequence-editor-actions">
+                    <button class="btn-secondary" id="btnCancelSequence">Annuler</button>
+                    <button class="btn-danger" id="btnDeleteSequence" style="display: none;">Supprimer</button>
+                    <button class="btn-primary" id="btnSaveSequence">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sequence Runner Modal -->
+    <div class="modal" id="sequenceRunnerModal">
+        <div class="modal-content">
+            <button class="modal-close" id="sequenceRunnerClose">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+
+            <div class="sequence-runner">
+                <h2 id="sequenceRunnerTitle">Séquence</h2>
+
+                <div class="runner-phase-display">
+                    <div class="runner-phase-label" id="runnerPhaseLabel">Prêt</div>
+                    <div class="runner-timer" id="runnerTimer">0:00</div>
+                    <div class="runner-progress-ring">
+                        <svg viewBox="0 0 200 200">
+                            <circle class="progress-bg" cx="100" cy="100" r="90"/>
+                            <circle class="progress-bar" id="runnerProgressBar" cx="100" cy="100" r="90"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="runner-info">
+                    <div class="runner-phase-counter" id="runnerPhaseCounter">Phase 0 / 0</div>
+                    <div class="runner-next-phase">Suivant: <span id="runnerNextPhase">--</span></div>
+                </div>
+
+                <div class="runner-timeline" id="runnerTimeline"></div>
+
+                <div class="runner-controls">
+                    <button class="btn-control" id="btnRunnerPause">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="4" width="4" height="16"/>
+                            <rect x="14" y="4" width="4" height="16"/>
+                        </svg>
+                    </button>
+                    <button class="btn-control btn-stop" id="btnRunnerStop">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="6" width="12" height="12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Apnea Test Modal -->
+    <div class="modal" id="apneaTestModal">
+        <div class="modal-content">
+            <button class="modal-close" id="testModalClose">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+
+            <div class="test-display">
+                <h2>Test d'Apnée Statique</h2>
+                <p class="test-instruction" id="testInstruction">Prenez 3 respirations calmes, puis inspirez profondément et retenez votre souffle aussi longtemps que possible.</p>
+
+                <div class="test-timer-container">
+                    <div class="test-timer" id="testTimer">0:00</div>
+                    <div class="test-status" id="testStatus">Prêt</div>
+                </div>
+
+                <div class="test-controls">
+                    <button class="btn-primary" id="btnStartHold">Commencer l'apnée</button>
+                    <button class="btn-secondary" id="btnStopHold" style="display: none;">Arrêter</button>
+                </div>
+
+                <div class="test-result-display" id="testResultDisplay" style="display: none;">
+                    <h3>Votre résultat</h3>
+                    <div class="result-time" id="resultTime">0:00</div>
+                    <p class="result-analysis" id="resultAnalysis"></p>
+                    <button class="btn-primary" id="btnSaveResult">Enregistrer comme record</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="ocean-sound.js"></script>
+    <script src="exercises.js"></script>
+    <script src="voice-guide.js"></script>
+    <script src="breath-sounds.js"></script>
+    <script src="app.js"></script>
+    <script src="multi-timer.js"></script>
+</body>
+</html>
