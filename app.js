@@ -1229,30 +1229,49 @@ class JmeeDeepBreathApp {
     }
 
     startPhaseTimer(duration, callback) {
-        let remaining = duration;
+        if (this.phaseTimer) clearInterval(this.phaseTimer);
+
         const timerDisplay = document.getElementById('breathTimer');
         const progressBar = document.getElementById('progressBar');
         const circumference = 2 * Math.PI * 90;
+        const durationMs = Math.round(duration * 1000);
+        const startTime = Date.now();
+        let pausedTime = 0;
+        let pauseStart = null;
 
         // Initial display
-        timerDisplay.textContent = remaining.toFixed(1);
+        timerDisplay.textContent = duration.toFixed(1);
         progressBar.style.strokeDashoffset = circumference;
 
         this.phaseTimer = setInterval(() => {
-            if (this.isPaused) return;
+            if (this.isPaused) {
+                if (!pauseStart) pauseStart = Date.now();
+                return;
+            }
+            if (pauseStart) {
+                pausedTime += Date.now() - pauseStart;
+                pauseStart = null;
+            }
 
-            remaining -= 0.1;
-            this.elapsedTime += 0.1;
+            const elapsed = Date.now() - startTime - pausedTime;
+            const remainingMs = durationMs - elapsed;
+            const remaining = Math.max(0, remainingMs / 1000);
 
             // Update timer display
-            timerDisplay.textContent = remaining > 0 ? remaining.toFixed(1) : '0.0';
+            timerDisplay.textContent = remaining.toFixed(1);
+
+            // Update elapsed time
+            this.elapsedTime = elapsed / 1000;
 
             // Update progress
-            const progress = 1 - (remaining / duration);
+            const progress = Math.min(1, elapsed / durationMs);
             progressBar.style.strokeDashoffset = circumference * (1 - progress);
 
-            if (remaining <= 0) {
+            if (remainingMs <= 50) {
                 clearInterval(this.phaseTimer);
+                this.phaseTimer = null;
+                timerDisplay.textContent = '0.0';
+                progressBar.style.strokeDashoffset = 0;
                 callback();
             }
         }, 100);
@@ -1330,14 +1349,26 @@ class JmeeDeepBreathApp {
         circle.classList.add('hold', 'active');
         document.getElementById('breathPhase').textContent = 'Rétention';
 
-        // Start counting up
-        let retentionTime = 0;
+        // Start counting up using Date.now() for accuracy
         const timerDisplay = document.getElementById('breathTimer');
         const progressBar = document.getElementById('progressBar');
+        const retentionStart = Date.now();
+        let pausedTime = 0;
+        let pauseStart = null;
+
+        if (this.phaseTimer) clearInterval(this.phaseTimer);
 
         this.phaseTimer = setInterval(() => {
-            if (this.isPaused) return;
-            retentionTime += 0.1;
+            if (this.isPaused) {
+                if (!pauseStart) pauseStart = Date.now();
+                return;
+            }
+            if (pauseStart) {
+                pausedTime += Date.now() - pauseStart;
+                pauseStart = null;
+            }
+
+            const retentionTime = (Date.now() - retentionStart - pausedTime) / 1000;
             timerDisplay.textContent = this.formatTime(retentionTime);
             // Keep progress bar full during retention
             progressBar.style.strokeDashoffset = 0;
@@ -1499,9 +1530,11 @@ class JmeeDeepBreathApp {
         // Clear any existing timer
         if (this.phaseTimer) clearInterval(this.phaseTimer);
 
-        let elapsed = 0;
         const timerDisplay = document.getElementById('breathTimer');
         const progressBar = document.getElementById('progressBar');
+        const startTime = Date.now();
+        let pausedTime = 0;
+        let pauseStart = null;
 
         // Estimate total time for progress bar
         const estimatedTotal = Math.max(5, instruction.length / 12);
@@ -1509,10 +1542,18 @@ class JmeeDeepBreathApp {
         timerDisplay.textContent = '...';
 
         this.phaseTimer = setInterval(() => {
-            if (this.isPaused) return;
-            elapsed += 0.1;
+            if (this.isPaused) {
+                if (!pauseStart) pauseStart = Date.now();
+                return;
+            }
+            if (pauseStart) {
+                pausedTime += Date.now() - pauseStart;
+                pauseStart = null;
+            }
 
-            // Show a subtle counting indicator
+            const elapsed = (Date.now() - startTime - pausedTime) / 1000;
+
+            // Show elapsed time
             timerDisplay.textContent = elapsed.toFixed(1);
 
             // Approximate progress
@@ -1829,6 +1870,7 @@ class JmeeDeepBreathApp {
     completeExercise() {
         this.isRunning = false;
         clearInterval(this.phaseTimer);
+        this.phaseTimer = null;
 
         // Stop sounds
         if (window.voiceGuide) window.voiceGuide.stop();
@@ -1861,7 +1903,9 @@ class JmeeDeepBreathApp {
         this.isRunning = false;
         this.isPaused = false;
         clearInterval(this.phaseTimer);
+        this.phaseTimer = null;
         clearInterval(this.displayTimer);
+        this.displayTimer = null;
 
         // Stop all sounds
         if (window.voiceGuide) window.voiceGuide.stop();

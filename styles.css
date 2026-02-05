@@ -78,6 +78,7 @@ body {
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Background Gradient */
@@ -279,6 +280,7 @@ body::before {
     align-items: center;
     justify-content: space-between;
     padding: 0 var(--space-xl);
+    padding-top: env(safe-area-inset-top, 0px);
     z-index: 90;
 }
 
@@ -974,7 +976,8 @@ body::before {
    ======================================== */
 @media (max-width: 768px) {
     .main-nav {
-        padding: 0 var(--space-md);
+        padding: 0 var(--space-sm);
+        height: 56px;
     }
 
     .nav-brand span {
@@ -983,24 +986,97 @@ body::before {
 
     .nav-links {
         gap: 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        flex-shrink: 1;
+        min-width: 0;
+    }
+
+    .nav-links::-webkit-scrollbar {
+        display: none;
     }
 
     .nav-link {
         padding: var(--space-sm);
-        font-size: 0.85rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
     }
 
-    .sound-control {
-        top: var(--space-md);
-        right: var(--space-md);
+    /* Audio controls: move to bottom bar on mobile */
+    .audio-controls {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        justify-content: center;
+        background: rgba(10, 10, 15, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid var(--border-subtle);
+        padding: var(--space-sm) var(--space-md);
+        padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
+        gap: var(--space-sm);
+    }
+
+    /* Increase touch targets on mobile */
+    .offline-toggle {
+        width: 44px;
+        height: 44px;
+    }
+
+    .audio-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 13px;
+    }
+
+    .spotify-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    /* Volume sliders always visible on mobile (no hover) */
+    .volume-sliders {
+        width: 70px;
+    }
+
+    .volume-sliders input::-webkit-slider-thumb {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Spotify panel: full width on mobile */
+    .spotify-panel {
+        top: auto;
+        bottom: 60px;
+        left: var(--space-sm);
+        right: var(--space-sm);
+        width: auto;
+    }
+
+    .spotify-close {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
     }
 
     .section {
         padding: var(--space-2xl) var(--space-md);
+        padding-bottom: calc(var(--space-2xl) + 60px); /* Space for bottom audio bar */
     }
 
     .hero {
         padding: var(--space-xl) 0;
+        margin-top: -14px; /* Compensate smaller nav */
     }
 
     .exercise-grid {
@@ -1009,13 +1085,83 @@ body::before {
 
     .modal-content {
         max-width: 100%;
-        margin: var(--space-md);
-        border-radius: var(--radius-lg);
+        margin: var(--space-sm);
+        border-radius: var(--radius-md);
+    }
+
+    .modal-large {
+        max-width: 100%;
     }
 
     .breath-circle-container {
         width: 180px;
         height: 180px;
+    }
+
+    /* Exercise card title padding */
+    .exercise-card h3 {
+        padding-right: 60px;
+    }
+}
+
+/* ========================================
+   Phone-specific (< 480px)
+   ======================================== */
+@media (max-width: 480px) {
+    .main-nav {
+        padding: 0 var(--space-xs);
+    }
+
+    .nav-link {
+        padding: 6px 8px;
+        font-size: 0.75rem;
+    }
+
+    .section {
+        padding: var(--space-lg) var(--space-sm);
+        padding-bottom: calc(var(--space-lg) + 60px);
+    }
+
+    .hero-title {
+        font-size: 1.8rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    .feature-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .breath-circle-container {
+        width: 160px;
+        height: 160px;
+    }
+
+    .modal-content {
+        margin: var(--space-xs);
+        padding: var(--space-md);
+    }
+
+    /* Audio controls compact on small phones */
+    .audio-controls {
+        gap: 4px;
+        padding: var(--space-xs) var(--space-sm);
+    }
+
+    .volume-sliders {
+        width: 50px;
+    }
+
+    .exercise-card h3 {
+        font-size: 1rem;
+        padding-right: 50px;
+    }
+
+    .exercise-badge {
+        font-size: 0.65rem;
+        padding: 2px 6px;
     }
 }
 
@@ -1364,8 +1510,8 @@ body::before {
 }
 
 .btn-expand {
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
