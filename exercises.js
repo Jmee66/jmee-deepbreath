@@ -143,19 +143,19 @@ const EXERCISES = {
         duration: 15,
         isGuided: true,
         segments: [
-            { zone: 'pieds', duration: 60, instruction: 'Portez votre attention sur vos pieds. Sentez le contact avec le sol, la température, les sensations.' },
-            { zone: 'chevilles et mollets', duration: 60, instruction: 'Remontez vers vos chevilles et mollets. Observez toute tension ou détente.' },
-            { zone: 'genoux et cuisses', duration: 60, instruction: 'Continuez vers vos genoux et cuisses. Laissez ces muscles se relâcher.' },
-            { zone: 'bassin et hanches', duration: 60, instruction: 'Portez attention à votre bassin et vos hanches. Respirez dans cette zone.' },
-            { zone: 'abdomen', duration: 60, instruction: 'Sentez votre abdomen se soulever et s\'abaisser avec la respiration.' },
-            { zone: 'poitrine', duration: 60, instruction: 'Observez votre poitrine. Sentez votre cœur battre calmement.' },
-            { zone: 'dos', duration: 60, instruction: 'Parcourez votre dos du bas vers le haut. Relâchez chaque vertèbre.' },
-            { zone: 'épaules et bras', duration: 60, instruction: 'Détendez vos épaules, laissez vos bras devenir lourds.' },
-            { zone: 'mains', duration: 45, instruction: 'Sentez vos mains, chaque doigt. Notez les sensations.' },
-            { zone: 'cou et gorge', duration: 45, instruction: 'Relâchez votre cou et votre gorge. Déglutissez si nécessaire.' },
-            { zone: 'visage', duration: 60, instruction: 'Détendez votre mâchoire, vos joues, vos yeux, votre front.' },
-            { zone: 'crâne', duration: 45, instruction: 'Sentez votre crâne, le sommet de votre tête. Imaginez une douce lumière.' },
-            { zone: 'corps entier', duration: 60, instruction: 'Percevez maintenant votre corps entier, unifié et détendu.' }
+            { zone: 'pieds', duration: 40, instruction: 'Portez votre attention sur vos pieds. Sentez le contact avec le sol, la température, les sensations.' },
+            { zone: 'chevilles et mollets', duration: 45, instruction: 'Remontez vers vos chevilles et mollets. Observez toute tension ou détente.' },
+            { zone: 'genoux et cuisses', duration: 50, instruction: 'Continuez vers vos genoux et cuisses. Grande zone musculaire. Laissez ces muscles se relâcher.' },
+            { zone: 'bassin et hanches', duration: 50, instruction: 'Portez attention à votre bassin et vos hanches. Respirez dans cette zone.' },
+            { zone: 'abdomen', duration: 60, instruction: 'Sentez votre abdomen se soulever et s\'abaisser avec la respiration. Centre de votre être.' },
+            { zone: 'poitrine', duration: 50, instruction: 'Observez votre poitrine. Sentez votre cœur battre calmement.' },
+            { zone: 'dos', duration: 60, instruction: 'Parcourez votre dos du bas vers le haut. Relâchez chaque vertèbre, une par une.' },
+            { zone: 'épaules et bras', duration: 50, instruction: 'Détendez vos épaules, laissez vos bras devenir lourds et chauds.' },
+            { zone: 'mains', duration: 35, instruction: 'Sentez vos mains, chaque doigt. Notez les sensations de chaleur.' },
+            { zone: 'cou et gorge', duration: 40, instruction: 'Relâchez votre cou et votre gorge. Zone de tension fréquente. Laissez aller.' },
+            { zone: 'visage', duration: 50, instruction: 'Détendez votre mâchoire, vos joues, vos yeux, votre front. Lissez chaque muscle.' },
+            { zone: 'crâne', duration: 30, instruction: 'Sentez votre crâne, le sommet de votre tête. Imaginez une douce lumière.' },
+            { zone: 'corps entier', duration: 75, instruction: 'Percevez maintenant votre corps entier, unifié et détendu. Savourez cette sensation de complétude.' }
         ],
         instructions: {
             start: 'Allongez-vous confortablement. Fermez les yeux et respirez naturellement.'
@@ -191,17 +191,17 @@ const EXERCISES = {
         duration: 20,
         isGuided: true,
         segments: [
-            { phase: 'Ancrage', duration: 60, instruction: 'Sentez le contact de votre corps avec le support. Vous êtes stable et en sécurité.' },
-            { phase: 'Respiration', duration: 90, instruction: 'Respirez calmement. Chaque expiration approfondit votre relaxation.' },
-            { phase: 'IRTER - Tête', duration: 90, instruction: 'Inspirez, retenez, contractez les muscles du visage, expirez, relâchez complètement.' },
-            { phase: 'IRTER - Épaules', duration: 90, instruction: 'Inspirez, retenez, haussez les épaules avec force, expirez, laissez tomber.' },
-            { phase: 'IRTER - Bras', duration: 90, instruction: 'Inspirez, retenez, serrez les poings très fort, expirez, ouvrez les mains.' },
-            { phase: 'IRTER - Abdomen', duration: 90, instruction: 'Inspirez, retenez, contractez l\'abdomen, expirez, relâchez le ventre.' },
-            { phase: 'IRTER - Jambes', duration: 90, instruction: 'Inspirez, retenez, pointez les orteils et contractez, expirez, relâchez.' },
-            { phase: 'IRTER - Corps', duration: 90, instruction: 'Inspirez, retenez, contractez tout le corps, expirez, relâchement total.' },
+            { phase: 'Ancrage', duration: 45, instruction: 'Sentez le contact de votre corps avec le support. Vous êtes stable et en sécurité.' },
+            { phase: 'Respiration', duration: 60, instruction: 'Respirez calmement. Chaque expiration approfondit votre relaxation.' },
+            { phase: 'IRTER - Tête', duration: 45, instruction: 'Inspirez, retenez, contractez les muscles du visage 5 secondes, expirez, relâchez complètement.' },
+            { phase: 'IRTER - Épaules', duration: 45, instruction: 'Inspirez, retenez, haussez les épaules avec force 5 secondes, expirez, laissez tomber.' },
+            { phase: 'IRTER - Bras', duration: 45, instruction: 'Inspirez, retenez, serrez les poings très fort 5 secondes, expirez, ouvrez les mains.' },
+            { phase: 'IRTER - Abdomen', duration: 45, instruction: 'Inspirez, retenez, contractez l\'abdomen 5 secondes, expirez, relâchez le ventre.' },
+            { phase: 'IRTER - Jambes', duration: 45, instruction: 'Inspirez, retenez, pointez les orteils et contractez 5 secondes, expirez, relâchez.' },
+            { phase: 'IRTER - Corps', duration: 60, instruction: 'Inspirez, retenez, contractez tout le corps 5 secondes, expirez, relâchement total. Savourez.' },
             { phase: 'Visualisation', duration: 120, instruction: 'Visualisez un lieu de paix. Voyez les couleurs, sentez la température, écoutez les sons.' },
-            { phase: 'Intégration', duration: 60, instruction: 'Accueillez cette sensation de calme. Elle est maintenant en vous.' },
-            { phase: 'Retour', duration: 60, instruction: 'Doucement, reprenez conscience de la pièce. Bougez les doigts, les orteils.' }
+            { phase: 'Intégration', duration: 90, instruction: 'Accueillez cette sensation de calme profond. Elle est maintenant en vous, disponible à tout moment.' },
+            { phase: 'Retour', duration: 45, instruction: 'Doucement, reprenez conscience de la pièce. Bougez les doigts, les orteils. Ouvrez les yeux.' }
         ],
         instructions: {
             start: 'Relaxation dynamique sophrologique. Méthode IRTER : Inspiration-Rétention-Tension-Expiration-Relâchement.'
@@ -216,24 +216,24 @@ const EXERCISES = {
         duration: 15,
         isGuided: true,
         segments: [
-            { muscle: 'Main droite', duration: 45, instruction: 'Serrez le poing droit très fort pendant 5 secondes... puis relâchez complètement.' },
-            { muscle: 'Main gauche', duration: 45, instruction: 'Serrez le poing gauche très fort... et relâchez.' },
-            { muscle: 'Avant-bras droit', duration: 45, instruction: 'Fléchissez le poignet droit vers vous... et relâchez.' },
-            { muscle: 'Avant-bras gauche', duration: 45, instruction: 'Fléchissez le poignet gauche... et relâchez.' },
-            { muscle: 'Biceps', duration: 45, instruction: 'Contractez les deux biceps, montrez vos muscles... et relâchez.' },
-            { muscle: 'Épaules', duration: 45, instruction: 'Haussez les épaules vers les oreilles... et laissez tomber.' },
-            { muscle: 'Front', duration: 45, instruction: 'Levez les sourcils très haut... et relâchez le front.' },
-            { muscle: 'Yeux', duration: 45, instruction: 'Fermez les yeux très fort... et détendez.' },
-            { muscle: 'Mâchoire', duration: 45, instruction: 'Serrez les dents... et laissez la mâchoire s\'ouvrir légèrement.' },
-            { muscle: 'Cou', duration: 45, instruction: 'Poussez la tête vers l\'arrière... et revenez au neutre.' },
-            { muscle: 'Poitrine', duration: 45, instruction: 'Inspirez profondément, retenez... et expirez en relâchant.' },
-            { muscle: 'Abdomen', duration: 45, instruction: 'Contractez l\'abdomen comme pour un coup... et relâchez.' },
-            { muscle: 'Cuisses', duration: 45, instruction: 'Contractez les cuisses... et relâchez.' },
-            { muscle: 'Mollets', duration: 45, instruction: 'Pointez les orteils vers le bas... et relâchez.' },
-            { muscle: 'Pieds', duration: 45, instruction: 'Recourbez les orteils... et détendez complètement.' }
+            { muscle: 'Main droite', duration: 25, instruction: 'Serrez le poing droit très fort pendant 5 secondes... puis relâchez complètement. Observez la différence.' },
+            { muscle: 'Main gauche', duration: 25, instruction: 'Serrez le poing gauche très fort 5 secondes... et relâchez. Sentez la détente.' },
+            { muscle: 'Avant-bras droit', duration: 25, instruction: 'Fléchissez le poignet droit vers vous 5 secondes... et relâchez.' },
+            { muscle: 'Avant-bras gauche', duration: 25, instruction: 'Fléchissez le poignet gauche 5 secondes... et relâchez.' },
+            { muscle: 'Biceps', duration: 25, instruction: 'Contractez les deux biceps 5 secondes, montrez vos muscles... et relâchez.' },
+            { muscle: 'Épaules', duration: 30, instruction: 'Haussez les épaules vers les oreilles 5 secondes... et laissez tomber d\'un coup.' },
+            { muscle: 'Front', duration: 25, instruction: 'Levez les sourcils très haut 5 secondes... et relâchez le front.' },
+            { muscle: 'Yeux', duration: 25, instruction: 'Fermez les yeux très fort 5 secondes... et détendez.' },
+            { muscle: 'Mâchoire', duration: 25, instruction: 'Serrez les dents 5 secondes... et laissez la mâchoire s\'ouvrir légèrement.' },
+            { muscle: 'Cou', duration: 25, instruction: 'Poussez la tête vers l\'arrière 5 secondes... et revenez au neutre.' },
+            { muscle: 'Poitrine', duration: 30, instruction: 'Inspirez profondément, retenez 5 secondes... et expirez en relâchant tout.' },
+            { muscle: 'Abdomen', duration: 25, instruction: 'Contractez l\'abdomen comme pour un coup 5 secondes... et relâchez.' },
+            { muscle: 'Cuisses', duration: 25, instruction: 'Contractez les cuisses 5 secondes... et relâchez.' },
+            { muscle: 'Mollets', duration: 25, instruction: 'Pointez les orteils vers le bas 5 secondes... et relâchez.' },
+            { muscle: 'Pieds', duration: 25, instruction: 'Recourbez les orteils 5 secondes... et détendez complètement.' }
         ],
         instructions: {
-            start: 'Relaxation musculaire progressive. Contractez chaque groupe musculaire 5 secondes, puis relâchez.'
+            start: 'Relaxation musculaire progressive. Contractez chaque groupe musculaire 5 secondes, puis relâchez 15-20 secondes.'
         }
     },
 
@@ -266,18 +266,18 @@ const EXERCISES = {
         duration: 10,
         isGuided: true,
         segments: [
-            { phase: 'Préparation', duration: 60, instruction: 'Vous êtes sur le bord, calme et prêt. Sentez la température de l\'air.' },
-            { phase: 'Respiration', duration: 90, instruction: 'Visualisez votre breathe-up. Respirations lentes, profondes, détendues.' },
-            { phase: 'Dernière inspiration', duration: 45, instruction: 'Voyez-vous prendre votre dernière grande inspiration. Poumons pleins.' },
-            { phase: 'Immersion', duration: 45, instruction: 'L\'eau fraîche enveloppe votre visage. Le réflexe de plongée s\'active.' },
-            { phase: 'Descente', duration: 90, instruction: 'Vous descendez sans effort. La pression augmente. Vous équilibrez naturellement.' },
-            { phase: 'Fond', duration: 60, instruction: 'Vous atteignez votre profondeur. Moment de calme absolu. Vous êtes serein.' },
-            { phase: 'Remontée', duration: 60, instruction: 'Vous remontez avec aisance. Le bleu devient plus clair.' },
-            { phase: 'Surface', duration: 45, instruction: 'Vous percez la surface. Récupération calme, contrôlée, souriant.' },
-            { phase: 'Succès', duration: 60, instruction: 'Ressentez la satisfaction. Vous avez réussi. Cette plongée est en vous.' }
+            { phase: 'Préparation', duration: 45, instruction: 'Vous êtes sur le bord, calme et prêt. Sentez la température de l\'air sur votre peau.' },
+            { phase: 'Respiration', duration: 75, instruction: 'Visualisez votre breathe-up. Respirations lentes, profondes, détendues. Votre cœur ralentit.' },
+            { phase: 'Dernière inspiration', duration: 30, instruction: 'Voyez-vous prendre votre dernière grande inspiration. Poumons pleins. Calme total.' },
+            { phase: 'Immersion', duration: 40, instruction: 'L\'eau fraîche enveloppe votre visage. Le réflexe de plongée s\'active. Votre cœur ralentit.' },
+            { phase: 'Descente', duration: 120, instruction: 'Vous descendez sans effort. La pression augmente doucement. Vous équilibrez naturellement. Chaque mètre est une méditation.' },
+            { phase: 'Fond', duration: 75, instruction: 'Vous atteignez votre profondeur cible. Moment de calme absolu. Le silence est total. Vous êtes serein.' },
+            { phase: 'Remontée', duration: 75, instruction: 'Vous remontez avec aisance. Le bleu devient plus clair, plus lumineux. Vous êtes patient.' },
+            { phase: 'Surface', duration: 35, instruction: 'Vous percez la surface. Récupération calme, contrôlée, souriant. Hook breath.' },
+            { phase: 'Succès', duration: 50, instruction: 'Ressentez la satisfaction profonde. Vous avez réussi. Cette plongée est ancrée en vous.' }
         ],
         instructions: {
-            start: 'Visualisation pré-plongée. Imaginez votre plongée parfaite en détail.'
+            start: 'Visualisation pré-plongée. Imaginez votre plongée parfaite dans les moindres détails.'
         }
     },
 

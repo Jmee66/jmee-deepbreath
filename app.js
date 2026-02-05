@@ -30,6 +30,10 @@ class JmeeDeepBreathApp {
             mode: 'auto', // 'auto' or 'manual'
             apneaMax: 120, // 2 minutes in seconds
 
+            // Guided exercise timing
+            guidedTimingMode: 'adaptive', // 'adaptive' or 'fixed'
+            guidedPauseAfterVoice: 8, // seconds of pause after voice instruction
+
             // Auto mode percentages
             co2HoldPercent: 50,
             o2StartPercent: 30,
@@ -73,13 +77,19 @@ class JmeeDeepBreathApp {
                     zoneDuration: 60
                 },
                 'pettlep': {
-                    phaseDuration: 60
+                    phasePhysical: 60,
+                    phaseEnvironment: 60,
+                    phaseTask: 120,
+                    phaseTiming: 120,
+                    phaseLearning: 60,
+                    phaseEmotion: 60,
+                    phasePerspective: 60
                 },
                 'sophro': {
                     segmentDuration: 90
                 },
                 'pmr': {
-                    muscleDuration: 45
+                    muscleDuration: 25
                 },
                 'focus': {
                     duration: 10
@@ -153,6 +163,7 @@ class JmeeDeepBreathApp {
         this.updatePersonalBestDisplay();
         this.applySettingsMode();
         this.setupOfflineMode();
+        this.setupSpotifyControls();
     }
 
     // ==========================================
@@ -396,6 +407,52 @@ class JmeeDeepBreathApp {
     }
 
     // ==========================================
+    // Spotify Controls
+    // ==========================================
+
+    setupSpotifyControls() {
+        const spotifyBtn = document.getElementById('spotifyBtn');
+        const spotifyPanel = document.getElementById('spotifyPanel');
+        const spotifyClose = document.getElementById('spotifyClose');
+        const spotifyCustomOpen = document.getElementById('spotifyCustomOpen');
+        const spotifyCustomUrl = document.getElementById('spotifyCustomUrl');
+
+        if (spotifyBtn && spotifyPanel) {
+            spotifyBtn.addEventListener('click', () => {
+                const isVisible = spotifyPanel.style.display !== 'none';
+                spotifyPanel.style.display = isVisible ? 'none' : 'block';
+            });
+
+            if (spotifyClose) {
+                spotifyClose.addEventListener('click', () => {
+                    spotifyPanel.style.display = 'none';
+                });
+            }
+
+            if (spotifyCustomOpen && spotifyCustomUrl) {
+                spotifyCustomOpen.addEventListener('click', () => {
+                    const url = spotifyCustomUrl.value.trim();
+                    if (url && url.includes('spotify.com')) {
+                        window.open(url, '_blank');
+                        spotifyPanel.style.display = 'none';
+                    }
+                });
+
+                spotifyCustomUrl.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') spotifyCustomOpen.click();
+                });
+            }
+
+            // Close panel when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!spotifyPanel.contains(e.target) && !spotifyBtn.contains(e.target)) {
+                    spotifyPanel.style.display = 'none';
+                }
+            });
+        }
+    }
+
+    // ==========================================
     // Settings
     // ==========================================
 
@@ -465,6 +522,9 @@ class JmeeDeepBreathApp {
                 });
             }
         });
+
+        // Guided timing mode toggle
+        this.setupGuidedTimingToggle();
 
         // Exercise settings inputs
         this.setupExerciseSettingsInputs();
@@ -542,6 +602,56 @@ class JmeeDeepBreathApp {
         }
     }
 
+    setupGuidedTimingToggle() {
+        const timingBtns = document.querySelectorAll('.timing-btn');
+        const adaptiveSettings = document.querySelectorAll('.adaptive-setting');
+        const fixedSettings = document.querySelectorAll('.fixed-timing-setting');
+        const hint = document.getElementById('guidedTimingHint');
+        const pauseInput = document.getElementById('guidedPauseAfterVoice');
+
+        // Set initial state from settings
+        const currentMode = this.settings.guidedTimingMode || 'adaptive';
+        timingBtns.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.timing === currentMode);
+        });
+        this.updateGuidedTimingUI(currentMode);
+
+        // Set initial pause value
+        if (pauseInput) {
+            pauseInput.value = this.settings.guidedPauseAfterVoice || 8;
+            pauseInput.addEventListener('change', () => {
+                this.settings.guidedPauseAfterVoice = parseInt(pauseInput.value) || 8;
+            });
+        }
+
+        // Toggle buttons
+        timingBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                timingBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.settings.guidedTimingMode = btn.dataset.timing;
+                this.updateGuidedTimingUI(btn.dataset.timing);
+            });
+        });
+    }
+
+    updateGuidedTimingUI(mode) {
+        const adaptiveSettings = document.querySelectorAll('.adaptive-setting');
+        const fixedSettings = document.querySelectorAll('.fixed-timing-setting');
+        const hint = document.getElementById('guidedTimingHint');
+
+        const isAdaptive = mode === 'adaptive';
+
+        adaptiveSettings.forEach(el => el.style.display = isAdaptive ? 'flex' : 'none');
+        fixedSettings.forEach(el => el.style.display = isAdaptive ? 'none' : 'flex');
+
+        if (hint) {
+            hint.textContent = isAdaptive
+                ? 'Mode adaptatif : le timer attend la fin de l\'instruction vocale + pause'
+                : 'Mode fixe : chaque phase a une durée fixe en secondes';
+        }
+    }
+
     setupExerciseSettingsInputs() {
         document.querySelectorAll('.exercise-settings').forEach(section => {
             const exerciseId = section.dataset.exercise;
@@ -571,6 +681,16 @@ class JmeeDeepBreathApp {
         document.querySelectorAll('.mode-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.mode === this.settings.mode);
         });
+
+        // Guided timing mode
+        document.querySelectorAll('.timing-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.timing === this.settings.guidedTimingMode);
+        });
+        const pauseInput = document.getElementById('guidedPauseAfterVoice');
+        if (pauseInput) {
+            pauseInput.value = this.settings.guidedPauseAfterVoice || 8;
+        }
+        this.updateGuidedTimingUI(this.settings.guidedTimingMode || 'adaptive');
 
         // Apnea max
         const apneaMinutes = document.getElementById('apneaMinutes');
@@ -609,6 +729,16 @@ class JmeeDeepBreathApp {
         const activeMode = document.querySelector('.mode-btn.active');
         if (activeMode) {
             this.settings.mode = activeMode.dataset.mode;
+        }
+
+        // Guided timing mode
+        const activeTimingBtn = document.querySelector('.timing-btn.active');
+        if (activeTimingBtn) {
+            this.settings.guidedTimingMode = activeTimingBtn.dataset.timing;
+        }
+        const pauseInput = document.getElementById('guidedPauseAfterVoice');
+        if (pauseInput) {
+            this.settings.guidedPauseAfterVoice = parseInt(pauseInput.value) || 8;
         }
 
         // Apnea max
@@ -731,25 +861,44 @@ class JmeeDeepBreathApp {
 
         // Guided exercises
         if (exercise.isGuided && exercise.segments) {
-            const durationKey = {
-                'body-scan': 'zoneDuration',
-                'pettlep': 'phaseDuration',
-                'sophro': 'segmentDuration',
-                'pmr': 'muscleDuration',
-                'focus': 'duration',
-                'predive': 'duration'
-            }[exerciseId];
+            if (exerciseId === 'pettlep') {
+                // PETTLEP: each phase has its own duration setting
+                const phaseMapping = {
+                    'Physical': 'phasePhysical',
+                    'Environment': 'phaseEnvironment',
+                    'Task': 'phaseTask',
+                    'Timing': 'phaseTiming',
+                    'Learning': 'phaseLearning',
+                    'Emotion': 'phaseEmotion',
+                    'Perspective': 'phasePerspective'
+                };
 
-            if (durationKey && userSettings[durationKey]) {
-                if (durationKey === 'duration') {
-                    // Scale all segments proportionally
-                    const originalTotal = exercise.segments.reduce((sum, s) => sum + s.duration, 0);
-                    const newTotal = userSettings.duration * 60;
-                    const ratio = newTotal / originalTotal;
-                    exercise.segments.forEach(s => s.duration = Math.round(s.duration * ratio));
-                } else {
-                    // Set all segments to same duration
-                    exercise.segments.forEach(s => s.duration = userSettings[durationKey]);
+                exercise.segments.forEach(segment => {
+                    const settingKey = phaseMapping[segment.phase];
+                    if (settingKey && userSettings[settingKey]) {
+                        segment.duration = userSettings[settingKey];
+                    }
+                });
+            } else {
+                const durationKey = {
+                    'body-scan': 'zoneDuration',
+                    'sophro': 'segmentDuration',
+                    'pmr': 'muscleDuration',
+                    'focus': 'duration',
+                    'predive': 'duration'
+                }[exerciseId];
+
+                if (durationKey && userSettings[durationKey]) {
+                    if (durationKey === 'duration') {
+                        // Scale all segments proportionally
+                        const originalTotal = exercise.segments.reduce((sum, s) => sum + s.duration, 0);
+                        const newTotal = userSettings.duration * 60;
+                        const ratio = newTotal / originalTotal;
+                        exercise.segments.forEach(s => s.duration = Math.round(s.duration * ratio));
+                    } else {
+                        // Set all segments to same duration
+                        exercise.segments.forEach(s => s.duration = userSettings[durationKey]);
+                    }
                 }
             }
         }
@@ -1297,15 +1446,80 @@ class JmeeDeepBreathApp {
         document.getElementById('cycleCounter').textContent =
             `${this.guidedSegmentIndex + 1} / ${exercise.segments.length}`;
 
-        // Speak the instruction if voice guide is enabled
-        if (window.voiceGuide && window.voiceGuide.enabled) {
-            window.voiceGuide.speak(segment.instruction);
-        }
+        const isAdaptive = this.settings.guidedTimingMode === 'adaptive';
+        const pauseAfterVoice = this.settings.guidedPauseAfterVoice || 8;
 
-        this.startPhaseTimer(segment.duration, () => {
-            this.guidedSegmentIndex++;
-            this.runGuidedSegment();
-        });
+        if (isAdaptive && window.voiceGuide && window.voiceGuide.enabled) {
+            // ADAPTIVE MODE: wait for voice to finish + pause
+            const voiceStartTime = Date.now();
+
+            window.voiceGuide.speak(segment.instruction, () => {
+                // Voice finished speaking
+                if (!this.isRunning) return;
+
+                const voiceDuration = (Date.now() - voiceStartTime) / 1000;
+                const totalDuration = voiceDuration + pauseAfterVoice;
+
+                // Start a countdown for the pause period
+                this.startPhaseTimer(pauseAfterVoice, () => {
+                    this.guidedSegmentIndex++;
+                    this.runGuidedSegment();
+                });
+            });
+
+            // Show an estimated timer while voice is speaking
+            // Use a simple counting timer that will be replaced when voice ends
+            this.startAdaptiveVoiceTimer(segment.instruction);
+        } else if (isAdaptive && (!window.voiceGuide || !window.voiceGuide.enabled)) {
+            // Adaptive mode but voice is off: estimate duration from text length
+            const estimatedSpeechTime = Math.max(3, segment.instruction.length / 15);
+            const totalDuration = estimatedSpeechTime + pauseAfterVoice;
+
+            this.startPhaseTimer(totalDuration, () => {
+                this.guidedSegmentIndex++;
+                this.runGuidedSegment();
+            });
+        } else {
+            // FIXED MODE: use segment.duration as before
+            if (window.voiceGuide && window.voiceGuide.enabled) {
+                window.voiceGuide.speak(segment.instruction);
+            }
+
+            this.startPhaseTimer(segment.duration, () => {
+                this.guidedSegmentIndex++;
+                this.runGuidedSegment();
+            });
+        }
+    }
+
+    /**
+     * Show a count-up timer while voice is speaking (adaptive mode)
+     */
+    startAdaptiveVoiceTimer(instruction) {
+        // Clear any existing timer
+        if (this.phaseTimer) clearInterval(this.phaseTimer);
+
+        let elapsed = 0;
+        const timerDisplay = document.getElementById('breathTimer');
+        const progressBar = document.getElementById('progressBar');
+
+        // Estimate total time for progress bar
+        const estimatedTotal = Math.max(5, instruction.length / 12);
+
+        timerDisplay.textContent = '...';
+
+        this.phaseTimer = setInterval(() => {
+            if (this.isPaused) return;
+            elapsed += 0.1;
+
+            // Show a subtle counting indicator
+            timerDisplay.textContent = elapsed.toFixed(1);
+
+            // Approximate progress
+            const progress = Math.min(elapsed / estimatedTotal, 0.95);
+            const circumference = 2 * Math.PI * 90;
+            progressBar.style.strokeDashoffset = circumference * (1 - progress);
+        }, 100);
     }
 
     // ==========================================

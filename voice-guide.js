@@ -9,8 +9,8 @@ class VoiceGuide {
         this.voice = null;
         this.enabled = true;
         this.volume = 0.8;
-        this.rate = 0.85; // Slower for calm delivery
-        this.pitch = 0.85; // Lower pitch for deeper feminine voice
+        this.rate = 0.78; // Slower for more natural, calm delivery
+        this.pitch = 1.0; // Natural pitch (avoid distortion)
         this.speaking = false;
 
         // Load French voice
@@ -28,21 +28,28 @@ class VoiceGuide {
         // Prefer French voices, prioritize high-quality feminine voices
         const frenchVoices = voices.filter(v => v.lang.startsWith('fr'));
 
-        // Priority order for feminine French voices (high quality):
-        // 1. Audrey (macOS premium) - calm feminine voice
-        // 2. Amélie (macOS premium) - natural feminine
-        // 3. Marie (if available) - soft feminine
-        // 4. Any premium/enhanced French voice
-        // 5. Local French voice
-        this.voice = frenchVoices.find(v => v.name.includes('Audrey')) ||
-                     frenchVoices.find(v => v.name.includes('Amelie') || v.name.includes('Amélie')) ||
-                     frenchVoices.find(v => v.name.includes('Marie')) ||
-                     frenchVoices.find(v => v.name.includes('Sandrine')) ||
-                     frenchVoices.find(v => v.name.toLowerCase().includes('premium') || v.name.toLowerCase().includes('enhanced')) ||
-                     frenchVoices.find(v => v.localService) || // Prefer local voices (higher quality)
-                     frenchVoices[0] ||
-                     voices.find(v => v.lang.startsWith('fr')) ||
-                     voices[0];
+        // Priority order for natural French voices:
+        // 1. Premium/Enhanced voices (downloaded from macOS settings)
+        // 2. Audrey, Amélie - high quality feminine voices
+        // 3. Thomas - good masculine voice
+        // 4. Any local French voice (better quality than remote)
+        const premiumVoice = frenchVoices.find(v =>
+            v.name.toLowerCase().includes('premium') ||
+            v.name.toLowerCase().includes('enhanced')
+        );
+        const audreyVoice = frenchVoices.find(v => v.name.includes('Audrey'));
+        const amelieVoice = frenchVoices.find(v => v.name.includes('Amelie') || v.name.includes('Amélie'));
+        const thomasVoice = frenchVoices.find(v => v.name.includes('Thomas'));
+        const localVoice = frenchVoices.find(v => v.localService);
+
+        this.voice = premiumVoice || audreyVoice || amelieVoice || thomasVoice ||
+                     localVoice || frenchVoices[0] || voices[0];
+
+        // Log available voices for debugging
+        if (frenchVoices.length > 0) {
+            console.log('Voice Guide: Available French voices:',
+                frenchVoices.map(v => `${v.name} (${v.lang})`).join(', '));
+        }
 
         if (this.voice) {
             console.log('Voice Guide: Using voice', this.voice.name, this.voice.lang);
