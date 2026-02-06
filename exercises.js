@@ -791,6 +791,269 @@ const EXERCISES = {
         instructions: {
             start: 'Initiation à l\'auto-hypnose pour apnéistes. Création de votre ancre personnelle de calme.'
         }
+    },
+
+    // ==========================================
+    // NOUVEAUX EXERCICES P1 - Apnée Performance
+    // ==========================================
+
+    'meditation-lacher-prise': {
+        name: 'Méditation Lâcher-Prise',
+        category: 'autohypnose',
+        description: 'Apprendre à lâcher prise par la respiration passive et l\'acceptation',
+        science: 'ACT (Acceptance & Commitment Therapy) - La défusion cognitive réduit l\'anxiété de performance de 35%',
+        duration: 10,
+        isGuided: true,
+        segments: [
+            // Breathe-Down (2 min)
+            { phase: 'Respiration passive', duration: 30, instruction: 'Laissez votre respiration se faire d\'elle-même. N\'essayez pas de la contrôler. Observez simplement.' },
+            { phase: 'Observation', duration: 30, instruction: 'Remarquez comment l\'air entre et sort naturellement. Votre corps sait respirer sans vous.' },
+            { phase: 'Non-intervention', duration: 30, instruction: 'Si vous avez l\'envie de contrôler, notez-la simplement. Elle passera. Laissez faire.' },
+            { phase: 'Courant naturel', duration: 30, instruction: 'Votre respiration trouve son propre rythme. Comme une vague qui monte et descend sans effort.' },
+
+            // Progressive Surrender (3 min)
+            { phase: 'Relâcher le corps', duration: 36, instruction: 'Lâchez chaque muscle. Votre mâchoire s\'ouvre légèrement. Vos épaules tombent. Vos mains s\'ouvrent.' },
+            { phase: 'Relâcher le souffle', duration: 36, instruction: 'Arrêtez de guider votre respiration. Elle n\'a pas besoin de vous. Laissez-la devenir irrégulière si elle le veut.' },
+            { phase: 'Relâcher l\'attention', duration: 36, instruction: 'Arrêtez de surveiller. Arrêtez de juger. Laissez votre esprit flotter sans direction.' },
+            { phase: 'Surrender total', duration: 36, instruction: 'Il n\'y a rien à faire, rien à réussir, rien à contrôler. Vous êtes simplement là.' },
+            { phase: 'Espace', duration: 36, instruction: 'Dans ce lâcher-prise, un espace s\'ouvre. Vaste, calme, accueillant. Restez-y.' },
+
+            // ACT Acceptance (2 min)
+            { phase: 'Observer la tension', duration: 30, instruction: 'Si une tension existe quelque part, observez-la. Ne la combattez pas. Dites : "Je remarque cette tension."' },
+            { phase: 'Permettre', duration: 30, instruction: '"Je permets à cette sensation d\'être là." Elle a le droit d\'exister. Vous n\'avez pas à la changer.' },
+            { phase: 'Coexistence', duration: 30, instruction: 'Vous pouvez être détendu ET avoir des sensations. Les deux coexistent. C\'est normal.' },
+            { phase: 'Défusion', duration: 30, instruction: 'Vos pensées ne sont que des mots. "Je ne peux pas" est juste une phrase. Observez-la passer comme un nuage.' },
+
+            // Cue-word conditioning (2 min)
+            { phase: 'Mot-clé intro', duration: 20, instruction: 'Nous allons ancrer un mot-clé. À chaque expiration, prononcez mentalement le mot "lâche".' },
+            { phase: 'Lâche 1', duration: 20, instruction: 'Expirez... "lâche". Sentez le relâchement qui accompagne ce mot.' },
+            { phase: 'Lâche 2', duration: 20, instruction: 'Expirez... "lâche". Le mot et la sensation deviennent un.' },
+            { phase: 'Lâche 3', duration: 20, instruction: 'Expirez... "lâche". Plus vous répétez, plus le lien se renforce.' },
+            { phase: 'Lâche 4', duration: 20, instruction: 'Expirez... "lâche". Ce mot est maintenant votre déclencheur de détente instantanée.' },
+            { phase: 'Ancrage', duration: 20, instruction: 'Désormais, avant chaque apnée, dites "lâche" sur l\'expiration. Le lâcher-prise viendra automatiquement.' },
+
+            // Integration (1 min)
+            { phase: 'Intégration', duration: 30, instruction: 'Restez dans cet état. Vous venez d\'apprendre à lâcher prise. Ce n\'est pas un effort, c\'est une permission.' },
+            { phase: 'Ancrage final', duration: 30, instruction: 'Emportez cette sensation avec vous. Elle est disponible avant chaque apnée, chaque plongée, chaque moment de stress.' }
+        ],
+        instructions: {
+            start: 'Méditation lâcher-prise. Vous allez apprendre à ne plus lutter, à ne plus contrôler. C\'est la clé de l\'apnée.'
+        }
+    },
+
+    'dry-to-wet-bridge': {
+        name: 'Programme Dry-to-Wet',
+        category: 'autohypnose',
+        description: 'Programme 8 semaines pour transférer vos performances du sec vers l\'eau',
+        science: 'La désensibilisation progressive réduit l\'anxiété aquatique de 60% en 8 semaines',
+        duration: 12,
+        isGuided: true,
+        segments: [
+            // Intro
+            { phase: 'Introduction', duration: 30, instruction: 'Ce programme en 8 semaines vous guide du dry static vers le water static. Votre écart actuel entre sec et eau est normal et peut être comblé.' },
+            { phase: 'Évaluation', duration: 30, instruction: 'Votre objectif : transférer progressivement vos capacités dry vers l\'eau. Le blocage est mental, pas physiologique.' },
+
+            // Week 1-2
+            { phase: 'Semaines 1-2', duration: 15, instruction: 'Semaines 1 et 2 : fondations. Continuez votre entraînement dry static quotidien.' },
+            { phase: 'Exercice sec', duration: 30, instruction: 'Faites vos tables CO2 et Sans Contraction à sec. Ajoutez la méditation lâcher-prise avant chaque session.' },
+            { phase: 'Immersion faciale', duration: 30, instruction: 'Après chaque session dry, faites 3 immersions faciales dans l\'eau froide avec l\'exercice Réflexe de Plongée. Associez l\'eau au calme.' },
+            { phase: 'Objectif S1-2', duration: 20, instruction: 'Objectif : l\'eau sur le visage déclenche automatiquement le calme et la bradycardie. Pas encore d\'apnée dans l\'eau.' },
+
+            // Week 3-4
+            { phase: 'Semaines 3-4', duration: 15, instruction: 'Semaines 3 et 4 : premier transfert. Passez à la baignoire ou au bord de la piscine.' },
+            { phase: 'Baignoire', duration: 30, instruction: 'En baignoire, allongé sur le dos, visage hors de l\'eau : faites votre breathe-up structuré, puis immergez le visage pour de courtes apnées.' },
+            { phase: 'Courtes apnées', duration: 30, instruction: 'Apnées très courtes : 50% de votre dry max. L\'objectif n\'est PAS la performance, c\'est le confort dans l\'eau.' },
+            { phase: 'Mot-clé', duration: 20, instruction: 'Utilisez votre mot-clé "lâche" avant chaque immersion. Le conditionnement du sec se transfère.' },
+
+            // Week 5-6
+            { phase: 'Semaines 5-6', duration: 15, instruction: 'Semaines 5 et 6 : piscine avec un buddy. JAMAIS seul dans l\'eau.' },
+            { phase: 'Piscine buddy', duration: 30, instruction: 'Static en piscine avec un buddy formé. Commencez à 40% de votre dry max. Augmentez de 10% par session uniquement si la session précédente était confortable.' },
+            { phase: 'Protocole surface', duration: 30, instruction: 'Protocole strict : breathe-up structuré, puis apnée, puis hook breathing immédiat à la surface. Le buddy surveille.' },
+            { phase: 'Scanner', duration: 20, instruction: 'Pendant l\'apnée en eau, utilisez le body scan ou le scan sensoriel. Gardez votre attention en mouvement.' },
+
+            // Week 7-8
+            { phase: 'Semaines 7-8', duration: 15, instruction: 'Semaines 7 et 8 : extension progressive. Vous approchez de votre potentiel en eau.' },
+            { phase: 'Extension', duration: 30, instruction: 'Augmentez par paliers de 10 secondes. Notez chaque session dans un journal. L\'écart sec-eau se réduit.' },
+            { phase: 'Pleine confiance', duration: 30, instruction: 'À ce stade, votre apnée en eau devrait atteindre 60-70% de votre dry. L\'anxiété a diminué considérablement.' },
+            { phase: 'Maintenance', duration: 20, instruction: 'Continuez avec 2-3 sessions eau par semaine. La confiance se construit avec la répétition.' },
+
+            // Closing
+            { phase: 'Conclusion', duration: 30, instruction: 'Ce programme est un guide. Adaptez le rythme à vos sensations. Ne forcez jamais. La patience est votre meilleur outil.' },
+            { phase: 'Sécurité', duration: 20, instruction: 'Rappel : ne JAMAIS pratiquer l\'apnée dans l\'eau seul. Toujours avec un buddy formé. Votre sécurité prime sur la performance.' }
+        ],
+        instructions: {
+            start: 'Programme Dry-to-Wet : 8 semaines pour combler l\'écart entre vos performances à sec et dans l\'eau.'
+        },
+        warning: 'Ne jamais pratiquer l\'apnée dans l\'eau seul. Toujours avec un buddy.'
+    },
+
+    'hook-breathing': {
+        name: 'Hook Breathing',
+        category: 'apnee',
+        description: 'Technique de récupération post-apnée en 3 rounds progressifs',
+        science: 'Prévient le blackout en maintenant la pression intrathoracique — réduit le temps de récupération SpO2 de 50%',
+        duration: 8,
+        isGuided: true,
+        segments: [
+            // Introduction
+            { phase: 'Introduction', duration: 30, instruction: 'Le hook breathing est la technique de sécurité la plus importante en apnée. Elle maintient l\'oxygène dans votre cerveau après une longue apnée.' },
+            { phase: 'Explication', duration: 30, instruction: 'Le cycle : inspirez profondément, fermez la glotte en disant "K" mentalement, pressez le diaphragme 2-3 secondes, puis expirez doucement.' },
+
+            // Round 1: Slow learning (3 reps)
+            { phase: 'Round 1 – Lent', duration: 10, instruction: 'Round 1 : apprentissage lent. Suivez mes instructions pas à pas.' },
+            { phase: 'Inspirez profondément', duration: 5, instruction: 'Inspirez profondément par la bouche. Remplissez complètement vos poumons.' },
+            { phase: 'Hook – Fermez', duration: 4, instruction: 'Fermez la glotte. Dites "K" mentalement. Pressez le diaphragme vers le bas. Maintenez 3 secondes.' },
+            { phase: 'Expirez doucement', duration: 4, instruction: 'Relâchez et expirez lentement. Pas trop vite.' },
+            { phase: 'Inspirez profondément', duration: 5, instruction: 'Inspirez à nouveau profondément par la bouche.' },
+            { phase: 'Hook – Fermez', duration: 4, instruction: 'Hook. Glotte fermée. Diaphragme pressé. 3 secondes.' },
+            { phase: 'Expirez doucement', duration: 4, instruction: 'Relâchez, expirez doucement.' },
+            { phase: 'Inspirez profondément', duration: 5, instruction: 'Dernière répétition du round. Grande inspiration.' },
+            { phase: 'Hook – Fermez', duration: 4, instruction: 'Hook. Verrouillez. Pressez. Maintenez.' },
+            { phase: 'Expirez doucement', duration: 4, instruction: 'Expirez. Bien. Le mouvement devient plus naturel.' },
+            { phase: 'Repos round 1', duration: 15, instruction: 'Respirez normalement pendant quelques secondes.' },
+
+            // Round 2: Normal speed (4 reps)
+            { phase: 'Round 2 – Normal', duration: 8, instruction: 'Round 2 : vitesse normale. Le rythme accélère légèrement.' },
+            { phase: 'Inspirez', duration: 3, instruction: 'Grande inspiration, bouche ouverte.' },
+            { phase: 'Hook', duration: 3, instruction: 'Hook ! Verrouillez, pressez, maintenez.' },
+            { phase: 'Expirez', duration: 3, instruction: 'Expirez.' },
+            { phase: 'Inspirez', duration: 3, instruction: 'Inspirez.' },
+            { phase: 'Hook', duration: 3, instruction: 'Hook ! Maintenez.' },
+            { phase: 'Expirez', duration: 3, instruction: 'Expirez.' },
+            { phase: 'Inspirez', duration: 3, instruction: 'Inspirez.' },
+            { phase: 'Hook', duration: 3, instruction: 'Hook !' },
+            { phase: 'Expirez', duration: 3, instruction: 'Expirez.' },
+            { phase: 'Inspirez', duration: 3, instruction: 'Dernière du round. Inspirez.' },
+            { phase: 'Hook', duration: 3, instruction: 'Hook !' },
+            { phase: 'Expirez', duration: 3, instruction: 'Relâchez.' },
+            { phase: 'Repos round 2', duration: 15, instruction: 'Repos. Respirez librement.' },
+
+            // Round 3: Rapid automatization (5 reps)
+            { phase: 'Round 3 – Rapide', duration: 8, instruction: 'Round 3 : rythme rapide pour automatiser. Comme après une vraie apnée profonde.' },
+            { phase: 'Inspirez–Hook 1', duration: 4, instruction: 'Inspirez ! Hook !' },
+            { phase: 'Expirez–Inspirez 1', duration: 3, instruction: 'Expirez. Inspirez.' },
+            { phase: 'Hook 2', duration: 3, instruction: 'Hook !' },
+            { phase: 'Expirez–Inspirez 2', duration: 3, instruction: 'Expirez. Inspirez.' },
+            { phase: 'Hook 3', duration: 3, instruction: 'Hook !' },
+            { phase: 'Expirez–Inspirez 3', duration: 3, instruction: 'Expirez. Inspirez.' },
+            { phase: 'Hook 4', duration: 3, instruction: 'Hook !' },
+            { phase: 'Expirez–Inspirez 4', duration: 3, instruction: 'Expirez. Inspirez.' },
+            { phase: 'Hook final', duration: 3, instruction: 'Dernier hook !' },
+            { phase: 'Récupération', duration: 5, instruction: 'Expirez et respirez normalement.' },
+
+            // Integration
+            { phase: 'Automatisme', duration: 20, instruction: 'Excellent. Ce geste doit devenir un réflexe. Après chaque apnée, les 3 premiers souffles sont des hook breaths. Toujours. Sans exception.' }
+        ],
+        instructions: {
+            start: 'Hook breathing : la technique de récupération essentielle. 3 rounds progressifs pour automatiser ce réflexe vital.'
+        },
+        warning: 'Pratiquez systématiquement après chaque apnée, même courte.'
+    },
+
+    'breathe-up-structure': {
+        name: 'Breathe-Up Structuré',
+        category: 'preperformance',
+        description: 'Préparation pré-plongée en 3 phases : tidal, segmentaire, inspiration finale',
+        science: 'Protocole utilisé par les champions du monde — optimise SpO2 sans hyperventilation',
+        duration: 6,
+        isGuided: true,
+        segments: [
+            // Phase 1: Tidal breathing 1:2 (2.5 min)
+            { phase: 'Phase 1 – Tidal', duration: 10, instruction: 'Phase 1 : respiration tidale. Ratio 1:2. Inspirez 4 secondes par le nez, expirez 8 secondes par la bouche.' },
+            { phase: 'Tidal 1', duration: 12, instruction: 'Inspirez 4 secondes... expirez 8 secondes. Doucement. Naturellement.' },
+            { phase: 'Tidal 2', duration: 12, instruction: 'Inspirez... expirez lentement. Votre cœur ralentit à chaque expiration.' },
+            { phase: 'Tidal 3', duration: 12, instruction: 'Inspirez... expirez. Chaque cycle vous rapproche de l\'état optimal.' },
+            { phase: 'Tidal 4', duration: 12, instruction: 'Inspirez... expirez. Relâchez les épaules, la mâchoire, les mains.' },
+            { phase: 'Tidal 5', duration: 12, instruction: 'Inspirez... expirez. Vous êtes de plus en plus calme.' },
+            { phase: 'Tidal 6', duration: 12, instruction: 'Inspirez... expirez. Le rythme est installé.' },
+            { phase: 'Tidal 7', duration: 12, instruction: 'Inspirez... expirez. Sentez le réflexe parasympathique s\'activer.' },
+            { phase: 'Tidal 8', duration: 12, instruction: 'Inspirez... expirez. Votre fréquence cardiaque descend.' },
+            { phase: 'Tidal 9', duration: 12, instruction: 'Inspirez... expirez. Parfait. Encore un.' },
+            { phase: 'Tidal 10', duration: 12, instruction: 'Inspirez... expirez. Phase 1 terminée. Excellent.' },
+
+            // Phase 2: Segmented breathing (1 min)
+            { phase: 'Phase 2 – Segmentaire', duration: 10, instruction: 'Phase 2 : respiration segmentaire. Remplissez en 3 étages : ventre, côtes, poitrine.' },
+            { phase: 'Ventre', duration: 12, instruction: 'Gonflez le ventre comme un ballon. Sentez le diaphragme descendre.' },
+            { phase: 'Côtes', duration: 12, instruction: 'Sans expirer, élargissez les côtes latéralement. Sentez l\'expansion.' },
+            { phase: 'Poitrine', duration: 12, instruction: 'Soulevez légèrement la poitrine. Vos poumons sont complètement remplis.' },
+            { phase: 'Expirez segmentaire', duration: 12, instruction: 'Expirez lentement et complètement. Relâchez tout dans l\'ordre inverse.' },
+            { phase: 'Répétez', duration: 12, instruction: 'À nouveau : ventre... côtes... poitrine... puis expirez lentement. Sentez l\'espace.' },
+
+            // Phase 3: Final breath (30s)
+            { phase: 'Phase 3 – Finale', duration: 10, instruction: 'Phase 3 : votre dernière inspiration avant l\'apnée. En 3 étapes précises.' },
+            { phase: 'Ventre 4s', duration: 5, instruction: 'Remplissez le ventre pendant 4 secondes. Lentement, profondément.' },
+            { phase: 'Côtes 3s', duration: 4, instruction: 'Élargissez les côtes pendant 3 secondes. Continuez à remplir.' },
+            { phase: 'Poitrine 2s', duration: 3, instruction: 'Poitrine pendant 2 secondes. Poumons complètement pleins.' },
+            { phase: 'Prêt', duration: 8, instruction: 'Poumons pleins. Vous êtes prêt. C\'est votre état optimal pour l\'apnée. Bonne plongée.' }
+        ],
+        instructions: {
+            start: 'Breathe-up structuré : préparation optimale en 3 phases pour maximiser vos réserves sans hyperventiler.'
+        }
+    },
+
+    'contraction-tolerance': {
+        name: 'Tolérance Contractions',
+        category: 'apnee',
+        description: 'Apnée avec suivi des contractions et coaching de reframing',
+        science: 'La réinterprétation cognitive des contractions réduit l\'anxiété et prolonge les apnées de 15-25%',
+        isContractionTable: true,
+        cycles: 4,
+        weekLevel: 1,
+        weekConfigs: {
+            1: { beyondContraction: 10, label: 'Semaines 1-2 : +10s après 1ère contraction' },
+            2: { beyondContraction: 15, label: 'Semaines 3-4 : +15s après 1ère contraction' },
+            3: { beyondContraction: 30, label: 'Semaines 5-6 : +30s après 1ère contraction' }
+        },
+        restDuration: 120,
+        reframingCues: [
+            'C\'est un étirement du diaphragme. C\'est normal. Vous êtes en sécurité.',
+            'Cette sensation est un signal, pas un danger. Votre corps gère parfaitement.',
+            'Chaque contraction est une vague. Laissez-la passer. Vous êtes plus fort qu\'elle.',
+            'Relâchez la mâchoire. Relâchez les épaules. La contraction ne demande pas de tension.',
+            'Observez la contraction comme un spectateur. Elle monte, elle passe. Vous restez calme.',
+            'Votre SpO2 est encore très bonne. Vous avez beaucoup de marge. Faites confiance à votre corps.'
+        ],
+        instructions: {
+            start: 'Tolérance aux contractions. Appuyez sur le bouton "Contraction" à chaque spasme. Nous allons apprendre à les accepter.',
+            breathe: 'Récupérez. Respirez calmement pendant 2 minutes.',
+            hold: 'Retenez votre souffle. Appuyez sur "Contraction" à chaque spasme.',
+            contraction: 'Contraction marquée. Restez calme. C\'est normal.'
+        }
+    },
+
+    'body-scan-apnea': {
+        name: 'Body Scan Apnée',
+        category: 'apnee',
+        description: 'Apnée guidée avec body scan pour déplacer l\'attention pendant la rétention',
+        science: 'La distraction attentionnelle guidée prolonge les apnées de 20% et réduit l\'anxiété',
+        isApneaWithGuidance: true,
+        cycles: 3,
+        breatheUpDuration: 60,
+        restDuration: 120,
+        holdTargets: [0.4, 0.5, 0.6],
+        scanSegments: [
+            { zone: 'Tête', duration: 8, instruction: 'Portez attention au sommet de votre crâne. Doux, calme, détendu.' },
+            { zone: 'Mâchoire', duration: 8, instruction: 'Relâchez votre mâchoire. Légèrement ouverte. Sans aucune tension.' },
+            { zone: 'Épaules', duration: 10, instruction: 'Vos épaules fondent. Elles ne portent rien. Relâchement total.' },
+            { zone: 'Bras', duration: 8, instruction: 'Vos bras sont lourds et chauds. Du bout des épaules au bout des doigts.' },
+            { zone: 'Mains', duration: 8, instruction: 'Vos mains s\'ouvrent doucement. Chaque doigt se détend, un par un.' },
+            { zone: 'Poitrine', duration: 10, instruction: 'Votre poitrine est immobile et calme. Observez simplement. Pas de lutte.' },
+            { zone: 'Ventre', duration: 10, instruction: 'Votre ventre est mou. Pas de tension abdominale. Laissez aller complètement.' },
+            { zone: 'Jambes', duration: 10, instruction: 'Vos jambes sont lourdes. Impossibles à soulever. Profondément détendues.' },
+            { zone: 'Pieds', duration: 8, instruction: 'Vos pieds sont chauds. Chaque orteil se relâche.' },
+            { zone: 'Corps entier', duration: 10, instruction: 'Percevez votre corps entier. Unifié. Détendu. En paix avec l\'apnée.' }
+        ],
+        rapidScanSegments: [
+            { zone: 'Mâchoire', duration: 5, instruction: 'Mâchoire. Relâchez.' },
+            { zone: 'Épaules', duration: 5, instruction: 'Épaules. Laissez tomber.' },
+            { zone: 'Mains', duration: 5, instruction: 'Mains. Ouvrez les doigts.' }
+        ],
+        silentModeInstruction: 'Observation silencieuse. Restez dans cet état de détente globale. Votre corps flotte.',
+        instructions: {
+            start: 'Body scan pendant l\'apnée. Le scan guide votre attention loin de l\'envie de respirer.',
+            breathe: 'Respirez calmement. Préparez-vous pour le prochain cycle.',
+            hold: 'Retenez. Suivez le scan corporel. Laissez-vous guider.'
+        }
     }
 };
 

@@ -116,6 +116,19 @@ class JmeeDeepBreathApp {
                 },
                 'diaphragm': {
                     duration: 10
+                },
+                'contraction-tolerance': {
+                    cycles: 4,
+                    weekLevel: 1,
+                    restDuration: 120
+                },
+                'body-scan-apnea': {
+                    cycles: 3,
+                    breatheUpDuration: 60,
+                    restDuration: 120
+                },
+                'breathe-up-structure': {
+                    mode: 'standard'
                 }
             }
         };
@@ -164,6 +177,7 @@ class JmeeDeepBreathApp {
         this.applySettingsMode();
         this.setupOfflineMode();
         this.setupSpotifyControls();
+        this.setupGuide();
     }
 
     // ==========================================
@@ -655,7 +669,7 @@ class JmeeDeepBreathApp {
     setupExerciseSettingsInputs() {
         document.querySelectorAll('.exercise-settings').forEach(section => {
             const exerciseId = section.dataset.exercise;
-            const inputs = section.querySelectorAll('input[data-param]');
+            const inputs = section.querySelectorAll('input[data-param], select[data-param]');
 
             inputs.forEach(input => {
                 const param = input.dataset.param;
@@ -670,7 +684,12 @@ class JmeeDeepBreathApp {
                     if (!this.settings.exercises[exerciseId]) {
                         this.settings.exercises[exerciseId] = {};
                     }
-                    this.settings.exercises[exerciseId][param] = parseFloat(input.value);
+                    // For select elements, keep string value; for inputs, parse as number
+                    if (input.tagName === 'SELECT') {
+                        this.settings.exercises[exerciseId][param] = input.value;
+                    } else {
+                        this.settings.exercises[exerciseId][param] = parseFloat(input.value);
+                    }
                 });
             });
         });
@@ -711,7 +730,7 @@ class JmeeDeepBreathApp {
         // Exercise settings
         document.querySelectorAll('.exercise-settings').forEach(section => {
             const exerciseId = section.dataset.exercise;
-            const inputs = section.querySelectorAll('input[data-param]');
+            const inputs = section.querySelectorAll('input[data-param], select[data-param]');
 
             inputs.forEach(input => {
                 const param = input.dataset.param;
@@ -759,7 +778,7 @@ class JmeeDeepBreathApp {
         // Exercise settings
         document.querySelectorAll('.exercise-settings').forEach(section => {
             const exerciseId = section.dataset.exercise;
-            const inputs = section.querySelectorAll('input[data-param]');
+            const inputs = section.querySelectorAll('input[data-param], select[data-param]');
 
             if (!this.settings.exercises[exerciseId]) {
                 this.settings.exercises[exerciseId] = {};
@@ -767,7 +786,11 @@ class JmeeDeepBreathApp {
 
             inputs.forEach(input => {
                 const param = input.dataset.param;
-                this.settings.exercises[exerciseId][param] = parseFloat(input.value);
+                if (input.tagName === 'SELECT') {
+                    this.settings.exercises[exerciseId][param] = input.value;
+                } else {
+                    this.settings.exercises[exerciseId][param] = parseFloat(input.value);
+                }
             });
         });
     }
@@ -812,6 +835,22 @@ class JmeeDeepBreathApp {
         // Apply user settings based on exercise type
         if (exercise.isApneaTable) {
             return this.getApneaTableParams(exerciseId, exercise, userSettings);
+        }
+
+        // Contraction tolerance
+        if (exercise.isContractionTable) {
+            exercise.cycles = userSettings.cycles || exercise.cycles;
+            exercise.weekLevel = userSettings.weekLevel || exercise.weekLevel;
+            exercise.restDuration = userSettings.restDuration || exercise.restDuration;
+            return exercise;
+        }
+
+        // Body scan apnea
+        if (exercise.isApneaWithGuidance) {
+            exercise.cycles = userSettings.cycles || exercise.cycles;
+            exercise.breatheUpDuration = userSettings.breatheUpDuration || exercise.breatheUpDuration;
+            exercise.restDuration = userSettings.restDuration || exercise.restDuration;
+            return exercise;
         }
 
         // Standard breathing exercises
@@ -1046,6 +1085,12 @@ class JmeeDeepBreathApp {
         stopBtn.addEventListener('click', () => this.closeExercise());
         resetBtn.addEventListener('click', () => this.resetExercise());
 
+        // Contraction button
+        const contractionBtn = document.getElementById('btnMarkContraction');
+        if (contractionBtn) {
+            contractionBtn.addEventListener('click', () => this.markContraction());
+        }
+
         // Close on backdrop click
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
@@ -1107,7 +1152,11 @@ class JmeeDeepBreathApp {
         document.getElementById('exerciseTitle').textContent = exercise.name;
 
         // Determine exercise type and start
-        if (exercise.isApneaTable) {
+        if (exercise.isApneaWithGuidance) {
+            this.startApneaWithGuidance();
+        } else if (exercise.isContractionTable) {
+            this.startContractionTable();
+        } else if (exercise.isApneaTable) {
             this.startApneaTable();
         } else if (exercise.isGuided) {
             this.startGuidedExercise();
@@ -1564,6 +1613,466 @@ class JmeeDeepBreathApp {
     }
 
     // ==========================================
+    // Contraction Tolerance Table
+    // ==========================================
+
+    startContractionTable() {
+        const exercise = this.currentExercise;
+        this.contractionCycle = 1;
+        this.contractionCount = 0;
+        this.contractionOnset = null;
+        this.contractionHoldStart = null;
+        this.contractionCueIndex = 0;
+        this.contractionHistory = [];
+
+        const weekConfig = exercise.weekConfigs[exercise.weekLevel] || exercise.weekConfigs[1];
+        this.contractionBeyond = weekConfig.beyondContraction;
+
+        document.getElementById('cycleCounter').textContent =
+            `Cycle ${this.contractionCycle} / ${exercise.cycles}`;
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.start;
+
+        // Show contraction UI
+        const btnContraction = document.getElementById('btnMarkContraction');
+        const counterDiv = document.getElementById('contractionCounter');
+        if (btnContraction) btnContraction.style.display = 'none'; // Hidden during rest
+        if (counterDiv) {
+            counterDiv.style.display = 'block';
+            counterDiv.textContent = 'Contractions : 0';
+        }
+
+        // Speak intro
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.start, () => {
+                setTimeout(() => this.runContractionCycle(), 1000);
+            });
+        } else {
+            setTimeout(() => this.runContractionCycle(), 3000);
+        }
+    }
+
+    runContractionCycle() {
+        if (!this.isRunning) return;
+
+        const exercise = this.currentExercise;
+
+        if (this.contractionCycle > exercise.cycles) {
+            this.completeContractionExercise();
+            return;
+        }
+
+        // Reset contraction tracking for this cycle
+        this.contractionCount = 0;
+        this.contractionOnset = null;
+        this.contractionCueIndex = 0;
+
+        const counterDiv = document.getElementById('contractionCounter');
+        if (counterDiv) counterDiv.textContent = 'Contractions : 0';
+
+        // Hide contraction button during rest
+        const btnContraction = document.getElementById('btnMarkContraction');
+        if (btnContraction) btnContraction.style.display = 'none';
+
+        // Rest phase (breathe)
+        document.getElementById('breathPhase').textContent = 'Respirez';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.breathe;
+        document.getElementById('cycleCounter').textContent =
+            `Cycle ${this.contractionCycle} / ${exercise.cycles} — Repos`;
+
+        this.updateBreathPhase({ name: 'Respirez', action: 'inhale', duration: exercise.restDuration }, 'hold');
+
+        if (window.breathSounds) {
+            window.breathSounds.playPhase('inhale', exercise.restDuration);
+        }
+
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.breathe);
+        }
+
+        this.startPhaseTimer(exercise.restDuration, () => {
+            this.runContractionHold();
+        });
+    }
+
+    runContractionHold() {
+        if (!this.isRunning) return;
+
+        const exercise = this.currentExercise;
+
+        // Show contraction button
+        const btnContraction = document.getElementById('btnMarkContraction');
+        if (btnContraction) btnContraction.style.display = 'block';
+
+        document.getElementById('breathPhase').textContent = 'Apnée';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.hold;
+        document.getElementById('cycleCounter').textContent =
+            `Cycle ${this.contractionCycle} / ${exercise.cycles} — Apnée`;
+
+        const circle = document.getElementById('breathCircle');
+        circle.classList.remove('inhale', 'exhale', 'holdEmpty');
+        circle.classList.add('hold', 'active');
+        circle.style.setProperty('--phase-duration', '1s');
+
+        // Count up timer (open-ended hold)
+        const timerDisplay = document.getElementById('breathTimer');
+        const progressBar = document.getElementById('progressBar');
+        const circumference = 2 * Math.PI * 90;
+        this.contractionHoldStart = Date.now();
+        let pausedTime = 0;
+        let pauseStart = null;
+
+        if (this.phaseTimer) clearInterval(this.phaseTimer);
+
+        if (window.breathSounds) {
+            window.breathSounds.playPhase('hold', 300); // Long hold
+        }
+
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.hold);
+        }
+
+        this.phaseTimer = setInterval(() => {
+            if (!this.isRunning) {
+                clearInterval(this.phaseTimer);
+                return;
+            }
+            if (this.isPaused) {
+                if (!pauseStart) pauseStart = Date.now();
+                return;
+            }
+            if (pauseStart) {
+                pausedTime += Date.now() - pauseStart;
+                pauseStart = null;
+            }
+
+            const elapsed = (Date.now() - this.contractionHoldStart - pausedTime) / 1000;
+            timerDisplay.textContent = this.formatTime(elapsed);
+
+            // Progress based on estimated max (use apneaMax as reference)
+            const estimatedMax = this.settings.apneaMax || 120;
+            const progress = Math.min(elapsed / estimatedMax, 1);
+            progressBar.style.strokeDashoffset = circumference * (1 - progress);
+
+            // Check if we should auto-end (beyondContraction seconds after first contraction)
+            if (this.contractionOnset !== null) {
+                const timeSinceContraction = elapsed - this.contractionOnset;
+                if (timeSinceContraction >= this.contractionBeyond) {
+                    this.endContractionHold(elapsed);
+                }
+            }
+        }, 100);
+    }
+
+    markContraction() {
+        if (!this.isRunning || this.isPaused) return;
+
+        const exercise = this.currentExercise;
+        const holdStart = this.contractionHoldStart;
+        if (!holdStart) return;
+
+        const elapsed = (Date.now() - holdStart) / 1000;
+
+        this.contractionCount++;
+
+        // Record onset of first contraction
+        if (this.contractionCount === 1) {
+            this.contractionOnset = elapsed;
+        }
+
+        // Update counter display
+        const counterDiv = document.getElementById('contractionCounter');
+        if (counterDiv) counterDiv.textContent = `Contractions : ${this.contractionCount}`;
+
+        // Show instruction text
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.contraction;
+
+        // Voice reframing cue
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            const cue = exercise.reframingCues[this.contractionCueIndex % exercise.reframingCues.length];
+            window.voiceGuide.speak(cue);
+            this.contractionCueIndex++;
+        }
+
+        // Haptic feedback if available
+        if (navigator.vibrate) {
+            navigator.vibrate(100);
+        }
+    }
+
+    endContractionHold(holdDuration) {
+        clearInterval(this.phaseTimer);
+        this.phaseTimer = null;
+
+        // Hide contraction button
+        const btnContraction = document.getElementById('btnMarkContraction');
+        if (btnContraction) btnContraction.style.display = 'none';
+
+        // Save cycle data
+        this.contractionHistory.push({
+            cycle: this.contractionCycle,
+            holdDuration: Math.round(holdDuration),
+            contractionCount: this.contractionCount,
+            contractionOnset: this.contractionOnset ? Math.round(this.contractionOnset) : null
+        });
+
+        // Voice feedback
+        const feedback = `Bien joué. ${this.formatTime(holdDuration)} d'apnée, ${this.contractionCount} contractions.`;
+        document.getElementById('exerciseInstruction').textContent = feedback;
+
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(feedback);
+        }
+
+        // Move to next cycle
+        this.contractionCycle++;
+        setTimeout(() => this.runContractionCycle(), 3000);
+    }
+
+    completeContractionExercise() {
+        // Save contraction history to localStorage
+        try {
+            const historyKey = 'deepbreath_contraction_history';
+            const existing = JSON.parse(localStorage.getItem(historyKey) || '[]');
+            existing.push({
+                date: new Date().toISOString(),
+                weekLevel: this.currentExercise.weekLevel,
+                cycles: this.contractionHistory
+            });
+            // Keep last 50 sessions
+            if (existing.length > 50) existing.splice(0, existing.length - 50);
+            localStorage.setItem(historyKey, JSON.stringify(existing));
+        } catch (e) {
+            console.warn('Could not save contraction history:', e);
+        }
+
+        // Hide contraction UI
+        const btnContraction = document.getElementById('btnMarkContraction');
+        const counterDiv = document.getElementById('contractionCounter');
+        if (btnContraction) btnContraction.style.display = 'none';
+        if (counterDiv) counterDiv.style.display = 'none';
+
+        this.completeExercise();
+    }
+
+    // ==========================================
+    // Apnea with Guided Body Scan
+    // ==========================================
+
+    startApneaWithGuidance() {
+        const exercise = this.currentExercise;
+        this.apneaGuidedCycle = 1;
+
+        document.getElementById('cycleCounter').textContent =
+            `Cycle ${this.apneaGuidedCycle} / ${exercise.cycles}`;
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.start;
+
+        // Speak intro
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.start, () => {
+                setTimeout(() => this.runApneaGuidedCycle(), 1000);
+            });
+        } else {
+            setTimeout(() => this.runApneaGuidedCycle(), 3000);
+        }
+    }
+
+    runApneaGuidedCycle() {
+        if (!this.isRunning) return;
+
+        const exercise = this.currentExercise;
+
+        if (this.apneaGuidedCycle > exercise.cycles) {
+            this.completeExercise();
+            return;
+        }
+
+        // Breathe-up phase
+        document.getElementById('breathPhase').textContent = 'Respirez';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.breathe;
+        document.getElementById('cycleCounter').textContent =
+            `Cycle ${this.apneaGuidedCycle} / ${exercise.cycles} — Breathe-up`;
+
+        this.updateBreathPhase({ name: 'Respirez', action: 'inhale', duration: exercise.breatheUpDuration }, 'hold');
+
+        if (window.breathSounds) {
+            window.breathSounds.playPhase('inhale', exercise.breatheUpDuration);
+        }
+
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.breathe);
+        }
+
+        this.startPhaseTimer(exercise.breatheUpDuration, () => {
+            this.runGuidedScanDuringHold();
+        });
+    }
+
+    runGuidedScanDuringHold() {
+        if (!this.isRunning) return;
+
+        const exercise = this.currentExercise;
+        const apneaMax = this.settings.apneaMax || 120;
+        const holdTarget = Math.round(apneaMax * exercise.holdTargets[this.apneaGuidedCycle - 1]);
+
+        document.getElementById('breathPhase').textContent = 'Apnée';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.hold;
+        document.getElementById('cycleCounter').textContent =
+            `Cycle ${this.apneaGuidedCycle} / ${exercise.cycles} — Apnée (${this.formatTime(holdTarget)})`;
+
+        const circle = document.getElementById('breathCircle');
+        circle.classList.remove('inhale', 'exhale', 'holdEmpty');
+        circle.classList.add('hold', 'active');
+        circle.style.setProperty('--phase-duration', '1s');
+
+        const timerDisplay = document.getElementById('breathTimer');
+        const progressBar = document.getElementById('progressBar');
+        const circumference = 2 * Math.PI * 90;
+        const holdStart = Date.now();
+        let pausedTime = 0;
+        let pauseStart = null;
+
+        if (this.phaseTimer) clearInterval(this.phaseTimer);
+
+        if (window.breathSounds) {
+            window.breathSounds.playPhase('hold', holdTarget);
+        }
+
+        // Schedule body scan segments during hold
+        const scanSegments = [...exercise.scanSegments];
+        const totalScanDuration = scanSegments.reduce((sum, s) => sum + s.duration, 0);
+        let scanElapsed = 0;
+        let scanIndex = 0;
+        let inSilentMode = false;
+        let rapidScanStarted = false;
+
+        // Speak first scan segment
+        if (scanSegments.length > 0 && window.voiceGuide && window.voiceGuide.enabled) {
+            setTimeout(() => {
+                if (this.isRunning && !this.isPaused) {
+                    window.voiceGuide.speak(scanSegments[0].instruction);
+                    document.getElementById('exerciseInstruction').textContent = scanSegments[0].instruction;
+                }
+            }, 1000);
+        }
+
+        this.phaseTimer = setInterval(() => {
+            if (!this.isRunning) {
+                clearInterval(this.phaseTimer);
+                return;
+            }
+            if (this.isPaused) {
+                if (!pauseStart) pauseStart = Date.now();
+                return;
+            }
+            if (pauseStart) {
+                pausedTime += Date.now() - pauseStart;
+                pauseStart = null;
+            }
+
+            const elapsed = (Date.now() - holdStart - pausedTime) / 1000;
+            const remaining = Math.max(0, holdTarget - elapsed);
+            timerDisplay.textContent = this.formatTime(remaining);
+
+            // Progress
+            const progress = Math.min(elapsed / holdTarget, 1);
+            progressBar.style.strokeDashoffset = circumference * (1 - progress);
+
+            // Body scan scheduling
+            scanElapsed += 0.1;
+
+            // Check if current scan segment is done, move to next
+            if (scanIndex < scanSegments.length) {
+                const currentSegment = scanSegments[scanIndex];
+                if (scanElapsed >= currentSegment.duration) {
+                    scanElapsed = 0;
+                    scanIndex++;
+
+                    if (scanIndex < scanSegments.length && window.voiceGuide && window.voiceGuide.enabled) {
+                        window.voiceGuide.speak(scanSegments[scanIndex].instruction);
+                        document.getElementById('exerciseInstruction').textContent = scanSegments[scanIndex].instruction;
+                    }
+                }
+            } else if (!inSilentMode && !rapidScanStarted) {
+                // Scan complete, enter silent mode
+                inSilentMode = true;
+                if (window.voiceGuide && window.voiceGuide.enabled) {
+                    window.voiceGuide.speak(exercise.silentModeInstruction);
+                }
+                document.getElementById('exerciseInstruction').textContent = exercise.silentModeInstruction;
+            }
+
+            // Rapid scan when close to end (last 15 seconds)
+            if (!rapidScanStarted && remaining <= 15 && remaining > 0) {
+                rapidScanStarted = true;
+                inSilentMode = false;
+                this.runRapidScan(exercise.rapidScanSegments);
+            }
+
+            // Hold complete
+            if (elapsed >= holdTarget) {
+                this.endApneaGuidedHold();
+            }
+        }, 100);
+    }
+
+    runRapidScan(rapidSegments) {
+        if (!rapidSegments || rapidSegments.length === 0) return;
+
+        let idx = 0;
+        const speakNext = () => {
+            if (idx >= rapidSegments.length || !this.isRunning) return;
+            const seg = rapidSegments[idx];
+            document.getElementById('exerciseInstruction').textContent = seg.instruction;
+            if (window.voiceGuide && window.voiceGuide.enabled) {
+                window.voiceGuide.speak(seg.instruction, () => {
+                    idx++;
+                    if (idx < rapidSegments.length) {
+                        setTimeout(speakNext, 500);
+                    }
+                });
+            } else {
+                idx++;
+                setTimeout(speakNext, seg.duration * 1000);
+            }
+        };
+        speakNext();
+    }
+
+    endApneaGuidedHold() {
+        clearInterval(this.phaseTimer);
+        this.phaseTimer = null;
+
+        if (window.breathSounds) window.breathSounds.stop();
+
+        const feedback = `Cycle ${this.apneaGuidedCycle} terminé. Respirez normalement.`;
+        document.getElementById('exerciseInstruction').textContent = feedback;
+        document.getElementById('breathPhase').textContent = 'Repos';
+
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(feedback);
+        }
+
+        this.apneaGuidedCycle++;
+
+        if (this.apneaGuidedCycle > this.currentExercise.cycles) {
+            setTimeout(() => this.completeExercise(), 3000);
+        } else {
+            // Rest before next cycle
+            setTimeout(() => {
+                this.updateBreathPhase({ name: 'Repos', action: 'inhale', duration: this.currentExercise.restDuration }, 'hold');
+
+                if (window.breathSounds) {
+                    window.breathSounds.playPhase('inhale', this.currentExercise.restDuration);
+                }
+
+                this.startPhaseTimer(this.currentExercise.restDuration, () => {
+                    this.runApneaGuidedCycle();
+                });
+            }, 2000);
+        }
+    }
+
+    // ==========================================
     // Apnea Tables
     // ==========================================
 
@@ -1823,6 +2332,16 @@ class JmeeDeepBreathApp {
         // Reset apnea state
         this.apneaCycle = 1;
 
+        // Reset contraction state
+        this.contractionCycle = 1;
+        this.contractionCount = 0;
+        this.contractionOnset = null;
+        this.contractionHoldStart = null;
+        this.contractionHistory = [];
+
+        // Reset body scan apnea state
+        this.apneaGuidedCycle = 1;
+
         // Reset pause button icon
         const pauseBtn = document.getElementById('btnPause');
         pauseBtn.innerHTML = `
@@ -1851,7 +2370,11 @@ class JmeeDeepBreathApp {
             this.isRunning = true;
 
             // Restart the same exercise type
-            if (this.currentExercise.isApneaTable) {
+            if (this.currentExercise.isApneaWithGuidance) {
+                this.startApneaWithGuidance();
+            } else if (this.currentExercise.isContractionTable) {
+                this.startContractionTable();
+            } else if (this.currentExercise.isApneaTable) {
                 this.startApneaTable();
             } else if (this.currentExercise.isGuided) {
                 this.startGuidedExercise();
@@ -1916,6 +2439,12 @@ class JmeeDeepBreathApp {
         // Reset circle
         const circle = document.getElementById('breathCircle');
         circle.classList.remove('inhale', 'exhale', 'hold', 'active');
+
+        // Hide contraction UI
+        const btnContraction = document.getElementById('btnMarkContraction');
+        const counterDiv = document.getElementById('contractionCounter');
+        if (btnContraction) btnContraction.style.display = 'none';
+        if (counterDiv) counterDiv.style.display = 'none';
     }
 
     togglePause() {
@@ -1943,6 +2472,65 @@ class JmeeDeepBreathApp {
                 </svg>
             `;
         }
+    }
+
+    // ==========================================
+    // Guide Section
+    // ==========================================
+
+    setupGuide() {
+        // Objective filter buttons
+        document.querySelectorAll('.guide-objective-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.guide-objective-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.filterGuideExercises();
+            });
+        });
+
+        // Level filter buttons
+        document.querySelectorAll('.guide-level-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.guide-level-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.filterGuideExercises();
+            });
+        });
+
+        // Click on exercise item → navigate to exercise and start it
+        document.querySelectorAll('.guide-exercise-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const exerciseId = item.dataset.exerciseId;
+                if (exerciseId && EXERCISES[exerciseId]) {
+                    this.startExercise(exerciseId);
+                }
+            });
+        });
+    }
+
+    filterGuideExercises() {
+        const activeObjective = document.querySelector('.guide-objective-btn.active')?.dataset.objective || 'all';
+        const activeLevel = document.querySelector('.guide-level-btn.active')?.dataset.level || 'all';
+
+        document.querySelectorAll('.guide-exercise-item').forEach(item => {
+            const objectives = (item.dataset.objectives || '').split(',');
+            const level = item.dataset.level || '';
+
+            const matchObjective = activeObjective === 'all' || objectives.includes(activeObjective);
+            const matchLevel = activeLevel === 'all' || level === activeLevel;
+
+            if (matchObjective && matchLevel) {
+                item.classList.remove('guide-hidden');
+            } else {
+                item.classList.add('guide-hidden');
+            }
+        });
+
+        // Hide empty categories
+        document.querySelectorAll('.guide-category').forEach(category => {
+            const visibleItems = category.querySelectorAll('.guide-exercise-item:not(.guide-hidden)');
+            category.style.display = visibleItems.length > 0 ? '' : 'none';
+        });
     }
 
     // ==========================================

@@ -100,6 +100,14 @@
             <button class="nav-link nav-urgence" data-section="urgence">Urgence</button>
             <button class="nav-link" data-section="preperformance">Pré-Perf</button>
             <button class="nav-link nav-hypnose" data-section="autohypnose">Hypnose</button>
+            <button class="nav-link nav-guide" data-section="guide">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Guide
+            </button>
             <button class="nav-link nav-settings" data-section="settings">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="3"/>
@@ -204,6 +212,19 @@
                         </div>
                         <h3>Auto-Hypnose</h3>
                         <p>Techniques VAKOG, flow-state et gestion des spasmes pour apnéistes</p>
+                    </div>
+
+                    <div class="feature-card feature-card-guide" data-goto="guide">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="24" cy="24" r="20" opacity="0.3"/>
+                                <circle cx="24" cy="24" r="10"/>
+                                <path d="M21 21a3 3 0 1 1 4.3 2.7c-.8.5-1.3 1.1-1.3 2.3"/>
+                                <circle cx="24" cy="30" r="0.5" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <h3>Guide</h3>
+                        <p>Aide au choix des exercices selon votre objectif, votre niveau et votre blocage</p>
                     </div>
                 </div>
             </div>
@@ -640,6 +661,63 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Hook Breathing -->
+                <div class="exercise-card" data-exercise="hook-breathing">
+                    <div class="exercise-badge">Sécurité</div>
+                    <h3>Hook Breathing</h3>
+                    <p>Technique de récupération post-apnée en 3 rounds progressifs. Réflexe vital de sécurité à automatiser.</p>
+                    <div class="exercise-meta">
+                        <span>8 min</span>
+                        <span>•</span>
+                        <span>Récupération</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                    </div>
+                </div>
+
+                <!-- Contraction Tolerance -->
+                <div class="exercise-card" data-exercise="contraction-tolerance">
+                    <div class="exercise-badge">Avancé</div>
+                    <h3>Tolérance Contractions</h3>
+                    <p>Apnée avec suivi des spasmes, coaching vocal et reframing cognitif. Progressif sur 6 semaines.</p>
+                    <div class="exercise-meta">
+                        <span>4 cycles</span>
+                        <span>•</span>
+                        <span>~15 min</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="contraction-tolerance">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Body Scan Apnea -->
+                <div class="exercise-card" data-exercise="body-scan-apnea">
+                    <div class="exercise-badge">Hybride</div>
+                    <h3>Body Scan Apnée</h3>
+                    <p>Apnée guidée avec scan corporel progressif. Déplace l'attention pendant la rétention pour plus de confort.</p>
+                    <div class="exercise-meta">
+                        <span>3 cycles</span>
+                        <span>•</span>
+                        <span>~20 min</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="body-scan-apnea">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Safety Notice -->
@@ -980,6 +1058,21 @@
                         <button class="btn-start btn-start-preperf">Commencer</button>
                     </div>
                 </div>
+
+                <!-- Breathe-Up Structuré -->
+                <div class="exercise-card exercise-card-preperf" data-exercise="breathe-up-structure">
+                    <div class="exercise-badge preperf-badge">Breathe-Up</div>
+                    <h3>Breathe-Up Structuré</h3>
+                    <p>Préparation pré-plongée en 3 phases : tidal 1:2, respiration segmentaire, inspiration finale en 3 étages.</p>
+                    <div class="exercise-meta">
+                        <span>6 min</span>
+                        <span>•</span>
+                        <span>Pré-Plongée</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-preperf">Commencer</button>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -1062,6 +1155,36 @@
                         <button class="btn-start btn-start-hypnose">Commencer</button>
                     </div>
                 </div>
+
+                <!-- Méditation Lâcher-Prise -->
+                <div class="exercise-card exercise-card-hypnose" data-exercise="meditation-lacher-prise">
+                    <div class="exercise-badge hypnose-badge">Lâcher-prise</div>
+                    <h3>Méditation Lâcher-Prise</h3>
+                    <p>Apprendre à ne plus lutter : respiration passive, acceptation ACT et conditionnement par mot-clé "lâche".</p>
+                    <div class="exercise-meta">
+                        <span>10 min</span>
+                        <span>•</span>
+                        <span>Mental / Anxiété</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-hypnose">Commencer</button>
+                    </div>
+                </div>
+
+                <!-- Programme Dry-to-Wet Bridge -->
+                <div class="exercise-card exercise-card-hypnose exercise-card-featured" data-exercise="dry-to-wet-bridge">
+                    <div class="exercise-badge hypnose-badge">Programme 8 sem.</div>
+                    <h3>Programme Dry-to-Wet</h3>
+                    <p>Guide en 8 semaines pour transférer vos performances du sec vers l'eau. Réduit l'anxiété aquatique progressivement.</p>
+                    <div class="exercise-meta">
+                        <span>12 min</span>
+                        <span>•</span>
+                        <span>Transfert Eau</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start btn-start-hypnose">Commencer</button>
+                    </div>
+                </div>
             </div>
 
             <div class="hypnose-tips">
@@ -1073,6 +1196,491 @@
                     <li><strong>Switch rapide :</strong> Dès qu'un spasme arrive, déplacez votre attention sur le lobe d'oreille ou le petit orteil.</li>
                 </ul>
             </div>
+        </section>
+
+        <!-- Guide Section -->
+        <section class="section" id="guide">
+            <div class="section-header">
+                <h2>Guide des exercices</h2>
+                <p>Choisissez vos exercices selon votre objectif, votre niveau et votre blocage principal</p>
+            </div>
+
+            <!-- Objective Filter -->
+            <div class="guide-filters">
+                <h3 class="guide-filter-title">Quel est votre objectif ?</h3>
+                <div class="guide-objective-grid">
+                    <button class="guide-objective-btn active" data-objective="all">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5"/></svg>
+                        Tout voir
+                    </button>
+                    <button class="guide-objective-btn" data-objective="static">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/></svg>
+                        Apnée statique
+                    </button>
+                    <button class="guide-objective-btn" data-objective="dynamic">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M13 8l4 4-4 4"/></svg>
+                        Apnée dynamique
+                    </button>
+                    <button class="guide-objective-btn" data-objective="depth">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 14l4 4 4-4"/></svg>
+                        Profondeur
+                    </button>
+                    <button class="guide-objective-btn" data-objective="spearfishing">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9l3-3 3 3"/></svg>
+                        Chasse sous-marine
+                    </button>
+                    <button class="guide-objective-btn" data-objective="anxiety">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                        Lâcher-prise / Anxiété
+                    </button>
+                    <button class="guide-objective-btn" data-objective="contractions">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        Tolérance contractions
+                    </button>
+                    <button class="guide-objective-btn" data-objective="drytowet">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 22v-6M2 12h6M22 12h-6"/><circle cx="12" cy="12" r="4"/></svg>
+                        Transfert sec &rarr; eau
+                    </button>
+                </div>
+            </div>
+
+            <!-- Level Filter -->
+            <div class="guide-level-filter">
+                <span class="guide-level-label">Niveau :</span>
+                <button class="guide-level-btn active" data-level="all">Tous</button>
+                <button class="guide-level-btn" data-level="beginner">Débutant</button>
+                <button class="guide-level-btn" data-level="intermediate">Intermédiaire</button>
+                <button class="guide-level-btn" data-level="advanced">Avancé</button>
+            </div>
+
+            <!-- Guide Recommendations -->
+            <div class="guide-recommendations" id="guideRecommendations">
+
+                <!-- RESPIRATION -->
+                <div class="guide-category">
+                    <h3 class="guide-category-title">Respiration</h3>
+                    <div class="guide-exercises-list">
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,depth,spearfishing,anxiety" data-level="beginner" data-exercise-id="cyclic-sighing">
+                            <div class="guide-exercise-header">
+                                <h4>Cyclic Sighing</h4>
+                                <span class="guide-badge guide-badge-beginner">Débutant</span>
+                            </div>
+                            <p class="guide-exercise-desc">Double inspiration + longue expiration. Active le système parasympathique en 5 min. Idéal pour démarrer chaque session.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Pré-session</span>
+                                <span class="guide-tag">Anti-stress</span>
+                                <span class="guide-tag">5 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Avant chaque entraînement d'apnée, ou en cas de stress quotidien.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,depth,spearfishing,anxiety" data-level="beginner" data-exercise-id="coherent">
+                            <div class="guide-exercise-header">
+                                <h4>Cohérence Cardiaque</h4>
+                                <span class="guide-badge guide-badge-beginner">Débutant</span>
+                            </div>
+                            <p class="guide-exercise-desc">Respiration à 5.5s/5.5s qui synchronise le cœur et le système nerveux. Réduit le cortisol de 23%.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Quotidien</span>
+                                <span class="guide-tag">HRV</span>
+                                <span class="guide-tag">10 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Matin et soir, 10 min. Fondation de tout entraînement respiratoire.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,anxiety" data-level="beginner" data-exercise-id="box">
+                            <div class="guide-exercise-header">
+                                <h4>Box Breathing</h4>
+                                <span class="guide-badge guide-badge-beginner">Débutant</span>
+                            </div>
+                            <p class="guide-exercise-desc">Carré respiratoire 4-4-4-4. Calme mental profond, utilisé par les Navy SEALs.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Calme mental</span>
+                                <span class="guide-tag">Focus</span>
+                                <span class="guide-tag">5 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Avant une apnée stressante ou pour retrouver le calme rapidement.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic" data-level="intermediate" data-exercise-id="co2-tolerance">
+                            <div class="guide-exercise-header">
+                                <h4>Tolérance au CO2</h4>
+                                <span class="guide-badge guide-badge-intermediate">Intermédiaire</span>
+                            </div>
+                            <p class="guide-exercise-desc">Expirations prolongées (ratio 1:2) pour augmenter progressivement la tolérance au CO2.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">CO2</span>
+                                <span class="guide-tag">Confort</span>
+                                <span class="guide-tag">5 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Quotidien. Complément aux tables CO2 pour augmenter le seuil de tolérance.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,depth" data-level="intermediate" data-exercise-id="wimhof">
+                            <div class="guide-exercise-header">
+                                <h4>Wim Hof</h4>
+                                <span class="guide-badge guide-badge-intermediate">Intermédiaire</span>
+                            </div>
+                            <p class="guide-exercise-desc">Hyperventilation contrôlée + rétention. Repousse les limites et conditionne au froid.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Limites</span>
+                                <span class="guide-tag">Énergie</span>
+                                <span class="guide-tag">~15 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> 2-3x/semaine. <strong>Jamais</strong> juste avant une apnée en eau (risque de syncope).</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,anxiety" data-level="beginner" data-exercise-id="relaxation">
+                            <div class="guide-exercise-header">
+                                <h4>Relaxation 4-7-8</h4>
+                                <span class="guide-badge guide-badge-beginner">Débutant</span>
+                            </div>
+                            <p class="guide-exercise-desc">Inspirez 4s, retenez 7s, expirez 8s. Effet tranquillisant naturel puissant.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Détente profonde</span>
+                                <span class="guide-tag">Sommeil</span>
+                                <span class="guide-tag">~5 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Le soir ou avant une session de visualisation/hypnose.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- APNÉE -->
+                <div class="guide-category">
+                    <h3 class="guide-category-title">Apnée</h3>
+                    <div class="guide-exercises-list">
+
+                        <div class="guide-exercise-item" data-objectives="static" data-level="intermediate" data-exercise-id="co2-table">
+                            <div class="guide-exercise-header">
+                                <h4>Table CO2</h4>
+                                <span class="guide-badge guide-badge-intermediate">Intermédiaire</span>
+                            </div>
+                            <p class="guide-exercise-desc">Apnées fixes avec repos décroissant. Augmente la tolérance au CO2 et recule le seuil des contractions.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">CO2</span>
+                                <span class="guide-tag">Contractions</span>
+                                <span class="guide-tag">8 cycles</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> 3-4x/semaine. Pilier de l'entraînement statique. Alterner avec Table O2.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static" data-level="intermediate" data-exercise-id="o2-table">
+                            <div class="guide-exercise-header">
+                                <h4>Table O2</h4>
+                                <span class="guide-badge guide-badge-intermediate">Intermédiaire</span>
+                            </div>
+                            <p class="guide-exercise-desc">Repos fixe avec apnées croissantes. Habitue le corps à des niveaux d'O2 plus bas.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">O2</span>
+                                <span class="guide-tag">Endurance</span>
+                                <span class="guide-tag">8 cycles</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> 2-3x/semaine en alternance avec Table CO2. Plus éprouvant.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic" data-level="beginner" data-exercise-id="no-contraction">
+                            <div class="guide-exercise-header">
+                                <h4>Table Sans Contraction</h4>
+                                <span class="guide-badge guide-badge-beginner">Débutant</span>
+                            </div>
+                            <p class="guide-exercise-desc">Apnées courtes sans jamais atteindre les contractions. Construit la confiance et le confort.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Confiance</span>
+                                <span class="guide-tag">Confort</span>
+                                <span class="guide-tag">6 cycles</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Idéal pour débuter ou reprendre après une pause. Aussi pour les jours "cool".</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,depth,contractions" data-level="advanced" data-exercise-id="contraction-tolerance">
+                            <div class="guide-exercise-header">
+                                <h4>Tolérance Contractions</h4>
+                                <span class="guide-badge guide-badge-advanced">Avancé</span>
+                            </div>
+                            <p class="guide-exercise-desc">Apnée avec suivi des spasmes + coaching vocal de reframing. Le bouton "Contraction" marque chaque spasme et déclenche un message de recadrage cognitif. L'apnée se termine automatiquement X secondes après la 1ère contraction (progressif sur 6 semaines).</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Contractions</span>
+                                <span class="guide-tag">Reframing</span>
+                                <span class="guide-tag">4 cycles</span>
+                                <span class="guide-tag">Progressif</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> 2-3x/semaine. Essentiel si les contractions vous font paniquer. Programme 6 semaines.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,depth,anxiety" data-level="intermediate" data-exercise-id="body-scan-apnea">
+                            <div class="guide-exercise-header">
+                                <h4>Body Scan Apnée</h4>
+                                <span class="guide-badge guide-badge-intermediate">Intermédiaire</span>
+                            </div>
+                            <p class="guide-exercise-desc">Apnée guidée avec scan corporel qui parcourt 10 zones pendant la rétention. Déplace l'attention loin de l'envie de respirer. 3 modes : scan normal → silence → scan rapide en fin de hold.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Distraction</span>
+                                <span class="guide-tag">Relaxation</span>
+                                <span class="guide-tag">3 cycles</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> 2-3x/semaine. Idéal pour ceux qui "pensent trop" pendant l'apnée.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,depth,spearfishing" data-level="beginner" data-exercise-id="hook-breathing">
+                            <div class="guide-exercise-header">
+                                <h4>Hook Breathing</h4>
+                                <span class="guide-badge guide-badge-beginner">Débutant</span>
+                            </div>
+                            <p class="guide-exercise-desc">Technique de sécurité post-apnée. 3 rounds progressifs pour automatiser ce réflexe vital qui prévient le blackout.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Sécurité</span>
+                                <span class="guide-tag">Récupération</span>
+                                <span class="guide-tag">8 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Pratiquer jusqu'à ce que ce soit un réflexe. Puis à chaque sortie de l'eau après une apnée.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="depth,spearfishing" data-level="beginner" data-exercise-id="dive-reflex">
+                            <div class="guide-exercise-header">
+                                <h4>Réflexe de Plongée</h4>
+                                <span class="guide-badge guide-badge-beginner">Débutant</span>
+                            </div>
+                            <p class="guide-exercise-desc">Stimule le réflexe mammalien de plongée par immersion faciale dans l'eau froide. Bradycardie naturelle.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Bradycardie</span>
+                                <span class="guide-tag">Adaptation</span>
+                                <span class="guide-tag">5 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> 3-4x/semaine. Fondamental pour le transfert sec → eau.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,depth" data-level="intermediate" data-exercise-id="diaphragm">
+                            <div class="guide-exercise-header">
+                                <h4>Respiration Diaphragmatique</h4>
+                                <span class="guide-badge guide-badge-intermediate">Intermédiaire</span>
+                            </div>
+                            <p class="guide-exercise-desc">Entraîne spécifiquement le diaphragme pour augmenter la capacité pulmonaire et le contrôle respiratoire.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Diaphragme</span>
+                                <span class="guide-tag">Capacité</span>
+                                <span class="guide-tag">10 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Quotidien si possible. Améliore toutes les techniques d'apnée.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="depth" data-level="intermediate" data-exercise-id="lung-stretch">
+                            <div class="guide-exercise-header">
+                                <h4>Étirements Pulmonaires</h4>
+                                <span class="guide-badge guide-badge-intermediate">Intermédiaire</span>
+                            </div>
+                            <p class="guide-exercise-desc">Augmente la souplesse thoracique et la capacité vitale. Important pour la profondeur.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Souplesse</span>
+                                <span class="guide-tag">Capacité vitale</span>
+                                <span class="guide-tag">~10 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Avant les sessions de profondeur. 3-4x/semaine.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- PRÉ-PERFORMANCE -->
+                <div class="guide-category">
+                    <h3 class="guide-category-title">Pré-Performance</h3>
+                    <div class="guide-exercises-list">
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,depth,spearfishing" data-level="intermediate" data-exercise-id="breathe-up-structure">
+                            <div class="guide-exercise-header">
+                                <h4>Breathe-Up Structuré</h4>
+                                <span class="guide-badge guide-badge-intermediate">Intermédiaire</span>
+                            </div>
+                            <p class="guide-exercise-desc">Préparation pré-plongée en 3 phases : tidal 1:2, respiration segmentaire, inspiration finale 3 étages. Optimise SpO2 sans hyperventiler.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Pré-plongée</span>
+                                <span class="guide-tag">SpO2</span>
+                                <span class="guide-tag">6 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Avant CHAQUE apnée en eau. Le rituel le plus important de l'apnéiste.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,depth,spearfishing" data-level="intermediate" data-exercise-id="preperf-protocol">
+                            <div class="guide-exercise-header">
+                                <h4>Protocole Pré-Performance</h4>
+                                <span class="guide-badge guide-badge-intermediate">Intermédiaire</span>
+                            </div>
+                            <p class="guide-exercise-desc">Protocole complet de 5 min : centrage, activation parasympathique, visualisation rapide, mot-clé d'ancrage.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Complet</span>
+                                <span class="guide-tag">Compétition</span>
+                                <span class="guide-tag">5 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Avant une compétition ou une tentative de record personnel.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- VISUALISATION -->
+                <div class="guide-category">
+                    <h3 class="guide-category-title">Visualisation</h3>
+                    <div class="guide-exercises-list">
+
+                        <div class="guide-exercise-item" data-objectives="depth,dynamic" data-level="intermediate" data-exercise-id="pettlep">
+                            <div class="guide-exercise-header">
+                                <h4>PETTLEP</h4>
+                                <span class="guide-badge guide-badge-intermediate">Intermédiaire</span>
+                            </div>
+                            <p class="guide-exercise-desc">Visualisation multi-sensorielle en 7 dimensions. Simule mentalement une plongée complète avec tous les sens.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Visualisation</span>
+                                <span class="guide-tag">Profondeur</span>
+                                <span class="guide-tag">~10 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> 3-4x/semaine. Particulièrement utile si vous ne pouvez pas plonger souvent.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,anxiety" data-level="beginner" data-exercise-id="body-scan">
+                            <div class="guide-exercise-header">
+                                <h4>Body Scan</h4>
+                                <span class="guide-badge guide-badge-beginner">Débutant</span>
+                            </div>
+                            <p class="guide-exercise-desc">Scan corporel zone par zone pour une relaxation complète. Base de la conscience corporelle.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Relaxation</span>
+                                <span class="guide-tag">Conscience</span>
+                                <span class="guide-tag">~15 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Quotidien si anxieux. Sinon 2-3x/semaine. Excellent avant le sommeil.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,anxiety" data-level="beginner" data-exercise-id="sophro">
+                            <div class="guide-exercise-header">
+                                <h4>Sophrologie</h4>
+                                <span class="guide-badge guide-badge-beginner">Débutant</span>
+                            </div>
+                            <p class="guide-exercise-desc">Relaxation dynamique progressive par zones corporelles. Très utilisée chez les apnéistes francophones.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Détente</span>
+                                <span class="guide-tag">Zones</span>
+                                <span class="guide-tag">~12 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Avant les sessions de visualisation ou d'hypnose.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- AUTO-HYPNOSE -->
+                <div class="guide-category">
+                    <h3 class="guide-category-title">Auto-Hypnose / Mental</h3>
+                    <div class="guide-exercises-list">
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,depth,anxiety,drytowet" data-level="beginner" data-exercise-id="meditation-lacher-prise">
+                            <div class="guide-exercise-header">
+                                <h4>Méditation Lâcher-Prise</h4>
+                                <span class="guide-badge guide-badge-beginner">Débutant</span>
+                            </div>
+                            <p class="guide-exercise-desc">Respiration passive + surrender progressif + acceptation ACT + conditionnement au mot-clé "lâche". Apprend à ne plus lutter contre les sensations.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Lâcher-prise</span>
+                                <span class="guide-tag">ACT</span>
+                                <span class="guide-tag">Mot-clé</span>
+                                <span class="guide-tag">10 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Quotidien si le lâcher-prise est votre blocage. Avant les sessions d'apnée. Fondamental.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,depth,drytowet" data-level="intermediate" data-exercise-id="dry-to-wet-bridge">
+                            <div class="guide-exercise-header">
+                                <h4>Programme Dry-to-Wet</h4>
+                                <span class="guide-badge guide-badge-intermediate">Intermédiaire</span>
+                            </div>
+                            <p class="guide-exercise-desc">Programme structuré de 8 semaines pour combler l'écart entre performances à sec et en eau. Désensibilisation progressive : dry → immersion faciale → baignoire → piscine buddy → extension.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Transfert</span>
+                                <span class="guide-tag">8 semaines</span>
+                                <span class="guide-tag">Progressif</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Si votre apnée en eau est bien inférieure à votre dry. Suivre le programme semaine par semaine.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,depth,spearfishing" data-level="beginner" data-exercise-id="hypno-apnee-debutant">
+                            <div class="guide-exercise-header">
+                                <h4>Hypno-Apnée Débutant</h4>
+                                <span class="guide-badge guide-badge-beginner">Débutant</span>
+                            </div>
+                            <p class="guide-exercise-desc">Initiation à l'auto-hypnose spécifique apnéistes. Création de votre ancre personnelle de calme profond.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Hypnose</span>
+                                <span class="guide-tag">Ancrage</span>
+                                <span class="guide-tag">~15 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> 2x/semaine minimum. L'ancre devient plus puissante avec la répétition.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="dynamic,depth" data-level="intermediate" data-exercise-id="flow-dynamique">
+                            <div class="guide-exercise-header">
+                                <h4>Flow-State Dynamique</h4>
+                                <span class="guide-badge guide-badge-intermediate">Intermédiaire</span>
+                            </div>
+                            <p class="guide-exercise-desc">Mantras rythmiques "Glisse-Relâche" pour entrer en flow pendant les dynamiques et les descentes.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Flow</span>
+                                <span class="guide-tag">Dynamique</span>
+                                <span class="guide-tag">~12 min</span>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Avant vos sessions de dynamique ou de profondeur.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Quick Programs -->
+            <div class="guide-programs">
+                <h3 class="guide-category-title">Programmes suggérés</h3>
+
+                <div class="guide-program-cards">
+                    <div class="guide-program-card">
+                        <h4>Débutant — Semaines 1-4</h4>
+                        <p>Construire les fondations</p>
+                        <ol class="guide-program-list">
+                            <li><strong>Quotidien :</strong> Cohérence Cardiaque (10 min)</li>
+                            <li><strong>Quotidien :</strong> Méditation Lâcher-Prise (10 min)</li>
+                            <li><strong>3x/sem :</strong> Table Sans Contraction</li>
+                            <li><strong>2x/sem :</strong> Body Scan ou Sophrologie</li>
+                            <li><strong>1x/sem :</strong> Hook Breathing (jusqu'à automatisme)</li>
+                        </ol>
+                    </div>
+
+                    <div class="guide-program-card">
+                        <h4>Intermédiaire — Semaines 5-12</h4>
+                        <p>Augmenter la tolérance et le confort</p>
+                        <ol class="guide-program-list">
+                            <li><strong>Quotidien :</strong> Cyclic Sighing + Cohérence (15 min)</li>
+                            <li><strong>3x/sem :</strong> Table CO2 (alterner avec Table O2)</li>
+                            <li><strong>2x/sem :</strong> Body Scan Apnée</li>
+                            <li><strong>2x/sem :</strong> Tolérance Contractions</li>
+                            <li><strong>2x/sem :</strong> Hypno-Apnée + PETTLEP</li>
+                            <li><strong>Avant chaque apnée :</strong> Breathe-Up Structuré</li>
+                        </ol>
+                    </div>
+
+                    <div class="guide-program-card">
+                        <h4>Transfert Sec &rarr; Eau</h4>
+                        <p>Spécial écart dry/wet important</p>
+                        <ol class="guide-program-list">
+                            <li><strong>Suivre :</strong> Programme Dry-to-Wet (8 semaines)</li>
+                            <li><strong>Quotidien :</strong> Méditation Lâcher-Prise</li>
+                            <li><strong>3x/sem :</strong> Réflexe de Plongée</li>
+                            <li><strong>2x/sem :</strong> Tolérance Contractions</li>
+                            <li><strong>Avant l'eau :</strong> Breathe-Up Structuré</li>
+                            <li><strong>Après l'eau :</strong> Hook Breathing (toujours !)</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
         </section>
 
         <!-- Settings Section -->
@@ -1612,6 +2220,75 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Contraction Tolerance -->
+                    <div class="exercise-settings" data-exercise="contraction-tolerance">
+                        <h4>Tolérance Contractions</h4>
+                        <div class="settings-row">
+                            <label>Nombre de cycles</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="8" value="4" data-param="cycles">
+                                <span>cycles</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Niveau (semaine)</label>
+                            <div class="input-with-unit">
+                                <select data-param="weekLevel">
+                                    <option value="1">Sem 1-2 : +10s après contraction</option>
+                                    <option value="2">Sem 3-4 : +15s après contraction</option>
+                                    <option value="3">Sem 5-6 : +30s après contraction</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Temps de repos</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="60" max="180" value="120" data-param="restDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Body Scan Apnea -->
+                    <div class="exercise-settings" data-exercise="body-scan-apnea">
+                        <h4>Body Scan Apnée</h4>
+                        <div class="settings-row">
+                            <label>Nombre de cycles</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="5" value="3" data-param="cycles">
+                                <span>cycles</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Durée breathe-up</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="30" max="120" value="60" data-param="breatheUpDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Durée repos</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="60" max="180" value="120" data-param="restDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Breathe-Up Structuré -->
+                    <div class="exercise-settings" data-exercise="breathe-up-structure">
+                        <h4>Breathe-Up Structuré</h4>
+                        <div class="settings-row">
+                            <label>Mode</label>
+                            <div class="input-with-unit">
+                                <select data-param="mode">
+                                    <option value="standard">Standard (3 phases)</option>
+                                    <option value="express">Express (2 min)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1667,6 +2344,17 @@
                 <!-- Cycle Counter -->
                 <div class="cycle-info">
                     <span id="cycleCounter">Cycle 0 / 0</span>
+                </div>
+
+                <!-- Contraction UI (hidden by default) -->
+                <button class="btn-contraction" id="btnMarkContraction" style="display:none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    Contraction !
+                </button>
+                <div class="contraction-counter" id="contractionCounter" style="display:none;">
+                    Contractions : 0
                 </div>
 
                 <!-- Controls -->
