@@ -1253,11 +1253,16 @@
                 <button class="guide-level-btn" data-level="advanced">Avancé</button>
             </div>
 
+            <!-- Result count -->
+            <div class="guide-result-count" id="guideResultCount">
+                <strong>24</strong> exercices disponibles
+            </div>
+
             <!-- Guide Recommendations -->
             <div class="guide-recommendations" id="guideRecommendations">
 
                 <!-- RESPIRATION -->
-                <div class="guide-category">
+                <div class="guide-category" data-cat="respiration">
                     <h3 class="guide-category-title">Respiration</h3>
                     <div class="guide-exercises-list">
 
@@ -1349,7 +1354,7 @@
                 </div>
 
                 <!-- APNÉE -->
-                <div class="guide-category">
+                <div class="guide-category" data-cat="apnee">
                     <h3 class="guide-category-title">Apnée</h3>
                     <div class="guide-exercises-list">
 
@@ -1484,7 +1489,7 @@
                 </div>
 
                 <!-- PRÉ-PERFORMANCE -->
-                <div class="guide-category">
+                <div class="guide-category" data-cat="preperf">
                     <h3 class="guide-category-title">Pré-Performance</h3>
                     <div class="guide-exercises-list">
 
@@ -1520,7 +1525,7 @@
                 </div>
 
                 <!-- VISUALISATION -->
-                <div class="guide-category">
+                <div class="guide-category" data-cat="visu">
                     <h3 class="guide-category-title">Visualisation</h3>
                     <div class="guide-exercises-list">
 
@@ -1570,7 +1575,7 @@
                 </div>
 
                 <!-- AUTO-HYPNOSE -->
-                <div class="guide-category">
+                <div class="guide-category" data-cat="hypnose">
                     <h3 class="guide-category-title">Auto-Hypnose / Mental</h3>
                     <div class="guide-exercises-list">
 
@@ -1632,6 +1637,12 @@
                         </div>
 
                     </div>
+                </div>
+
+                <!-- No results -->
+                <div class="guide-no-results" id="guideNoResults" style="display:none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    <p>Aucun exercice ne correspond à cette combinaison de filtres.<br>Essayez un autre objectif ou niveau.</p>
                 </div>
 
             </div>

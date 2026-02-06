@@ -2512,6 +2512,8 @@ class JmeeDeepBreathApp {
         const activeObjective = document.querySelector('.guide-objective-btn.active')?.dataset.objective || 'all';
         const activeLevel = document.querySelector('.guide-level-btn.active')?.dataset.level || 'all';
 
+        let visibleCount = 0;
+
         document.querySelectorAll('.guide-exercise-item').forEach(item => {
             const objectives = (item.dataset.objectives || '').split(',');
             const level = item.dataset.level || '';
@@ -2521,6 +2523,7 @@ class JmeeDeepBreathApp {
 
             if (matchObjective && matchLevel) {
                 item.classList.remove('guide-hidden');
+                visibleCount++;
             } else {
                 item.classList.add('guide-hidden');
             }
@@ -2531,6 +2534,23 @@ class JmeeDeepBreathApp {
             const visibleItems = category.querySelectorAll('.guide-exercise-item:not(.guide-hidden)');
             category.style.display = visibleItems.length > 0 ? '' : 'none';
         });
+
+        // Update result count
+        const countEl = document.getElementById('guideResultCount');
+        if (countEl) {
+            const total = document.querySelectorAll('.guide-exercise-item').length;
+            if (activeObjective === 'all' && activeLevel === 'all') {
+                countEl.innerHTML = `<strong>${total}</strong> exercices disponibles`;
+            } else {
+                countEl.innerHTML = `<strong>${visibleCount}</strong> exercice${visibleCount > 1 ? 's' : ''} sur ${total}`;
+            }
+        }
+
+        // Show/hide no results message
+        const noResultsEl = document.getElementById('guideNoResults');
+        if (noResultsEl) {
+            noResultsEl.style.display = visibleCount === 0 ? '' : 'none';
+        }
     }
 
     // ==========================================
