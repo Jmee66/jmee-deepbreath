@@ -96,6 +96,12 @@
         </div>
         <div class="nav-links">
             <button class="nav-link active" data-section="home">Accueil</button>
+            <button class="nav-link nav-coach" data-section="coach">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                Coach
+            </button>
             <button class="nav-link" data-section="respiration">Respiration</button>
             <button class="nav-link" data-section="visualisation">Visualisation</button>
             <button class="nav-link" data-section="apnee">Apnée</button>
@@ -103,12 +109,6 @@
             <button class="nav-link nav-urgence" data-section="urgence">Urgence</button>
             <button class="nav-link" data-section="preperformance">Pré-Perf</button>
             <button class="nav-link nav-hypnose" data-section="autohypnose">Hypnose</button>
-            <button class="nav-link nav-coach" data-section="coach">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-                Coach
-            </button>
             <button class="nav-link nav-guide" data-section="guide">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
                     <circle cx="12" cy="12" r="10"/>
@@ -135,6 +135,20 @@
                 <p class="hero-subtitle">Techniques avancées basées sur les dernières recherches scientifiques</p>
 
                 <div class="feature-cards">
+                    <div class="feature-card feature-card-coach" data-goto="coach">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="24" cy="24" r="20" opacity="0.3"/>
+                                <path d="M34 26a2 2 0 0 1-2 2H18l-4 4V14a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
+                                <circle cx="20" cy="20" r="1" fill="currentColor"/>
+                                <circle cx="24" cy="20" r="1" fill="currentColor"/>
+                                <circle cx="28" cy="20" r="1" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <h3>Coach IA</h3>
+                        <p>Entrainement apnee au sec, programmes sur mesure, suivi de progression</p>
+                    </div>
+
                     <div class="feature-card" data-goto="respiration">
                         <div class="feature-icon">
                             <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -221,20 +235,6 @@
                         </div>
                         <h3>Auto-Hypnose</h3>
                         <p>Techniques VAKOG, flow-state et gestion des spasmes pour apnéistes</p>
-                    </div>
-
-                    <div class="feature-card feature-card-coach" data-goto="coach">
-                        <div class="feature-icon">
-                            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <circle cx="24" cy="24" r="20" opacity="0.3"/>
-                                <path d="M34 26a2 2 0 0 1-2 2H18l-4 4V14a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
-                                <circle cx="20" cy="20" r="1" fill="currentColor"/>
-                                <circle cx="24" cy="20" r="1" fill="currentColor"/>
-                                <circle cx="28" cy="20" r="1" fill="currentColor"/>
-                            </svg>
-                        </div>
-                        <h3>Coach IA</h3>
-                        <p>Entrainement apnee au sec, programmes sur mesure, suivi de progression</p>
                     </div>
 
                     <div class="feature-card feature-card-guide" data-goto="guide">
