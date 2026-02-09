@@ -111,6 +111,12 @@
                 </svg>
                 Guide
             </button>
+            <button class="nav-link nav-coach" data-section="coach">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                Coach
+            </button>
             <button class="nav-link nav-settings" data-section="settings">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="3"/>
@@ -228,6 +234,20 @@
                         </div>
                         <h3>Guide</h3>
                         <p>Aide au choix des exercices selon votre objectif, votre niveau et votre blocage</p>
+                    </div>
+
+                    <div class="feature-card feature-card-coach" data-goto="coach">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="24" cy="24" r="20" opacity="0.3"/>
+                                <path d="M34 26a2 2 0 0 1-2 2H18l-4 4V14a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
+                                <circle cx="20" cy="20" r="1" fill="currentColor"/>
+                                <circle cx="24" cy="20" r="1" fill="currentColor"/>
+                                <circle cx="28" cy="20" r="1" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <h3>Coach IA</h3>
+                        <p>Entrainement apnee au sec, programmes sur mesure, suivi de progression</p>
                     </div>
                 </div>
             </div>
@@ -1697,6 +1717,213 @@
 
         </section>
 
+        <!-- Coach AI Section -->
+        <section class="section" id="coach">
+            <div class="section-header">
+                <h2>Coach IA</h2>
+                <p>Entrainement apnee au sec — programmes adaptes a ton niveau</p>
+            </div>
+
+            <!-- Quick Stats Bar -->
+            <div class="coach-stats-bar">
+                <div class="coach-stat">
+                    <span class="coach-stat-value" id="coachTotalSessions">0</span>
+                    <span class="coach-stat-label">Sessions</span>
+                </div>
+                <div class="coach-stat">
+                    <span class="coach-stat-value" id="coachStreak">0</span>
+                    <span class="coach-stat-label">Serie (j)</span>
+                </div>
+                <div class="coach-stat">
+                    <span class="coach-stat-value" id="coachAvgStressReduction">-</span>
+                    <span class="coach-stat-label">Stress reduit</span>
+                </div>
+            </div>
+
+            <!-- Athlete Profile -->
+            <div class="coach-profile-card">
+                <div class="coach-profile-header" id="coachProfileToggle">
+                    <h3>Mon profil</h3>
+                    <svg class="coach-profile-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6,9 12,15 18,9"/>
+                    </svg>
+                </div>
+                <div class="coach-profile-body collapsed" id="coachProfileBody">
+
+                    <!-- Physio -->
+                    <div class="profile-group">
+                        <h4>Physio</h4>
+                        <div class="profile-row">
+                            <label>Age</label>
+                            <input type="number" id="profileAge" min="10" max="99" placeholder="-" data-profile="age">
+                            <span class="profile-unit">ans</span>
+                        </div>
+                        <div class="profile-row">
+                            <label>Taille</label>
+                            <input type="number" id="profileHeight" min="100" max="220" placeholder="-" data-profile="height">
+                            <span class="profile-unit">cm</span>
+                        </div>
+                        <div class="profile-row">
+                            <label>Poids</label>
+                            <input type="number" id="profileWeight" min="30" max="200" placeholder="-" data-profile="weight">
+                            <span class="profile-unit">kg</span>
+                        </div>
+                        <div class="profile-row">
+                            <label>VO2max estimee</label>
+                            <input type="number" id="profileVo2max" min="20" max="90" placeholder="-" data-profile="vo2max">
+                            <span class="profile-unit">ml/kg/min</span>
+                        </div>
+                        <div class="profile-row">
+                            <label>FC repos</label>
+                            <input type="number" id="profileHrRest" min="30" max="120" placeholder="-" data-profile="hrRest">
+                            <span class="profile-unit">bpm</span>
+                        </div>
+                    </div>
+
+                    <!-- Apnee -->
+                    <div class="profile-group">
+                        <h4>Apnee</h4>
+                        <div class="profile-row">
+                            <label>Statique max (sec)</label>
+                            <input type="number" id="profileStaticMax" min="0" max="600" placeholder="-" data-profile="staticMax">
+                            <span class="profile-unit">sec</span>
+                        </div>
+                        <div class="profile-row">
+                            <label>Statique dry max</label>
+                            <input type="number" id="profileStaticDry" min="0" max="600" placeholder="-" data-profile="staticDry">
+                            <span class="profile-unit">sec</span>
+                        </div>
+                        <div class="profile-row">
+                            <label>Dynamique max</label>
+                            <input type="number" id="profileDynMax" min="0" max="300" placeholder="-" data-profile="dynMax">
+                            <span class="profile-unit">m</span>
+                        </div>
+                        <div class="profile-row">
+                            <label>Profondeur max</label>
+                            <input type="number" id="profileDepthMax" min="0" max="150" placeholder="-" data-profile="depthMax">
+                            <span class="profile-unit">m</span>
+                        </div>
+                        <div class="profile-row">
+                            <label>Premiere contraction (sec)</label>
+                            <input type="number" id="profileFirstContraction" min="0" max="600" placeholder="-" data-profile="firstContraction">
+                            <span class="profile-unit">sec</span>
+                        </div>
+                        <div class="profile-row">
+                            <label>Niveau</label>
+                            <select id="profileApneaLevel" data-profile="apneaLevel">
+                                <option value="">-</option>
+                                <option value="debutant">Debutant (< 1min30 statique)</option>
+                                <option value="intermediaire">Intermediaire (1min30 - 3min)</option>
+                                <option value="avance">Avance (3min - 5min)</option>
+                                <option value="expert">Expert (> 5min)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Sport & Entrainement -->
+                    <div class="profile-group">
+                        <h4>Sport & Entrainement</h4>
+                        <div class="profile-row">
+                            <label>Sport(s) principal(aux)</label>
+                            <input type="text" id="profileSports" placeholder="Ex: apnee, natation, course..." data-profile="sports">
+                        </div>
+                        <div class="profile-row">
+                            <label>Frequence entrainement</label>
+                            <select id="profileTrainingFreq" data-profile="trainingFreq">
+                                <option value="">-</option>
+                                <option value="1-2">1-2x / semaine</option>
+                                <option value="3-4">3-4x / semaine</option>
+                                <option value="5+">5+ / semaine</option>
+                                <option value="quotidien">Quotidien</option>
+                            </select>
+                        </div>
+                        <div class="profile-row">
+                            <label>Etat actuel</label>
+                            <select id="profileCurrentState" data-profile="currentState">
+                                <option value="">-</option>
+                                <option value="reprise">Reprise apres pause</option>
+                                <option value="base">Construction de base</option>
+                                <option value="progression">En progression</option>
+                                <option value="plateau">Plateau</option>
+                                <option value="pic">Pic de forme</option>
+                                <option value="fatigue">Fatigue / surentrainement</option>
+                            </select>
+                        </div>
+                        <div class="profile-row profile-row-full">
+                            <label>Notes libres</label>
+                            <textarea id="profileNotes" rows="2" placeholder="Blessures, contraintes, preferences..." data-profile="notes"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button class="btn-primary btn-sm" id="btnSaveProfile">Enregistrer le profil</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="coach-chat-container">
+                <div class="coach-chat-messages" id="coachMessages">
+                    <!-- Welcome message inserted by JS -->
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="coach-quick-actions" id="coachQuickActions">
+                    <button class="coach-quick-btn" data-prompt="Seance apnee au sec pour aujourd'hui">
+                        Apnee sec
+                    </button>
+                    <button class="coach-quick-btn" data-prompt="Programme-moi une semaine d'entrainement">
+                        Programme
+                    </button>
+                    <button class="coach-quick-btn" data-prompt="Bilan de ma progression et axes d'amelioration">
+                        Bilan
+                    </button>
+                    <button class="coach-quick-btn" data-prompt="Je suis stresse, j'ai besoin de redescendre">
+                        Stress
+                    </button>
+                </div>
+
+                <!-- Chat Input -->
+                <div class="coach-chat-input">
+                    <textarea id="coachInput" rows="1"
+                        placeholder="Posez une question a votre coach..."
+                        maxlength="500"></textarea>
+                    <button class="coach-send-btn" id="coachSendBtn">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Sessions -->
+            <div class="coach-recent-section">
+                <h3>Sessions recentes</h3>
+                <div class="coach-sessions-list" id="coachSessionsList">
+                    <!-- Populated by JS -->
+                </div>
+                <div class="coach-data-actions">
+                    <button class="btn-secondary" id="btnExportSessions">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7,10 12,15 17,10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Exporter (JSON)
+                    </button>
+                    <button class="btn-secondary" id="btnImportSessions">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17,8 12,3 7,8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        Importer
+                    </button>
+                    <input type="file" id="importSessionsFile" accept=".json" style="display:none">
+                </div>
+            </div>
+        </section>
+
         <!-- Settings Section -->
         <section class="section" id="settings">
             <div class="section-header">
@@ -2306,6 +2533,55 @@
                 </div>
             </div>
 
+            <!-- Coach AI Settings -->
+            <div class="settings-card">
+                <div class="settings-card-header">
+                    <h3>Coach IA</h3>
+                    <button class="btn-expand" data-target="coachSettings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6,9 12,15 18,9"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="settings-card-body collapsed" id="coachSettings">
+                    <div class="exercise-settings">
+                        <div class="settings-row">
+                            <label>Fournisseur IA</label>
+                            <select id="coachProvider" class="form-select">
+                                <option value="claude">Claude (Anthropic)</option>
+                                <option value="openai">OpenAI (GPT)</option>
+                            </select>
+                        </div>
+                        <div class="settings-row">
+                            <label>Cle API</label>
+                            <input type="password" id="coachApiKey"
+                                placeholder="sk-..."
+                                style="font-size: 0.85rem;">
+                        </div>
+                        <div class="settings-row">
+                            <label>Modele</label>
+                            <select id="coachModel" class="form-select">
+                                <option value="claude-sonnet-4-20250514">Claude Sonnet</option>
+                                <option value="claude-haiku-4-20250414">Claude Haiku (rapide)</option>
+                            </select>
+                        </div>
+                        <div class="settings-row">
+                            <label>Suggestion auto apres exercice</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="coachAutoSuggest">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="settings-row" style="flex-direction: column; align-items: stretch;">
+                            <label>Objectifs personnels</label>
+                            <textarea id="coachGoals" rows="3"
+                                placeholder="Ex: Atteindre 3 min d'apnee statique, reduire mon stress quotidien..."
+                                style="margin-top: var(--space-sm); width: 100%;"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Save/Reset Buttons -->
             <div class="settings-actions">
                 <button class="btn-secondary" id="btnResetSettings">
@@ -2390,6 +2666,81 @@
                             <rect x="6" y="6" width="12" height="12"/>
                         </svg>
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div class="modal" id="feedbackModal">
+        <div class="modal-content modal-feedback">
+            <button class="modal-close" id="feedbackModalClose">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+
+            <div class="feedback-display">
+                <h2>Comment vous sentez-vous ?</h2>
+                <p class="feedback-exercise-name" id="feedbackExerciseName"></p>
+
+                <!-- Feeling Rating -->
+                <div class="feedback-section">
+                    <label>Ressenti global</label>
+                    <div class="feedback-rating" id="feedbackFeeling">
+                        <button class="rating-btn" data-value="1">1</button>
+                        <button class="rating-btn" data-value="2">2</button>
+                        <button class="rating-btn" data-value="3">3</button>
+                        <button class="rating-btn" data-value="4">4</button>
+                        <button class="rating-btn" data-value="5">5</button>
+                    </div>
+                    <div class="rating-labels">
+                        <span>Difficile</span><span>Excellent</span>
+                    </div>
+                </div>
+
+                <!-- Stress Before -->
+                <div class="feedback-section">
+                    <label>Stress avant l'exercice</label>
+                    <div class="feedback-rating" id="feedbackStressBefore">
+                        <button class="rating-btn" data-value="1">1</button>
+                        <button class="rating-btn" data-value="2">2</button>
+                        <button class="rating-btn" data-value="3">3</button>
+                        <button class="rating-btn" data-value="4">4</button>
+                        <button class="rating-btn" data-value="5">5</button>
+                    </div>
+                    <div class="rating-labels">
+                        <span>Calme</span><span>Tres stresse</span>
+                    </div>
+                </div>
+
+                <!-- Stress After -->
+                <div class="feedback-section">
+                    <label>Stress apres l'exercice</label>
+                    <div class="feedback-rating" id="feedbackStressAfter">
+                        <button class="rating-btn" data-value="1">1</button>
+                        <button class="rating-btn" data-value="2">2</button>
+                        <button class="rating-btn" data-value="3">3</button>
+                        <button class="rating-btn" data-value="4">4</button>
+                        <button class="rating-btn" data-value="5">5</button>
+                    </div>
+                    <div class="rating-labels">
+                        <span>Calme</span><span>Tres stresse</span>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="feedback-section">
+                    <label>Notes (optionnel)</label>
+                    <textarea id="feedbackNotes" rows="2"
+                        placeholder="Sensations, observations..."></textarea>
+                </div>
+
+                <!-- Actions -->
+                <div class="feedback-actions">
+                    <button class="btn-secondary" id="btnSkipFeedback">Passer</button>
+                    <button class="btn-primary" id="btnSaveFeedback">Enregistrer</button>
                 </div>
             </div>
         </div>
@@ -2618,6 +2969,7 @@
     <script src="voice-guide.js"></script>
     <script src="breath-sounds.js"></script>
     <script src="app.js"></script>
+    <script src="coach.js"></script>
     <script src="multi-timer.js"></script>
 </body>
 </html>

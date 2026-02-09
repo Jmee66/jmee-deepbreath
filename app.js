@@ -15,6 +15,9 @@ class JmeeDeepBreathApp {
         this.displayTimer = null;
         this.elapsedTime = 0;
 
+        // Wake Lock to prevent screen from sleeping during exercises
+        this.wakeLock = null;
+
         // Settings
         this.settings = this.loadSettings();
 
@@ -178,6 +181,80 @@ class JmeeDeepBreathApp {
         this.setupOfflineMode();
         this.setupSpotifyControls();
         this.setupGuide();
+        this.setupWakeLock();
+    }
+
+    // ==========================================
+    // Wake Lock & Visibility (prevent sleep)
+    // ==========================================
+
+    setupWakeLock() {
+        // Re-acquire wake lock when page becomes visible again
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && this.isRunning) {
+                this.onResumeFromBackground();
+            }
+        });
+    }
+
+    async requestWakeLock() {
+        if (!('wakeLock' in navigator)) return;
+        try {
+            this.wakeLock = await navigator.wakeLock.request('screen');
+            this.wakeLock.addEventListener('release', () => {
+                this.wakeLock = null;
+            });
+            console.log('Wake Lock acquired');
+        } catch (e) {
+            console.log('Wake Lock request failed:', e.message);
+        }
+    }
+
+    releaseWakeLock() {
+        if (this.wakeLock) {
+            this.wakeLock.release();
+            this.wakeLock = null;
+            console.log('Wake Lock released');
+        }
+    }
+
+    /**
+     * Called when the page returns to foreground during an exercise.
+     * Resumes AudioContext and speech synthesis that the browser suspended.
+     */
+    onResumeFromBackground() {
+        console.log('Resuming from background, isRunning:', this.isRunning);
+
+        // Re-acquire wake lock (browser releases it when page goes hidden)
+        this.requestWakeLock();
+
+        // Resume AudioContext for breath sounds
+        if (window.breathSounds && window.breathSounds.audioContext) {
+            if (window.breathSounds.audioContext.state === 'suspended') {
+                window.breathSounds.audioContext.resume().then(() => {
+                    console.log('BreathSounds AudioContext resumed after wake');
+                });
+            }
+        }
+
+        // Resume AudioContext for ocean sound
+        if (this.oceanSound && this.oceanSound.audioContext) {
+            if (this.oceanSound.audioContext.state === 'suspended') {
+                this.oceanSound.audioContext.resume().then(() => {
+                    console.log('OceanSound AudioContext resumed after wake');
+                });
+            }
+        }
+
+        // Resume speech synthesis
+        if (window.voiceGuide && window.voiceGuide.synth) {
+            // speechSynthesis can get stuck after background; cancel and let
+            // the next scheduled speak() call re-trigger it naturally
+            if (window.voiceGuide.speaking) {
+                window.voiceGuide.synth.cancel();
+                window.voiceGuide.speaking = false;
+            }
+        }
     }
 
     // ==========================================
@@ -1126,6 +1203,9 @@ class JmeeDeepBreathApp {
         this.currentPhaseIndex = 0;
         this.currentCycle = 1;
         this.elapsedTime = 0;
+
+        // Prevent screen from sleeping during exercise
+        this.requestWakeLock();
 
         // Initialize breath sounds - ensure AudioContext is running
         if (window.breathSounds) {
@@ -2395,6 +2475,9 @@ class JmeeDeepBreathApp {
         clearInterval(this.phaseTimer);
         this.phaseTimer = null;
 
+        // Allow screen to sleep again
+        this.releaseWakeLock();
+
         // Stop sounds
         if (window.voiceGuide) window.voiceGuide.stop();
         if (window.breathSounds) {
@@ -2414,12 +2497,20 @@ class JmeeDeepBreathApp {
         const circle = document.getElementById('breathCircle');
         circle.classList.remove('inhale', 'exhale', 'hold', 'active');
 
-        // Auto-close after delay
-        setTimeout(() => {
-            if (!this.isRunning) {
-                this.closeExercise();
-            }
-        }, 5000);
+        // Show feedback modal or auto-close
+        if (window.coach) {
+            setTimeout(() => {
+                if (!this.isRunning) {
+                    window.coach.showFeedbackModal(this.currentExercise, this.elapsedTime);
+                }
+            }, 2000);
+        } else {
+            setTimeout(() => {
+                if (!this.isRunning) {
+                    this.closeExercise();
+                }
+            }, 5000);
+        }
     }
 
     closeExercise() {
@@ -2429,6 +2520,9 @@ class JmeeDeepBreathApp {
         this.phaseTimer = null;
         clearInterval(this.displayTimer);
         this.displayTimer = null;
+
+        // Allow screen to sleep again
+        this.releaseWakeLock();
 
         // Stop all sounds
         if (window.voiceGuide) window.voiceGuide.stop();
