@@ -141,37 +141,66 @@ class MultiTimer {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
 
-    playBeep(frequency = 800, duration = 150, type = 'sine') {
+    // Zen-style soft chime — singing bowl strike with harmonics and long decay
+    playBeep(frequency = 220, duration = 600) {
         if (!this.audioContext) this.initAudio();
 
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
+        const now = this.audioContext.currentTime;
+        const dur = duration / 1000;
 
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
+        // Fundamental with filter for warmth
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        const filter = this.audioContext.createBiquadFilter();
 
-        oscillator.frequency.value = frequency;
-        oscillator.type = type;
+        osc.type = 'sine';
+        osc.frequency.value = frequency;
+        filter.type = 'lowpass';
+        filter.frequency.value = frequency * 3;
+        filter.Q.value = 0.3;
 
-        gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration / 1000);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.audioContext.destination);
 
-        oscillator.start(this.audioContext.currentTime);
-        oscillator.stop(this.audioContext.currentTime + duration / 1000);
+        // Bowl-like envelope: soft attack, natural decay
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.18, now + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.08, now + dur * 0.4);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+        osc.start(now);
+        osc.stop(now + dur + 0.1);
+
+        // Soft octave harmonic
+        const osc2 = this.audioContext.createOscillator();
+        const gain2 = this.audioContext.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.value = frequency * 2;
+        osc2.connect(gain2);
+        gain2.connect(this.audioContext.destination);
+
+        gain2.gain.setValueAtTime(0.0001, now);
+        gain2.gain.exponentialRampToValueAtTime(0.04, now + 0.02);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now + dur * 0.6);
+
+        osc2.start(now);
+        osc2.stop(now + dur + 0.1);
     }
 
     playPhaseStartBeep() {
-        this.playBeep(600, 200);
+        this.playBeep(174, 800); // F3 — soft singing bowl tap
     }
 
     playPhaseEndBeep() {
-        this.playBeep(400, 150);
+        this.playBeep(131, 700); // C3 — deeper bowl tone
     }
 
     playCompleteBeep() {
-        this.playBeep(800, 100);
-        setTimeout(() => this.playBeep(1000, 100), 150);
-        setTimeout(() => this.playBeep(1200, 200), 300);
+        // Three gentle bowl strikes ascending — zen completion
+        this.playBeep(131, 1200);  // C3
+        setTimeout(() => this.playBeep(196, 1200), 500);  // G3
+        setTimeout(() => this.playBeep(262, 1500), 1000); // C4
     }
 
     // ==========================================
@@ -271,7 +300,7 @@ class MultiTimer {
             if (this.quickTimerRemaining <= 3 && this.quickTimerRemaining > 0
                 && this.quickTimerRemaining !== this.lastQuickWarnSecond) {
                 this.lastQuickWarnSecond = this.quickTimerRemaining;
-                this.playBeep(500, 100);
+                this.playBeep(196, 400);
             }
 
             if (remainingMs <= 0) {
@@ -860,7 +889,7 @@ class MultiTimer {
             if (remaining <= 3 && remaining > 0
                 && remaining !== this.lastPhaseWarnSecond) {
                 this.lastPhaseWarnSecond = remaining;
-                this.playBeep(500, 100);
+                this.playBeep(196, 400);
             }
 
             if (remainingMs <= 0) {
