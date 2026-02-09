@@ -623,7 +623,7 @@ class CoachAI {
                 ? `📎 ${fileLabel}\n\n${userMessage}`
                 : `📎 ${fileLabel}`;
 
-            const fileContent = this.attachedFileText.slice(0, 8000); // Limiter la taille
+            const fileContent = this.attachedFileText.slice(0, 50000); // ~14 pages max
             aiMessage = userMessage
                 ? `Voici le contenu du fichier "${fileLabel}" :\n\n---\n${fileContent}\n---\n\nMa demande : ${userMessage}`
                 : `Voici le contenu du fichier "${fileLabel}" que je veux que tu analyses :\n\n---\n${fileContent}\n---\n\nAnalyse ce document et donne-moi tes recommandations.`;
@@ -768,7 +768,7 @@ class CoachAI {
             },
             body: JSON.stringify({
                 model: settings.model || 'claude-sonnet-4-20250514',
-                max_tokens: 1024,
+                max_tokens: 4096,
                 system: systemPrompt,
                 messages: messages.map(m => ({
                     role: m.role,
@@ -795,7 +795,7 @@ class CoachAI {
             },
             body: JSON.stringify({
                 model: settings.model || 'gpt-4o-mini',
-                max_tokens: 1024,
+                max_tokens: 4096,
                 messages: [
                     { role: 'system', content: systemPrompt },
                     ...messages
