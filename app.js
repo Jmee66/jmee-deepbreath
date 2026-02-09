@@ -227,9 +227,8 @@ class JmeeDeepBreathApp {
             this.wakeLock.addEventListener('release', () => {
                 this.wakeLock = null;
             });
-            console.log('Wake Lock acquired');
         } catch (e) {
-            console.log('Wake Lock request failed:', e.message);
+            // Wake lock request failed silently
         }
     }
 
@@ -237,7 +236,6 @@ class JmeeDeepBreathApp {
         if (this.wakeLock) {
             this.wakeLock.release();
             this.wakeLock = null;
-            console.log('Wake Lock released');
         }
     }
 
@@ -246,26 +244,20 @@ class JmeeDeepBreathApp {
      * Resumes AudioContext and speech synthesis that the browser suspended.
      */
     onResumeFromBackground() {
-        console.log('Resuming from background, isRunning:', this.isRunning);
-
         // Re-acquire wake lock (browser releases it when page goes hidden)
         this.requestWakeLock();
 
         // Resume AudioContext for breath sounds
         if (window.breathSounds && window.breathSounds.audioContext) {
             if (window.breathSounds.audioContext.state === 'suspended') {
-                window.breathSounds.audioContext.resume().then(() => {
-                    console.log('BreathSounds AudioContext resumed after wake');
-                });
+                window.breathSounds.audioContext.resume();
             }
         }
 
         // Resume AudioContext for ocean sound
         if (this.oceanSound && this.oceanSound.audioContext) {
             if (this.oceanSound.audioContext.state === 'suspended') {
-                this.oceanSound.audioContext.resume().then(() => {
-                    console.log('OceanSound AudioContext resumed after wake');
-                });
+                this.oceanSound.audioContext.resume();
             }
         }
 
@@ -289,7 +281,6 @@ class JmeeDeepBreathApp {
 
         // Check if service workers are supported
         if (!('serviceWorker' in navigator)) {
-            console.log('Service Workers not supported');
             if (offlineToggle) offlineToggle.style.display = 'none';
             return;
         }
@@ -364,14 +355,12 @@ class JmeeDeepBreathApp {
             const registrations = await navigator.serviceWorker.getRegistrations();
             for (const registration of registrations) {
                 await registration.unregister();
-                console.log('Service Worker unregistered');
             }
 
             // Clear caches
             const cacheNames = await caches.keys();
             for (const cacheName of cacheNames) {
                 await caches.delete(cacheName);
-                console.log('Cache deleted:', cacheName);
             }
         } catch (error) {
             console.error('Service Worker unregistration failed:', error);
@@ -391,7 +380,6 @@ class JmeeDeepBreathApp {
     }
 
     handleConnectivityChange(isOnline) {
-        console.log('Connectivity changed:', isOnline ? 'online' : 'offline');
         this.updateConnectivityBadge();
 
         if (!isOnline) {
@@ -433,7 +421,8 @@ class JmeeDeepBreathApp {
 
                 // Update sections
                 sections.forEach(s => s.classList.remove('active'));
-                document.getElementById(targetSection).classList.add('active');
+                const target = document.getElementById(targetSection);
+                if (target) target.classList.add('active');
             });
         });
 
@@ -441,7 +430,8 @@ class JmeeDeepBreathApp {
         document.querySelectorAll('.feature-card').forEach(card => {
             card.addEventListener('click', () => {
                 const targetSection = card.dataset.goto;
-                document.querySelector(`[data-section="${targetSection}"]`).click();
+                const navLink = document.querySelector(`[data-section="${targetSection}"]`);
+                if (navLink) navLink.click();
             });
         });
     }
@@ -457,23 +447,23 @@ class JmeeDeepBreathApp {
         const breathVolumeRange = document.getElementById('breathVolumeRange');
 
         // Ocean sound toggle
-        soundToggle.addEventListener('click', () => {
-            console.log('Ocean toggle clicked');
-            const isPlaying = this.oceanSound.toggle();
-            console.log('Ocean isPlaying:', isPlaying);
-            soundToggle.classList.toggle('active', isPlaying);
-        });
+        if (soundToggle) {
+            soundToggle.addEventListener('click', () => {
+                const isPlaying = this.oceanSound.toggle();
+                soundToggle.classList.toggle('active', isPlaying);
+            });
+        }
 
         // Ocean volume
-        volumeRange.addEventListener('input', (e) => {
-            this.oceanSound.setVolume(e.target.value / 100);
-        });
+        if (volumeRange) {
+            volumeRange.addEventListener('input', (e) => {
+                this.oceanSound.setVolume(e.target.value / 100);
+            });
+        }
 
         // Breath sound toggle
         if (breathSoundToggle) {
             breathSoundToggle.addEventListener('click', function() {
-                console.log('B button clicked');
-
                 // Toggle state
                 if (window.breathSounds) {
                     window.breathSounds.enabled = !window.breathSounds.enabled;
@@ -492,12 +482,10 @@ class JmeeDeepBreathApp {
             // Initialize volume from slider value (slider is 0-100, we want 0-1)
             const initialVolume = breathVolumeRange.value / 100;
             window.breathSounds.setVolume(initialVolume);
-            console.log('Initial breath volume set to:', initialVolume);
 
             breathVolumeRange.addEventListener('input', (e) => {
                 const vol = e.target.value / 100;
                 window.breathSounds.setVolume(vol);
-                console.log('Breath volume changed to:', vol);
             });
         }
     }
@@ -935,6 +923,10 @@ class JmeeDeepBreathApp {
 
     getExerciseParams(exerciseId) {
         const baseExercise = EXERCISES[exerciseId];
+        if (!baseExercise) {
+            this.showToast('Exercice inconnu', 'warning');
+            return null;
+        }
         const userSettings = this.settings.exercises[exerciseId] || {};
 
         // Clone the base exercise
@@ -1069,7 +1061,7 @@ class JmeeDeepBreathApp {
             exercise.restEnd = userSettings.restEnd || 15;
 
             // Generate rest pattern
-            const restStep = (exercise.restStart - exercise.restEnd) / (exercise.cycles - 1);
+            const restStep = exercise.cycles > 1 ? (exercise.restStart - exercise.restEnd) / (exercise.cycles - 1) : 0;
             exercise.restPattern = [];
             for (let i = 0; i < exercise.cycles; i++) {
                 exercise.restPattern.push(Math.round(exercise.restStart - (restStep * i)));
@@ -1088,7 +1080,7 @@ class JmeeDeepBreathApp {
             exercise.restDuration = userSettings.restTime || 120;
 
             // Generate hold pattern
-            const holdStep = (holdEnd - holdStart) / (exercise.cycles - 1);
+            const holdStep = exercise.cycles > 1 ? (holdEnd - holdStart) / (exercise.cycles - 1) : 0;
             exercise.holdPattern = [];
             for (let i = 0; i < exercise.cycles; i++) {
                 exercise.holdPattern.push(Math.round(holdStart + (holdStep * i)));
@@ -1121,14 +1113,12 @@ class JmeeDeepBreathApp {
                         // Create AudioContext synchronously on click
                         if (!window.breathSounds.audioContext) {
                             window.breathSounds.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                            console.log('BreathSounds: AudioContext created on start click');
                         }
                         if (window.breathSounds.audioContext.state === 'suspended') {
                             window.breathSounds.audioContext.resume();
                         }
                         // Make sure sounds are enabled
                         window.breathSounds.enabled = true;
-                        console.log('BreathSounds ready: enabled=', window.breathSounds.enabled, 'volume=', window.breathSounds.volume);
                     }
                     const exerciseId = card.dataset.exercise;
                     this.startExercise(exerciseId);
@@ -1243,16 +1233,13 @@ class JmeeDeepBreathApp {
             // Create AudioContext if it doesn't exist
             if (!window.breathSounds.audioContext) {
                 window.breathSounds.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                console.log('startExercise: AudioContext created');
             }
             // Resume if suspended
             if (window.breathSounds.audioContext.state === 'suspended') {
                 window.breathSounds.audioContext.resume();
-                console.log('startExercise: AudioContext resumed');
             }
             // Force enable sounds
             window.breathSounds.enabled = true;
-            console.log('startExercise: BreathSounds ready - enabled:', window.breathSounds.enabled, 'volume:', window.breathSounds.volume, 'state:', window.breathSounds.audioContext.state);
         }
 
         // Show modal
@@ -1598,7 +1585,7 @@ class JmeeDeepBreathApp {
             `${this.guidedSegmentIndex + 1} / ${exercise.segments.length}`;
 
         // Hide breath circle animation for guided exercises
-        document.getElementById('breathCircle').classList.remove('inhale', 'exhale', 'hold');
+        document.getElementById('breathCircle').classList.remove('inhale', 'exhale', 'hold', 'holdEmpty');
         document.getElementById('breathPhase').textContent = 'Guidé';
 
         // Speak intro if voice guide is available and enabled
@@ -2336,6 +2323,7 @@ class JmeeDeepBreathApp {
 
     startApneaHold() {
         this.testStartTime = Date.now();
+        if (this.testTimer) clearInterval(this.testTimer);
         this.testTimer = null;
 
         document.getElementById('btnStartHold').style.display = 'none';
@@ -2413,8 +2401,6 @@ class JmeeDeepBreathApp {
 
     resetExercise() {
         if (!this.currentExercise) return;
-
-        console.log('Reset exercise called');
 
         // Temporarily stop running to halt any ongoing loops
         this.isRunning = false;
@@ -2532,7 +2518,7 @@ class JmeeDeepBreathApp {
         }
 
         const circle = document.getElementById('breathCircle');
-        circle.classList.remove('inhale', 'exhale', 'hold', 'active');
+        circle.classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
 
         // Show feedback modal or auto-close
         if (window.coach) {
@@ -2575,7 +2561,7 @@ class JmeeDeepBreathApp {
 
         // Reset circle
         const circle = document.getElementById('breathCircle');
-        circle.classList.remove('inhale', 'exhale', 'hold', 'active');
+        circle.classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
 
         // Hide contraction UI
         const btnContraction = document.getElementById('btnMarkContraction');

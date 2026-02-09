@@ -3,7 +3,7 @@
  * Enables offline functionality
  */
 
-const CACHE_NAME = 'jmee-deepbreath-v19';
+const CACHE_NAME = 'jmee-deepbreath-v20';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -16,6 +16,7 @@ const ASSETS_TO_CACHE = [
     '/coach.js',
     '/journal.js',
     '/multi-timer.js',
+    '/manifest.json',
     'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js',
     'https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js',
     'https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js'
@@ -23,15 +24,12 @@ const ASSETS_TO_CACHE = [
 
 // Install event - cache all assets
 self.addEventListener('install', (event) => {
-    console.log('Service Worker: Installing...');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
-                console.log('Service Worker: Caching files');
                 return cache.addAll(ASSETS_TO_CACHE);
             })
             .then(() => {
-                console.log('Service Worker: All files cached');
                 return self.skipWaiting();
             })
             .catch((error) => {
@@ -42,19 +40,16 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-    console.log('Service Worker: Activating...');
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
                     if (cacheName !== CACHE_NAME) {
-                        console.log('Service Worker: Deleting old cache', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
             );
         }).then(() => {
-            console.log('Service Worker: Activated');
             return self.clients.claim();
         })
     );
@@ -72,12 +67,19 @@ self.addEventListener('fetch', (event) => {
     // Only handle GET requests
     if (event.request.method !== 'GET') return;
 
+    // Only cache same-origin and known CDN requests
+    const url = new URL(event.request.url);
+    const isSameOrigin = url.origin === self.location.origin;
+    const isKnownCDN = url.hostname === 'cdn.sheetjs.com'
+        || url.hostname === 'cdn.jsdelivr.net'
+        || url.hostname === 'fonts.googleapis.com'
+        || url.hostname === 'fonts.gstatic.com';
+
     event.respondWith(
         caches.match(event.request)
             .then((cachedResponse) => {
                 // Return cached version if available
                 if (cachedResponse) {
-                    console.log('Service Worker: Serving from cache:', event.request.url);
                     return cachedResponse;
                 }
 
@@ -89,28 +91,28 @@ self.addEventListener('fetch', (event) => {
                             return response;
                         }
 
-                        // Clone the response
-                        const responseToCache = response.clone();
-
-                        // Add to cache for future use
-                        caches.open(CACHE_NAME)
-                            .then((cache) => {
-                                cache.put(event.request, responseToCache);
-                            });
+                        // Only cache same-origin and known CDN responses
+                        if (isSameOrigin || isKnownCDN) {
+                            const responseToCache = response.clone();
+                            caches.open(CACHE_NAME)
+                                .then((cache) => {
+                                    cache.put(event.request, responseToCache);
+                                });
+                        }
 
                         return response;
                     })
                     .catch(() => {
-                        // If fetch fails and no cache, return offline message
-                        console.log('Service Worker: Fetch failed, no cache for:', event.request.url);
+                        // Fallback offline response
+                        if (event.request.destination === 'document') {
+                            return caches.match('/index.html');
+                        }
+                        return new Response('Hors ligne', {
+                            status: 503,
+                            statusText: 'Service Unavailable',
+                            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+                        });
                     });
             })
     );
-});
-
-// Listen for messages from the main thread
-self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
-    }
 });

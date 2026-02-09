@@ -126,9 +126,11 @@ class JournalView {
 
         if (sessions.length === 0) {
             const emptyRow = document.createElement('tr');
-            emptyRow.innerHTML = `<td colspan="9" class="journal-empty">
-                ${this.filterQuery ? 'Aucun resultat' : 'Aucune session enregistree. Cliquez "+ Ajouter" pour commencer.'}
-            </td>`;
+            const emptyTd = document.createElement('td');
+            emptyTd.colSpan = 9;
+            emptyTd.className = 'journal-empty';
+            emptyTd.textContent = this.filterQuery ? 'Aucun resultat' : 'Aucune session enregistree. Cliquez "+ Ajouter" pour commencer.';
+            emptyRow.appendChild(emptyTd);
             this.tbody.appendChild(emptyRow);
             return;
         }
@@ -205,7 +207,10 @@ class JournalView {
         const td = document.createElement('td');
         td.className = 'journal-cell';
         td.dataset.field = field;
-        td.innerHTML = `<span class="journal-cell-text">${displayValue}</span>`;
+        const span = document.createElement('span');
+        span.className = 'journal-cell-text';
+        span.textContent = displayValue;
+        td.appendChild(span);
         td.addEventListener('click', () => this.startEdit(td, session.id, field));
         return td;
     }
@@ -373,6 +378,7 @@ class JournalView {
         if (this.editingCell) {
             this.editingCell.classList.remove('editing');
             this.editingCell = null;
+            this.render();
         }
     }
 

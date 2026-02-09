@@ -57,7 +57,9 @@ class CoachAI {
     }
 
     saveCoachSettings() {
-        localStorage.setItem('deepbreath_coach_settings', JSON.stringify(this.coachSettings));
+        try {
+            localStorage.setItem('deepbreath_coach_settings', JSON.stringify(this.coachSettings));
+        } catch (e) { console.warn('localStorage quota exceeded (coach settings)'); }
     }
 
     setupCoachSettings() {
@@ -174,7 +176,9 @@ class CoachAI {
     }
 
     saveProfile() {
-        localStorage.setItem('deepbreath_profile', JSON.stringify(this.profile));
+        try {
+            localStorage.setItem('deepbreath_profile', JSON.stringify(this.profile));
+        } catch (e) { console.warn('localStorage quota exceeded (profile)'); }
     }
 
     setupProfile() {
@@ -267,7 +271,9 @@ class CoachAI {
     }
 
     saveSessions() {
-        localStorage.setItem('deepbreath_sessions', JSON.stringify(this.sessions));
+        try {
+            localStorage.setItem('deepbreath_sessions', JSON.stringify(this.sessions));
+        } catch (e) { console.warn('localStorage quota exceeded (sessions)'); }
     }
 
     loadChatHistory() {
@@ -283,9 +289,11 @@ class CoachAI {
     }
 
     saveChatHistory() {
-        // Garder les 100 derniers messages max
-        const toSave = this.chatHistory.slice(-100);
-        localStorage.setItem('deepbreath_chat_history', JSON.stringify(toSave));
+        try {
+            // Garder les 100 derniers messages max
+            const toSave = this.chatHistory.slice(-100);
+            localStorage.setItem('deepbreath_chat_history', JSON.stringify(toSave));
+        } catch (e) { console.warn('localStorage quota exceeded (chat history)'); }
     }
 
     clearChatHistory() {
@@ -661,11 +669,15 @@ class CoachAI {
     }
 
     async sendMessage() {
+        if (this.isLoading) return;
+
         const input = document.getElementById('coachInput');
         const hasText = input && input.value.trim();
         const hasFile = this.attachedFileText;
 
-        if ((!hasText && !hasFile) || this.isLoading) return;
+        if (!hasText && !hasFile) return;
+
+        this.isLoading = true;
 
         let userMessage = (input?.value || '').trim();
         let displayMessage = userMessage;
@@ -696,7 +708,6 @@ class CoachAI {
 
         // Show loading indicator
         this.showTypingIndicator();
-        this.isLoading = true;
 
         // Call AI
         const response = await this.callAI(aiMessage);
@@ -726,7 +737,7 @@ class CoachAI {
         html = html.replace(/\[EXERCICE:([a-z0-9-]+)\]/g, (match, exerciseId) => {
             const exercise = window.EXERCISES?.[exerciseId];
             if (exercise) {
-                return `<button class="coach-exercise-link" data-exercise="${exerciseId}">${exercise.name}</button>`;
+                return `<button class="coach-exercise-link" data-exercise="${exerciseId}">${this.escapeHtml(exercise.name)}</button>`;
             }
             return match;
         });
@@ -815,7 +826,10 @@ class CoachAI {
     }
 
     async callClaude(systemPrompt, messages, settings) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30000);
         const response = await fetch('https://api.anthropic.com/v1/messages', {
+            signal: controller.signal,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -834,17 +848,24 @@ class CoachAI {
             })
         });
 
+        clearTimeout(timeout);
+
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
             throw new Error(err.error?.message || `Erreur ${response.status}`);
         }
 
         const data = await response.json();
-        return { text: data.content[0].text };
+        const text = data.content?.[0]?.text;
+        if (!text) throw new Error('Réponse vide de l\'API');
+        return { text };
     }
 
     async callOpenAI(systemPrompt, messages, settings) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30000);
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            signal: controller.signal,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -860,13 +881,17 @@ class CoachAI {
             })
         });
 
+        clearTimeout(timeout);
+
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
             throw new Error(err.error?.message || `Erreur ${response.status}`);
         }
 
         const data = await response.json();
-        return { text: data.choices[0].message.content };
+        const text = data.choices?.[0]?.message?.content;
+        if (!text) throw new Error('Réponse vide de l\'API');
+        return { text };
     }
 
     // ==========================================

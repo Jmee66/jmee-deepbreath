@@ -366,7 +366,6 @@ class MultiTimer {
         if (!grid) return;
 
         // Clear existing cards except the add card
-        const addCard = document.getElementById('addSequenceCard');
         grid.innerHTML = '';
 
         // Render sequence cards
@@ -375,27 +374,22 @@ class MultiTimer {
             grid.appendChild(card);
         }
 
-        // Re-add the add card
-        if (addCard) {
-            grid.appendChild(addCard);
-        } else {
-            // Create add card if it doesn't exist
-            const newAddCard = document.createElement('div');
-            newAddCard.className = 'sequence-card sequence-card-add';
-            newAddCard.id = 'addSequenceCard';
-            newAddCard.innerHTML = `
-                <div class="sequence-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"/>
-                        <line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                </div>
-                <h4>Créer une séquence</h4>
-                <p>Personnalisez vos intervalles</p>
-            `;
-            newAddCard.addEventListener('click', () => this.openSequenceEditor(null));
-            grid.appendChild(newAddCard);
-        }
+        // Always recreate the add card (innerHTML destroys previous references)
+        const addCard = document.createElement('div');
+        addCard.className = 'sequence-card sequence-card-add';
+        addCard.id = 'addSequenceCard';
+        addCard.innerHTML = `
+            <div class="sequence-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+            </div>
+            <h4>Créer une séquence</h4>
+            <p>Personnalisez vos intervalles</p>
+        `;
+        addCard.addEventListener('click', () => this.openSequenceEditor(null));
+        grid.appendChild(addCard);
     }
 
     createSequenceCard(sequence) {
@@ -410,8 +404,8 @@ class MultiTimer {
             <div class="sequence-icon">
                 ${icon}
             </div>
-            <h4>${sequence.name}</h4>
-            <p>${sequence.description}</p>
+            <h4>${this.escapeHtml(sequence.name)}</h4>
+            <p>${this.escapeHtml(sequence.description)}</p>
             <div class="sequence-meta">
                 <span>${stats.phases} phases</span>
                 <span>•</span>
@@ -620,7 +614,7 @@ class MultiTimer {
         item.dataset.index = index;
 
         item.innerHTML = `
-            <input type="text" class="phase-label" value="${phaseData?.label || `Phase ${index + 1}`}" placeholder="Nom">
+            <input type="text" class="phase-label" value="${this.escapeHtml(phaseData?.label || `Phase ${index + 1}`)}" placeholder="Nom">
             <div class="input-with-unit">
                 <input type="number" class="phase-duration" min="1" max="600" value="${phaseData?.duration || 30}">
                 <span>sec</span>
@@ -666,9 +660,9 @@ class MultiTimer {
                 type: 'interval',
                 description: `${document.getElementById('intervalWork').value}s / ${document.getElementById('intervalRest').value}s × ${document.getElementById('intervalReps').value}`,
                 settings: {
-                    work: parseInt(document.getElementById('intervalWork').value),
-                    rest: parseInt(document.getElementById('intervalRest').value),
-                    reps: parseInt(document.getElementById('intervalReps').value),
+                    work: parseInt(document.getElementById('intervalWork').value, 10) || 30,
+                    rest: parseInt(document.getElementById('intervalRest').value, 10) || 30,
+                    reps: parseInt(document.getElementById('intervalReps').value, 10) || 8,
                     labelWork: document.getElementById('labelWork').value,
                     labelRest: document.getElementById('labelRest').value
                 }
@@ -678,7 +672,7 @@ class MultiTimer {
             document.querySelectorAll('.phase-item').forEach(item => {
                 phases.push({
                     label: item.querySelector('.phase-label').value,
-                    duration: parseInt(item.querySelector('.phase-duration').value),
+                    duration: parseInt(item.querySelector('.phase-duration').value, 10) || 30,
                     color: item.querySelector('.phase-color').value
                 });
             });
@@ -701,11 +695,10 @@ class MultiTimer {
         const timeline = document.getElementById('previewTimeline');
         if (timeline) {
             timeline.innerHTML = phases.map(phase => {
-                const widthPercent = (phase.duration / stats.totalDuration) * 100;
                 const colorClass = sequence.type === 'interval'
                     ? (phase.label.includes('Repos') || phase.label.includes('Rest') ? 'rest' : 'work')
                     : phase.color;
-                return `<div class="preview-phase ${colorClass}" style="flex: ${phase.duration};" title="${phase.label}: ${phase.duration}s"></div>`;
+                return `<div class="preview-phase ${this.escapeHtml(colorClass)}" style="flex: ${phase.duration};" title="${this.escapeHtml(phase.label)}: ${phase.duration}s"></div>`;
             }).join('');
         }
 
@@ -947,6 +940,12 @@ class MultiTimer {
     // ==========================================
     // Utilities
     // ==========================================
+
+    escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
 
     formatTime(seconds) {
         const mins = Math.floor(seconds / 60);
