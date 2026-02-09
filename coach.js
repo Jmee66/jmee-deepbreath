@@ -9,7 +9,7 @@ class CoachAI {
         this.goals = localStorage.getItem('deepbreath_goals') || '';
         this.profile = this.loadProfile();
         this.coachSettings = this.loadCoachSettings();
-        this.chatHistory = [];
+        this.chatHistory = this.loadChatHistory();
         this.isLoading = false;
         this.pendingSession = null;
 
@@ -268,6 +268,29 @@ class CoachAI {
 
     saveSessions() {
         localStorage.setItem('deepbreath_sessions', JSON.stringify(this.sessions));
+    }
+
+    loadChatHistory() {
+        const saved = localStorage.getItem('deepbreath_chat_history');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                return [];
+            }
+        }
+        return [];
+    }
+
+    saveChatHistory() {
+        // Garder les 100 derniers messages max
+        const toSave = this.chatHistory.slice(-100);
+        localStorage.setItem('deepbreath_chat_history', JSON.stringify(toSave));
+    }
+
+    clearChatHistory() {
+        this.chatHistory = [];
+        localStorage.removeItem('deepbreath_chat_history');
     }
 
     generateId() {
@@ -556,6 +579,16 @@ class CoachAI {
         removeBtn?.addEventListener('click', () => {
             this.clearAttachment();
         });
+
+        // New conversation button
+        const newChatBtn = document.getElementById('btnNewChat');
+        newChatBtn?.addEventListener('click', () => {
+            this.clearChatHistory();
+            const messagesDiv = document.getElementById('coachMessages');
+            if (messagesDiv) messagesDiv.innerHTML = '';
+            this.showWelcomeMessage();
+            if (window.app) window.app.showToast('Nouvelle conversation');
+        });
     }
 
     clearAttachment() {
@@ -589,6 +622,12 @@ class CoachAI {
         const messagesDiv = document.getElementById('coachMessages');
         if (!messagesDiv) return;
 
+        // Si historique de chat existant, le restaurer
+        if (this.chatHistory.length > 0) {
+            this.restoreChatMessages();
+            return;
+        }
+
         const stats = this.computeStats();
         let welcome;
 
@@ -603,6 +642,20 @@ class CoachAI {
         }
 
         this.renderMessage(welcome, 'assistant');
+    }
+
+    restoreChatMessages() {
+        const messagesDiv = document.getElementById('coachMessages');
+        if (!messagesDiv) return;
+
+        // Afficher les 30 derniers messages
+        const recent = this.chatHistory.slice(-30);
+        recent.forEach(msg => {
+            this.renderMessage(msg.content, msg.role);
+        });
+
+        // Scroll en bas
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
     async sendMessage() {
@@ -737,8 +790,8 @@ class CoachAI {
         // Add to chat history
         this.chatHistory.push({ role: 'user', content: userMessage });
 
-        // Keep last 20 messages
-        const messages = this.chatHistory.slice(-20);
+        // Keep last 50 messages for context
+        const messages = this.chatHistory.slice(-50);
 
         try {
             let result;
@@ -749,10 +802,12 @@ class CoachAI {
             }
 
             this.chatHistory.push({ role: 'assistant', content: result.text });
+            this.saveChatHistory();
             return result;
         } catch (e) {
             // Remove the failed user message from history
             this.chatHistory.pop();
+            this.saveChatHistory();
             return { error: `Erreur de connexion : ${e.message}` };
         }
     }
@@ -996,11 +1051,12 @@ ${this.goals || 'Non definis — demande-lui ses objectifs.'}
 
     exportJSON() {
         const data = {
-            version: 2,
+            version: 3,
             exportDate: new Date().toISOString(),
             sessions: this.sessions,
             goals: this.goals,
-            profile: this.profile
+            profile: this.profile,
+            chatHistory: this.chatHistory
         };
 
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1297,6 +1353,12 @@ ${this.goals || 'Non definis — demande-lui ses objectifs.'}
                     if (data.profile && !this.profile.apneaLevel && !this.profile.staticMax) {
                         this.profile = { ...this.getDefaultProfile(), ...data.profile };
                         this.saveProfile();
+                    }
+
+                    // Import chat history if present and current is empty
+                    if (data.chatHistory && Array.isArray(data.chatHistory) && this.chatHistory.length === 0) {
+                        this.chatHistory = data.chatHistory;
+                        this.saveChatHistory();
                     }
 
                     this.updateStatsDisplay();

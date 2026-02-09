@@ -3793,6 +3793,17 @@ body.manual-mode .settings-manual-panel {
     border-color: rgba(74, 158, 255, 0.3);
 }
 
+.coach-new-chat-btn {
+    border-color: rgba(200, 100, 100, 0.3);
+    color: var(--text-muted);
+}
+
+.coach-new-chat-btn:hover {
+    background: rgba(200, 100, 100, 0.1);
+    color: #c86464;
+    border-color: rgba(200, 100, 100, 0.5);
+}
+
 /* Chat Input — large rounded field like Claude */
 .coach-chat-input {
     display: flex;
