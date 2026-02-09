@@ -1867,32 +1867,33 @@
                     <!-- Welcome message inserted by JS -->
                 </div>
 
-                <!-- Quick Actions -->
-                <div class="coach-quick-actions" id="coachQuickActions">
-                    <button class="coach-quick-btn" data-prompt="Seance apnee au sec pour aujourd'hui">
-                        Apnee sec
-                    </button>
-                    <button class="coach-quick-btn" data-prompt="Programme-moi une semaine d'entrainement">
-                        Programme
-                    </button>
-                    <button class="coach-quick-btn" data-prompt="Bilan de ma progression et axes d'amelioration">
-                        Bilan
-                    </button>
-                    <button class="coach-quick-btn" data-prompt="Je suis stresse, j'ai besoin de redescendre">
-                        Stress
-                    </button>
-                </div>
-
-                <!-- Chat Input -->
-                <div class="coach-chat-input">
-                    <textarea id="coachInput" rows="1"
-                        placeholder="Posez une question a votre coach..."
-                        maxlength="500"></textarea>
-                    <button class="coach-send-btn" id="coachSendBtn">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                        </svg>
-                    </button>
+                <!-- Input Zone (quick actions + textarea) -->
+                <div class="coach-input-zone">
+                    <div class="coach-quick-actions" id="coachQuickActions">
+                        <button class="coach-quick-btn" data-prompt="Seance apnee au sec pour aujourd'hui">
+                            Apnee sec
+                        </button>
+                        <button class="coach-quick-btn" data-prompt="Programme-moi une semaine d'entrainement">
+                            Programme
+                        </button>
+                        <button class="coach-quick-btn" data-prompt="Bilan de ma progression et axes d'amelioration">
+                            Bilan
+                        </button>
+                        <button class="coach-quick-btn" data-prompt="Je suis stresse, j'ai besoin de redescendre">
+                            Stress
+                        </button>
+                    </div>
+                    <div class="coach-chat-input">
+                        <textarea id="coachInput" rows="2"
+                            placeholder="Demande une seance, un programme, un bilan..."
+                            maxlength="1000"></textarea>
+                        <button class="coach-send-btn" id="coachSendBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 
