@@ -423,6 +423,12 @@ class JmeeDeepBreathApp {
                 sections.forEach(s => s.classList.remove('active'));
                 const target = document.getElementById(targetSection);
                 if (target) target.classList.add('active');
+
+                // Auto-scroll coach chat to bottom when opening
+                if (targetSection === 'coach') {
+                    const coachMessages = document.getElementById('coachMessages');
+                    if (coachMessages) coachMessages.scrollTop = coachMessages.scrollHeight;
+                }
             });
         });
 
