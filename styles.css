@@ -943,6 +943,9 @@ body::before {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
+}
+
+#exerciseModal.active .btn-contraction {
     animation: pulse-contraction 2s ease-in-out infinite;
 }
 
@@ -1239,14 +1242,6 @@ body::before {
 /* ========================================
    Animations
    ======================================== */
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
-}
 
 @keyframes breathGlow {
     0%, 100% {

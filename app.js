@@ -1512,6 +1512,9 @@ class JmeeDeepBreathApp {
         // Start counting up using Date.now() for accuracy
         const timerDisplay = document.getElementById('breathTimer');
         const progressBar = document.getElementById('progressBar');
+        const circumference = 2 * Math.PI * 90;
+        progressBar.style.strokeDasharray = circumference;
+        const estimatedMax = (this.settings?.apneaMax || 120) * 1.2; // 20% above user max
         const retentionStart = Date.now();
         let pausedTime = 0;
         let pauseStart = null;
@@ -1530,20 +1533,23 @@ class JmeeDeepBreathApp {
 
             const retentionTime = (Date.now() - retentionStart - pausedTime) / 1000;
             timerDisplay.textContent = this.formatTime(retentionTime);
-            // Keep progress bar full during retention
-            progressBar.style.strokeDashoffset = 0;
+            // Progressive fill based on estimated max retention
+            const progress = Math.min(retentionTime / estimatedMax, 1);
+            progressBar.style.strokeDashoffset = circumference * (1 - progress);
         }, 100);
 
-        // Wait for spacebar
-        const spaceHandler = (e) => {
+        // Wait for spacebar — store on this for cleanup in closeExercise()
+        this.wimHofSpaceHandler = (e) => {
             if (e.code === 'Space' && this.isRunning) {
                 e.preventDefault();
+                e.stopImmediatePropagation();
                 clearInterval(this.phaseTimer);
-                document.removeEventListener('keydown', spaceHandler);
+                document.removeEventListener('keydown', this.wimHofSpaceHandler);
+                this.wimHofSpaceHandler = null;
                 this.runWimHofRecovery();
             }
         };
-        document.addEventListener('keydown', spaceHandler);
+        document.addEventListener('keydown', this.wimHofSpaceHandler);
     }
 
     runWimHofRecovery() {
@@ -2051,7 +2057,7 @@ class JmeeDeepBreathApp {
         // Schedule body scan segments during hold
         const scanSegments = [...exercise.scanSegments];
         const totalScanDuration = scanSegments.reduce((sum, s) => sum + s.duration, 0);
-        let scanElapsed = 0;
+        let scanSegmentStartElapsed = 0;
         let scanIndex = 0;
         let inSilentMode = false;
         let rapidScanStarted = false;
@@ -2088,14 +2094,14 @@ class JmeeDeepBreathApp {
             const progress = Math.min(elapsed / holdTarget, 1);
             progressBar.style.strokeDashoffset = circumference * (1 - progress);
 
-            // Body scan scheduling
-            scanElapsed += 0.1;
+            // Body scan scheduling — use elapsed time delta instead of float accumulation
+            const scanSegmentElapsed = elapsed - scanSegmentStartElapsed;
 
             // Check if current scan segment is done, move to next
             if (scanIndex < scanSegments.length) {
                 const currentSegment = scanSegments[scanIndex];
-                if (scanElapsed >= currentSegment.duration) {
-                    scanElapsed = 0;
+                if (scanSegmentElapsed >= currentSegment.duration) {
+                    scanSegmentStartElapsed = elapsed;
                     scanIndex++;
 
                     if (scanIndex < scanSegments.length && window.voiceGuide && window.voiceGuide.enabled) {
@@ -2551,6 +2557,12 @@ class JmeeDeepBreathApp {
         this.phaseTimer = null;
         clearInterval(this.displayTimer);
         this.displayTimer = null;
+
+        // Clean up Wim Hof spacebar handler if still attached
+        if (this.wimHofSpaceHandler) {
+            document.removeEventListener('keydown', this.wimHofSpaceHandler);
+            this.wimHofSpaceHandler = null;
+        }
 
         // Allow screen to sleep again
         this.releaseWakeLock();

@@ -8,12 +8,27 @@ class MultiTimer {
         this.currentSequence = null;
         this.currentPhaseIndex = 0;
         this.isRunning = false;
-        this.isPaused = false;
         this.phaseTimer = null;
+        this.editingSequenceId = null;
+
+        // Quick Timer state (separate from sequence)
         this.quickTimer = null;
         this.quickTimerValue = 60;
         this.quickTimerRemaining = 60;
-        this.editingSequenceId = null;
+        this.quickTimerPaused = false;
+        this.quickTimerStartTime = null;
+        this.quickTimerDurationMs = 0;
+        this.quickTimerPausedAccum = 0;
+        this.quickTimerPauseStart = null;
+        this.lastQuickWarnSecond = null;
+
+        // Sequence Timer state (separate from quick timer)
+        this.sequencePaused = false;
+        this.phaseStartTime = null;
+        this.phaseDurationMs = 0;
+        this.phasePausedAccum = 0;
+        this.phasePauseStart = null;
+        this.lastPhaseWarnSecond = null;
 
         // Audio context for beeps
         this.audioContext = null;
@@ -211,7 +226,7 @@ class MultiTimer {
 
         if (status) {
             if (this.quickTimer) {
-                status.textContent = this.isPaused ? 'En pause' : 'En cours...';
+                status.textContent = this.quickTimerPaused ? 'En pause' : 'En cours...';
             } else {
                 status.textContent = 'Prêt';
             }
@@ -230,30 +245,47 @@ class MultiTimer {
         if (startBtn) startBtn.style.display = 'none';
         if (pauseBtn) pauseBtn.style.display = 'flex';
 
-        this.isPaused = false;
-        this.quickTimer = setInterval(() => {
-            if (this.isPaused) return;
+        this.quickTimerPaused = false;
+        this.quickTimerDurationMs = this.quickTimerValue * 1000;
+        this.quickTimerStartTime = Date.now();
+        this.quickTimerPausedAccum = 0;
+        this.quickTimerPauseStart = null;
+        this.lastQuickWarnSecond = null;
 
-            this.quickTimerRemaining--;
+        this.quickTimer = setInterval(() => {
+            if (this.quickTimerPaused) {
+                if (!this.quickTimerPauseStart) this.quickTimerPauseStart = Date.now();
+                return;
+            }
+            if (this.quickTimerPauseStart) {
+                this.quickTimerPausedAccum += Date.now() - this.quickTimerPauseStart;
+                this.quickTimerPauseStart = null;
+            }
+
+            const elapsed = Date.now() - this.quickTimerStartTime - this.quickTimerPausedAccum;
+            const remainingMs = this.quickTimerDurationMs - elapsed;
+            this.quickTimerRemaining = Math.max(0, Math.ceil(remainingMs / 1000));
             this.updateQuickTimerDisplay();
 
-            // Warning beeps at 3, 2, 1
-            if (this.quickTimerRemaining <= 3 && this.quickTimerRemaining > 0) {
+            // Warning beeps at 3, 2, 1 (anti-duplicate)
+            if (this.quickTimerRemaining <= 3 && this.quickTimerRemaining > 0
+                && this.quickTimerRemaining !== this.lastQuickWarnSecond) {
+                this.lastQuickWarnSecond = this.quickTimerRemaining;
                 this.playBeep(500, 100);
             }
 
-            if (this.quickTimerRemaining <= 0) {
+            if (remainingMs <= 0) {
                 this.completeQuickTimer();
             }
-        }, 1000);
+        }, 250);
     }
 
     pauseQuickTimer() {
-        this.isPaused = !this.isPaused;
+        this.quickTimerPaused = !this.quickTimerPaused;
 
         const pauseBtn = document.getElementById('btnQuickTimerPause');
         if (pauseBtn) {
-            if (this.isPaused) {
+            if (this.quickTimerPaused) {
                 pauseBtn.innerHTML = `
                     <svg viewBox="0 0 24 24" fill="currentColor">
                         <polygon points="5,3 19,12 5,21"/>
@@ -280,7 +312,7 @@ class MultiTimer {
             this.quickTimer = null;
         }
 
-        this.isPaused = false;
+        this.quickTimerPaused = false;
         this.quickTimerRemaining = this.quickTimerValue;
 
         const startBtn = document.getElementById('btnQuickTimerStart');
@@ -746,7 +778,7 @@ class MultiTimer {
         this.currentPhases = this.generatePhases(sequence);
         this.currentPhaseIndex = 0;
         this.isRunning = true;
-        this.isPaused = false;
+        this.sequencePaused = false;
 
         // Open runner modal
         const modal = document.getElementById('sequenceRunnerModal');
@@ -777,7 +809,6 @@ class MultiTimer {
         }
 
         const phase = this.currentPhases[this.currentPhaseIndex];
-        let remaining = phase.duration;
 
         this.playPhaseStartBeep();
 
@@ -801,40 +832,59 @@ class MultiTimer {
         const circumference = 2 * Math.PI * 90;
         progressBar.style.strokeDasharray = circumference;
 
-        const updateDisplay = () => {
+        // Date.now() delta pattern for accurate timing
+        this.phaseDurationMs = phase.duration * 1000;
+        this.phaseStartTime = Date.now();
+        this.phasePausedAccum = 0;
+        this.phasePauseStart = null;
+        this.lastPhaseWarnSecond = null;
+
+        const updateDisplay = (remaining) => {
             document.getElementById('runnerTimer').textContent = this.formatTime(remaining);
             const progress = 1 - (remaining / phase.duration);
             progressBar.style.strokeDashoffset = circumference * (1 - progress);
         };
 
-        updateDisplay();
+        updateDisplay(phase.duration);
 
         this.phaseTimer = setInterval(() => {
-            if (this.isPaused) return;
+            if (this.sequencePaused) {
+                if (!this.phasePauseStart) this.phasePauseStart = Date.now();
+                return;
+            }
+            if (this.phasePauseStart) {
+                this.phasePausedAccum += Date.now() - this.phasePauseStart;
+                this.phasePauseStart = null;
+            }
 
-            remaining--;
-            updateDisplay();
+            const elapsed = Date.now() - this.phaseStartTime - this.phasePausedAccum;
+            const remainingMs = this.phaseDurationMs - elapsed;
+            const remaining = Math.max(0, Math.ceil(remainingMs / 1000));
 
-            // Warning beeps at 3, 2, 1
-            if (remaining <= 3 && remaining > 0) {
+            updateDisplay(remaining);
+
+            // Warning beeps at 3, 2, 1 (anti-duplicate)
+            if (remaining <= 3 && remaining > 0
+                && remaining !== this.lastPhaseWarnSecond) {
+                this.lastPhaseWarnSecond = remaining;
                 this.playBeep(500, 100);
             }
 
-            if (remaining <= 0) {
+            if (remainingMs <= 0) {
                 clearInterval(this.phaseTimer);
                 this.playPhaseEndBeep();
                 this.currentPhaseIndex++;
                 setTimeout(() => this.runPhase(), 500);
             }
-        }, 1000);
+        }, 250);
     }
 
     togglePauseSequence() {
-        this.isPaused = !this.isPaused;
+        this.sequencePaused = !this.sequencePaused;
 
         const pauseBtn = document.getElementById('btnRunnerPause');
         if (pauseBtn) {
-            if (this.isPaused) {
+            if (this.sequencePaused) {
                 pauseBtn.innerHTML = `
                     <svg viewBox="0 0 24 24" fill="currentColor">
                         <polygon points="5,3 19,12 5,21"/>
