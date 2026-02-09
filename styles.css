@@ -3922,9 +3922,18 @@ body.manual-mode .settings-manual-panel {
 
 /* Data Actions */
 .coach-data-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+}
+
+.coach-data-actions .btn-secondary {
     display: flex;
-    gap: var(--space-md);
-    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    padding: var(--space-sm) var(--space-md);
+    gap: 4px;
 }
 
 /* Feature card coach accent */

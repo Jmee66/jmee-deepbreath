@@ -886,20 +886,28 @@ ${this.goals || 'Non definis — demande-lui ses objectifs.'}
 
     setupExportImport() {
         const exportBtn = document.getElementById('btnExportSessions');
+        const exportExcelBtn = document.getElementById('btnExportExcel');
+        const exportWordBtn = document.getElementById('btnExportWord');
         const importBtn = document.getElementById('btnImportSessions');
-        const importFile = document.getElementById('importSessionsFile');
+        const importFileInput = document.getElementById('importSessionsFile');
 
-        exportBtn?.addEventListener('click', () => this.exportSessions());
-        importBtn?.addEventListener('click', () => importFile?.click());
-        importFile?.addEventListener('change', (e) => {
+        exportBtn?.addEventListener('click', () => this.exportJSON());
+        exportExcelBtn?.addEventListener('click', () => this.exportExcel());
+        exportWordBtn?.addEventListener('click', () => this.exportWord());
+        importBtn?.addEventListener('click', () => importFileInput?.click());
+        importFileInput?.addEventListener('change', (e) => {
             if (e.target.files[0]) {
-                this.importSessions(e.target.files[0]);
+                this.importFile(e.target.files[0]);
                 e.target.value = '';
             }
         });
     }
 
-    exportSessions() {
+    // ==========================================
+    //  EXPORT JSON
+    // ==========================================
+
+    exportJSON() {
         const data = {
             version: 2,
             exportDate: new Date().toISOString(),
@@ -909,19 +917,279 @@ ${this.goals || 'Non definis — demande-lui ses objectifs.'}
         };
 
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `deepbreath-sessions-${new Date().toISOString().slice(0, 10)}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        if (window.app) window.app.showToast('Sessions exportees');
+        this.downloadBlob(blob, `deepbreath-sessions-${new Date().toISOString().slice(0, 10)}.json`);
+        if (window.app) window.app.showToast('Export JSON termine');
     }
 
-    importSessions(file) {
+    // ==========================================
+    //  EXPORT EXCEL
+    // ==========================================
+
+    exportExcel() {
+        if (typeof XLSX === 'undefined') {
+            if (window.app) window.app.showToast('Librairie Excel non chargee', 'warning');
+            return;
+        }
+
+        const wb = XLSX.utils.book_new();
+
+        // --- Feuille 1 : Sessions ---
+        const sessionsData = this.sessions.map(s => ({
+            'ID': s.id || '',
+            'Date': s.date ? new Date(s.date) : '',
+            'Exercice': s.exerciseName || '',
+            'ID Exercice': s.exerciseId || '',
+            'Categorie': s.category || '',
+            'Duree (s)': s.duration || 0,
+            'Duree (min)': s.duration ? Math.round(s.duration / 60 * 10) / 10 : 0,
+            'Complete': s.completed ? 'Oui' : 'Non',
+            'Stress Avant': s.stressBefore ?? '',
+            'Stress Apres': s.stressAfter ?? '',
+            'Reduction': (s.stressBefore != null && s.stressAfter != null)
+                ? s.stressBefore - s.stressAfter : '',
+            'Ressenti': s.feeling ?? '',
+            'Notes': s.notes || ''
+        }));
+
+        const ws1 = XLSX.utils.json_to_sheet(sessionsData);
+        ws1['!cols'] = [
+            {wch:14}, {wch:18}, {wch:25}, {wch:15}, {wch:15},
+            {wch:10}, {wch:12}, {wch:10}, {wch:12}, {wch:12},
+            {wch:10}, {wch:10}, {wch:30}
+        ];
+        XLSX.utils.book_append_sheet(wb, ws1, 'Sessions');
+
+        // --- Feuille 2 : Profil ---
+        const p = this.profile;
+        const profileRows = [
+            ['Profil Athlete', ''],
+            ['Age', p.age || ''],
+            ['Taille (cm)', p.height || ''],
+            ['Poids (kg)', p.weight || ''],
+            ['VO2max (ml/kg/min)', p.vo2max || ''],
+            ['FC Repos (bpm)', p.hrRest || ''],
+            ['', ''],
+            ['Apnee', ''],
+            ['Statique max eau (s)', p.staticMax || ''],
+            ['Statique dry max (s)', p.staticDry || ''],
+            ['Dynamique max (m)', p.dynMax || ''],
+            ['Profondeur max (m)', p.depthMax || ''],
+            ['1ere contraction (s)', p.firstContraction || ''],
+            ['Niveau apnee', p.apneaLevel || ''],
+            ['', ''],
+            ['Entrainement', ''],
+            ['Sports', p.sports || ''],
+            ['Frequence (x/sem)', p.trainingFreq || ''],
+            ['Etat actuel', p.currentState || ''],
+            ['Notes', p.notes || '']
+        ];
+        const ws2 = XLSX.utils.aoa_to_sheet(profileRows);
+        ws2['!cols'] = [{wch:25}, {wch:30}];
+        XLSX.utils.book_append_sheet(wb, ws2, 'Profil');
+
+        // --- Feuille 3 : Stats ---
+        const stats = this.computeStats();
+        const statsRows = [
+            ['Statistiques', ''],
+            ['Sessions totales', stats.totalSessions],
+            ['Serie actuelle (jours)', stats.currentStreak],
+            ['Stress moyen avant', stats.avgStressBefore],
+            ['Stress moyen apres', stats.avgStressAfter],
+            ['Reduction stress moyenne', stats.avgStressReduction],
+            ['Exercice favori', stats.favoriteExercise || '-'],
+            ['', ''],
+            ['Objectifs', this.goals || ''],
+            ['Date export', new Date().toLocaleDateString('fr-FR')]
+        ];
+        const ws3 = XLSX.utils.aoa_to_sheet(statsRows);
+        ws3['!cols'] = [{wch:25}, {wch:30}];
+        XLSX.utils.book_append_sheet(wb, ws3, 'Stats');
+
+        // --- Telecharger ---
+        const wbOut = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbOut], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        this.downloadBlob(blob, `deepbreath-sessions-${new Date().toISOString().slice(0, 10)}.xlsx`);
+        if (window.app) window.app.showToast('Export Excel termine');
+    }
+
+    // ==========================================
+    //  EXPORT WORD (rapport)
+    // ==========================================
+
+    exportWord() {
+        if (typeof docx === 'undefined') {
+            if (window.app) window.app.showToast('Librairie Word non chargee', 'warning');
+            return;
+        }
+
+        const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+                HeadingLevel, AlignmentType, WidthType } = docx;
+
+        const stats = this.computeStats();
+        const p = this.profile;
+        const exportDate = new Date().toLocaleDateString('fr-FR', {
+            day: 'numeric', month: 'long', year: 'numeric'
+        });
+
+        // --- Profil (champs non vides) ---
+        const profileLines = [];
+        if (p.age) profileLines.push(`Age : ${p.age} ans`);
+        if (p.height) profileLines.push(`Taille : ${p.height} cm`);
+        if (p.weight) profileLines.push(`Poids : ${p.weight} kg`);
+        if (p.vo2max) profileLines.push(`VO2max : ${p.vo2max} ml/kg/min`);
+        if (p.hrRest) profileLines.push(`FC repos : ${p.hrRest} bpm`);
+        if (p.staticMax) profileLines.push(`Statique max eau : ${p.staticMax}s`);
+        if (p.staticDry) profileLines.push(`Statique dry : ${p.staticDry}s`);
+        if (p.dynMax) profileLines.push(`Dynamique max : ${p.dynMax}m`);
+        if (p.depthMax) profileLines.push(`Profondeur max : ${p.depthMax}m`);
+        if (p.firstContraction) profileLines.push(`1ere contraction : ${p.firstContraction}s`);
+        if (p.apneaLevel) profileLines.push(`Niveau : ${p.apneaLevel}`);
+        if (p.sports) profileLines.push(`Sports : ${p.sports}`);
+        if (p.trainingFreq) profileLines.push(`Frequence : ${p.trainingFreq}x/sem`);
+        if (p.currentState) profileLines.push(`Etat actuel : ${p.currentState}`);
+
+        // --- Tableau sessions (50 dernieres) ---
+        const cols = ['Date', 'Exercice', 'Duree', 'Stress', 'Ressenti', 'Notes'];
+        const headerRow = new TableRow({
+            children: cols.map(text => new TableCell({
+                children: [new Paragraph({
+                    children: [new TextRun({ text, bold: true, color: 'FFFFFF', size: 20, font: 'Helvetica' })]
+                })],
+                shading: { fill: '1a365d', type: 'clear', color: 'auto' }
+            }))
+        });
+
+        const recentSessions = this.sessions.slice(-50);
+        const sessionRows = recentSessions.map(s => {
+            const cells = [
+                s.date ? new Date(s.date).toLocaleDateString('fr-FR') : '-',
+                s.exerciseName || '-',
+                s.duration ? `${Math.floor(s.duration / 60)}min ${s.duration % 60}s` : '-',
+                (s.stressBefore != null && s.stressAfter != null)
+                    ? `${s.stressBefore} → ${s.stressAfter}` : '-',
+                s.feeling ? `${s.feeling}/5` : '-',
+                s.notes || ''
+            ];
+            return new TableRow({
+                children: cells.map(text => new TableCell({
+                    children: [new Paragraph({
+                        children: [new TextRun({ text: String(text), size: 18, font: 'Helvetica' })]
+                    })]
+                }))
+            });
+        });
+
+        // --- Construction du document ---
+        const children = [
+            new Paragraph({
+                children: [new TextRun({ text: 'Rapport d\'Entrainement', bold: true, size: 36, font: 'Helvetica' })],
+                heading: HeadingLevel.TITLE
+            }),
+            new Paragraph({
+                children: [new TextRun({ text: `Jmee DeepBreath — ${exportDate}`, italics: true, color: '666666', size: 22 })]
+            }),
+            new Paragraph({ text: '' })
+        ];
+
+        // Profil
+        if (profileLines.length > 0) {
+            children.push(new Paragraph({
+                children: [new TextRun({ text: 'Profil Athlete', bold: true, size: 28, font: 'Helvetica' })],
+                heading: HeadingLevel.HEADING_1
+            }));
+            profileLines.forEach(line => {
+                children.push(new Paragraph({
+                    children: [new TextRun({ text: line, size: 22, font: 'Helvetica' })],
+                    bullet: { level: 0 }
+                }));
+            });
+            children.push(new Paragraph({ text: '' }));
+        }
+
+        // Stats
+        children.push(new Paragraph({
+            children: [new TextRun({ text: 'Statistiques', bold: true, size: 28, font: 'Helvetica' })],
+            heading: HeadingLevel.HEADING_1
+        }));
+        [
+            `Sessions totales : ${stats.totalSessions}`,
+            `Serie en cours : ${stats.currentStreak} jours`,
+            `Stress moyen avant : ${stats.avgStressBefore}`,
+            `Stress moyen apres : ${stats.avgStressAfter}`,
+            `Reduction stress : ${stats.avgStressReduction}`,
+            `Exercice favori : ${stats.favoriteExercise || '-'}`
+        ].forEach(line => {
+            children.push(new Paragraph({
+                children: [new TextRun({ text: line, size: 22, font: 'Helvetica' })],
+                bullet: { level: 0 }
+            }));
+        });
+        children.push(new Paragraph({ text: '' }));
+
+        // Historique sessions
+        if (sessionRows.length > 0) {
+            children.push(new Paragraph({
+                children: [new TextRun({ text: `Historique des Sessions (${recentSessions.length} dernieres)`, bold: true, size: 28, font: 'Helvetica' })],
+                heading: HeadingLevel.HEADING_1
+            }));
+            children.push(new Table({
+                rows: [headerRow, ...sessionRows],
+                width: { size: 100, type: WidthType.PERCENTAGE }
+            }));
+            children.push(new Paragraph({ text: '' }));
+        }
+
+        // Objectifs
+        if (this.goals) {
+            children.push(new Paragraph({
+                children: [new TextRun({ text: 'Objectifs', bold: true, size: 28, font: 'Helvetica' })],
+                heading: HeadingLevel.HEADING_1
+            }));
+            children.push(new Paragraph({
+                children: [new TextRun({ text: this.goals, size: 22, font: 'Helvetica' })]
+            }));
+            children.push(new Paragraph({ text: '' }));
+        }
+
+        // Footer
+        children.push(new Paragraph({
+            children: [new TextRun({
+                text: `Genere par Jmee DeepBreath le ${exportDate}`,
+                italics: true, color: '999999', size: 16, font: 'Helvetica'
+            })],
+            alignment: AlignmentType.CENTER
+        }));
+
+        const doc = new Document({
+            sections: [{ children }]
+        });
+
+        Packer.toBlob(doc).then(blob => {
+            this.downloadBlob(blob, `deepbreath-rapport-${new Date().toISOString().slice(0, 10)}.docx`);
+            if (window.app) window.app.showToast('Rapport Word exporte');
+        }).catch(() => {
+            if (window.app) window.app.showToast('Erreur export Word', 'warning');
+        });
+    }
+
+    // ==========================================
+    //  IMPORT (dispatch JSON / Excel)
+    // ==========================================
+
+    importFile(file) {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (ext === 'json') {
+            this.importJSON(file);
+        } else if (ext === 'xlsx') {
+            this.importExcel(file);
+        } else {
+            if (window.app) window.app.showToast('Format non supporte (.json ou .xlsx)', 'warning');
+        }
+    }
+
+    importJSON(file) {
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
@@ -939,7 +1207,6 @@ ${this.goals || 'Non definis — demande-lui ses objectifs.'}
                         localStorage.setItem('deepbreath_goals', this.goals);
                     }
 
-                    // Import profile if present and current is empty
                     if (data.profile && !this.profile.apneaLevel && !this.profile.staticMax) {
                         this.profile = { ...this.getDefaultProfile(), ...data.profile };
                         this.saveProfile();
@@ -952,10 +1219,111 @@ ${this.goals || 'Non definis — demande-lui ses objectifs.'}
                     throw new Error('Format invalide');
                 }
             } catch (err) {
-                if (window.app) window.app.showToast('Fichier invalide', 'warning');
+                if (window.app) window.app.showToast('Fichier JSON invalide', 'warning');
             }
         };
         reader.readAsText(file);
+    }
+
+    importExcel(file) {
+        if (typeof XLSX === 'undefined') {
+            if (window.app) window.app.showToast('Librairie Excel non chargee', 'warning');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const wb = XLSX.read(data, { type: 'array', cellDates: true });
+
+                // Lire feuille Sessions
+                const sessionsSheet = wb.Sheets['Sessions'] || wb.Sheets[wb.SheetNames[0]];
+                if (!sessionsSheet) throw new Error('Aucune feuille Sessions');
+
+                const rows = XLSX.utils.sheet_to_json(sessionsSheet);
+                const importedSessions = rows.map(row => ({
+                    id: row['ID'] || `imported-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                    date: row['Date'] instanceof Date
+                        ? row['Date'].toISOString()
+                        : (row['Date'] || new Date().toISOString()),
+                    exerciseName: row['Exercice'] || '',
+                    exerciseId: row['ID Exercice'] || '',
+                    category: row['Categorie'] || '',
+                    duration: parseFloat(row['Duree (s)']) || 0,
+                    completed: row['Complete'] === 'Oui' || row['Complete'] === true,
+                    stressBefore: row['Stress Avant'] != null && row['Stress Avant'] !== ''
+                        ? parseInt(row['Stress Avant']) : null,
+                    stressAfter: row['Stress Apres'] != null && row['Stress Apres'] !== ''
+                        ? parseInt(row['Stress Apres']) : null,
+                    feeling: row['Ressenti'] != null && row['Ressenti'] !== ''
+                        ? parseInt(row['Ressenti']) : null,
+                    notes: row['Notes'] || ''
+                })).filter(s => s.exerciseName);
+
+                // Deduplique par ID
+                const existingIds = new Set(this.sessions.map(s => s.id));
+                const newSessions = importedSessions.filter(s => !existingIds.has(s.id));
+
+                this.sessions = [...this.sessions, ...newSessions];
+                this.sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
+                this.saveSessions();
+
+                // Importer profil si present et profil actuel vide
+                const profilSheet = wb.Sheets['Profil'];
+                if (profilSheet && !this.profile.staticMax && !this.profile.apneaLevel) {
+                    this.importProfileFromSheet(profilSheet);
+                }
+
+                this.updateStatsDisplay();
+                this.renderRecentSessions();
+                if (window.app) window.app.showToast(
+                    `${newSessions.length} session${newSessions.length > 1 ? 's' : ''} importee${newSessions.length > 1 ? 's' : ''}`
+                );
+            } catch (err) {
+                console.error('Import Excel:', err);
+                if (window.app) window.app.showToast('Fichier Excel invalide', 'warning');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    importProfileFromSheet(sheet) {
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        const map = {};
+        rows.forEach(row => {
+            if (row[0] && row[1] != null && row[1] !== '') map[row[0]] = row[1];
+        });
+
+        const fieldMap = {
+            'Age': 'age', 'Taille (cm)': 'height', 'Poids (kg)': 'weight',
+            'VO2max (ml/kg/min)': 'vo2max', 'FC Repos (bpm)': 'hrRest',
+            'Statique max eau (s)': 'staticMax', 'Statique dry max (s)': 'staticDry',
+            'Dynamique max (m)': 'dynMax', 'Profondeur max (m)': 'depthMax',
+            '1ere contraction (s)': 'firstContraction', 'Niveau apnee': 'apneaLevel',
+            'Sports': 'sports', 'Frequence (x/sem)': 'trainingFreq',
+            'Etat actuel': 'currentState', 'Notes': 'notes'
+        };
+
+        for (const [label, key] of Object.entries(fieldMap)) {
+            if (map[label] != null) this.profile[key] = map[label];
+        }
+        this.saveProfile();
+    }
+
+    // ==========================================
+    //  HELPER : telechargement blob
+    // ==========================================
+
+    downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 }
 
