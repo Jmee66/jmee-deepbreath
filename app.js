@@ -3,6 +3,9 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
+// PIN universel — hash SHA-256 (PIN + salt)
+const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
+
 class JmeeDeepBreathApp {
     constructor() {
         this.oceanSound = new OceanSound();
@@ -169,6 +172,9 @@ class JmeeDeepBreathApp {
     }
 
     init() {
+        // Clean up old localStorage PIN (now hardcoded)
+        localStorage.removeItem('deepbreath_pin_hash');
+
         // Check PIN lock before anything else
         if (this.checkPINLock()) {
             // App is locked — wait for PIN verification
@@ -191,7 +197,6 @@ class JmeeDeepBreathApp {
         this.setupSpotifyControls();
         this.setupGuide();
         this.setupWakeLock();
-        this.setupPINSettings();
     }
 
     // ==========================================
@@ -2680,34 +2685,9 @@ class JmeeDeepBreathApp {
     // ==========================================
 
     checkPINLock() {
-        const pinHash = localStorage.getItem('deepbreath_pin_hash');
+        // Always show lock screen — universal PIN
         const lockScreen = document.getElementById('pinLockScreen');
-        const unlockMode = document.getElementById('pinUnlockMode');
-        const setupMode = document.getElementById('pinSetupMode');
-
-        if (!pinHash) {
-            // No PIN yet — force setup on first launch
-            if (lockScreen) lockScreen.style.display = 'flex';
-            if (unlockMode) unlockMode.style.display = 'none';
-            if (setupMode) setupMode.style.display = 'block';
-            document.body.classList.add('app-locked');
-
-            const setupBtn = document.getElementById('pinSetupBtn');
-            const setupConfirm = document.getElementById('pinSetupConfirm');
-
-            setupBtn?.addEventListener('click', () => this.setupFirstPIN());
-            setupConfirm?.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') this.setupFirstPIN();
-            });
-
-            setTimeout(() => document.getElementById('pinSetupNew')?.focus(), 300);
-            return true;
-        }
-
-        // PIN exists — show unlock mode
         if (lockScreen) lockScreen.style.display = 'flex';
-        if (unlockMode) unlockMode.style.display = 'block';
-        if (setupMode) setupMode.style.display = 'none';
         document.body.classList.add('app-locked');
 
         // Setup unlock handlers
@@ -2734,9 +2714,8 @@ class JmeeDeepBreathApp {
         if (!inputPIN) return;
 
         const inputHash = await this.hashPIN(inputPIN);
-        const storedHash = localStorage.getItem('deepbreath_pin_hash');
 
-        if (inputHash === storedHash) {
+        if (inputHash === APP_PIN_HASH) {
             // Correct — unlock
             const lockScreen = document.getElementById('pinLockScreen');
             if (lockScreen) lockScreen.style.display = 'none';
@@ -2756,64 +2735,6 @@ class JmeeDeepBreathApp {
         }
     }
 
-    async setupFirstPIN() {
-        const newInput = document.getElementById('pinSetupNew');
-        const confirmInput = document.getElementById('pinSetupConfirm');
-        const errorEl = document.getElementById('pinSetupError');
-        if (!newInput || !confirmInput) return;
-
-        const newPIN = newInput.value.trim();
-        const confirmPIN = confirmInput.value.trim();
-
-        // Validate
-        if (!newPIN || newPIN.length < 4) {
-            if (errorEl) {
-                errorEl.textContent = 'Le PIN doit faire au moins 4 chiffres';
-                errorEl.style.display = 'block';
-            }
-            newInput.classList.add('shake');
-            setTimeout(() => newInput.classList.remove('shake'), 400);
-            return;
-        }
-
-        if (!/^\d+$/.test(newPIN)) {
-            if (errorEl) {
-                errorEl.textContent = 'Le PIN doit contenir uniquement des chiffres';
-                errorEl.style.display = 'block';
-            }
-            newInput.classList.add('shake');
-            setTimeout(() => newInput.classList.remove('shake'), 400);
-            return;
-        }
-
-        if (newPIN !== confirmPIN) {
-            if (errorEl) {
-                errorEl.textContent = 'Les PIN ne correspondent pas';
-                errorEl.style.display = 'block';
-            }
-            confirmInput.classList.add('shake');
-            setTimeout(() => confirmInput.classList.remove('shake'), 400);
-            confirmInput.value = '';
-            confirmInput.focus();
-            return;
-        }
-
-        // Save PIN hash
-        const pinHash = await this.hashPIN(newPIN);
-        localStorage.setItem('deepbreath_pin_hash', pinHash);
-
-        // Unlock and continue
-        const lockScreen = document.getElementById('pinLockScreen');
-        if (lockScreen) lockScreen.style.display = 'none';
-        document.body.classList.remove('app-locked');
-        newInput.value = '';
-        confirmInput.value = '';
-        if (errorEl) errorEl.style.display = 'none';
-
-        this.showToast('PIN active ! Votre app est protegee');
-        this.initApp();
-    }
-
     async hashPIN(pin) {
         const encoder = new TextEncoder();
         const data = encoder.encode(pin + 'deepbreath_salt');
@@ -2822,130 +2743,7 @@ class JmeeDeepBreathApp {
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    setupPINSettings() {
-        const pinStatus = document.getElementById('pinStatus');
-        const currentInput = document.getElementById('pinCurrentInput');
-        const newInput = document.getElementById('pinNewInput');
-        const confirmInput = document.getElementById('pinConfirmInput');
-        const saveBtn = document.getElementById('btnSavePIN');
-        const removeBtn = document.getElementById('btnRemovePIN');
-        const errorEl = document.getElementById('pinSettingsError');
-        const currentRow = currentInput?.closest('.settings-row');
-
-        const hasPIN = !!localStorage.getItem('deepbreath_pin_hash');
-
-        // Update UI based on PIN state
-        if (pinStatus) {
-            pinStatus.textContent = hasPIN ? 'Active' : 'Desactive';
-            pinStatus.classList.toggle('active', hasPIN);
-        }
-        if (saveBtn) saveBtn.textContent = hasPIN ? 'Modifier le PIN' : 'Activer le PIN';
-        if (removeBtn) removeBtn.style.display = hasPIN ? 'block' : 'none';
-        if (currentRow) currentRow.style.display = hasPIN ? 'flex' : 'none';
-
-        saveBtn?.addEventListener('click', async () => {
-            if (errorEl) errorEl.style.display = 'none';
-
-            const currentPIN = currentInput?.value.trim() || '';
-            const newPIN = newInput?.value.trim() || '';
-            const confirmPIN = confirmInput?.value.trim() || '';
-
-            // Validate current PIN if one exists
-            if (hasPIN && currentPIN) {
-                const currentHash = await this.hashPIN(currentPIN);
-                const storedHash = localStorage.getItem('deepbreath_pin_hash');
-                if (currentHash !== storedHash) {
-                    if (errorEl) {
-                        errorEl.textContent = 'PIN actuel incorrect';
-                        errorEl.style.display = 'block';
-                    }
-                    return;
-                }
-            } else if (hasPIN && !currentPIN) {
-                if (errorEl) {
-                    errorEl.textContent = 'Entrez votre PIN actuel';
-                    errorEl.style.display = 'block';
-                }
-                return;
-            }
-
-            // Validate new PIN
-            if (!newPIN || newPIN.length < 4) {
-                if (errorEl) {
-                    errorEl.textContent = 'Le PIN doit faire au moins 4 chiffres';
-                    errorEl.style.display = 'block';
-                }
-                return;
-            }
-
-            if (newPIN !== confirmPIN) {
-                if (errorEl) {
-                    errorEl.textContent = 'Les PIN ne correspondent pas';
-                    errorEl.style.display = 'block';
-                }
-                return;
-            }
-
-            // Save
-            const newHash = await this.hashPIN(newPIN);
-            localStorage.setItem('deepbreath_pin_hash', newHash);
-
-            // Clear inputs
-            if (currentInput) currentInput.value = '';
-            if (newInput) newInput.value = '';
-            if (confirmInput) confirmInput.value = '';
-
-            this.showToast('PIN active');
-
-            // Update UI
-            if (pinStatus) {
-                pinStatus.textContent = 'Active';
-                pinStatus.classList.add('active');
-            }
-            if (saveBtn) saveBtn.textContent = 'Modifier le PIN';
-            if (removeBtn) removeBtn.style.display = 'block';
-            if (currentRow) currentRow.style.display = 'flex';
-        });
-
-        removeBtn?.addEventListener('click', async () => {
-            if (errorEl) errorEl.style.display = 'none';
-
-            const currentPIN = currentInput?.value.trim() || '';
-            if (!currentPIN) {
-                if (errorEl) {
-                    errorEl.textContent = 'Entrez votre PIN actuel pour le supprimer';
-                    errorEl.style.display = 'block';
-                }
-                return;
-            }
-
-            const currentHash = await this.hashPIN(currentPIN);
-            const storedHash = localStorage.getItem('deepbreath_pin_hash');
-            if (currentHash !== storedHash) {
-                if (errorEl) {
-                    errorEl.textContent = 'PIN incorrect';
-                    errorEl.style.display = 'block';
-                }
-                return;
-            }
-
-            localStorage.removeItem('deepbreath_pin_hash');
-
-            if (currentInput) currentInput.value = '';
-            if (newInput) newInput.value = '';
-            if (confirmInput) confirmInput.value = '';
-
-            this.showToast('PIN supprime');
-
-            if (pinStatus) {
-                pinStatus.textContent = 'Desactive';
-                pinStatus.classList.remove('active');
-            }
-            if (saveBtn) saveBtn.textContent = 'Activer le PIN';
-            if (removeBtn) removeBtn.style.display = 'none';
-            if (currentRow) currentRow.style.display = 'none';
-        });
-    }
+    // PIN settings removed — PIN is hardcoded and universal
 }
 
 // Initialize app when DOM is ready

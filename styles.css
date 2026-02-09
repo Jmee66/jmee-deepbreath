@@ -4425,10 +4425,6 @@ body.manual-mode .settings-manual-panel {
     color: var(--text-muted);
 }
 
-.pin-input-confirm {
-    margin-top: var(--space-sm);
-}
-
 .pin-unlock-btn {
     width: 100%;
     padding: var(--space-md) var(--space-lg);
@@ -4443,13 +4439,6 @@ body.manual-mode .settings-manual-panel {
     font-weight: 500;
 }
 
-#pinSetupMode .pin-lock-subtitle {
-    font-size: 0.9rem;
-    line-height: 1.5;
-    margin-bottom: var(--space-md);
-    opacity: 0.85;
-}
-
 /* Shake animation on wrong PIN */
 @keyframes pinShake {
     0%, 100% { transform: translateX(0); }
@@ -4462,48 +4451,6 @@ body.manual-mode .settings-manual-panel {
 .pin-input.shake {
     animation: pinShake 0.4s ease;
     border-color: var(--danger);
-}
-
-/* PIN Settings in Settings page */
-.pin-settings {
-    padding: var(--space-sm) 0;
-}
-
-.pin-status {
-    font-size: 0.9rem;
-    font-weight: 500;
-    padding: 4px 12px;
-    border-radius: var(--radius-full);
-    background: var(--bg-tertiary);
-    color: var(--text-muted);
-}
-
-.pin-status.active {
-    background: rgba(74, 200, 130, 0.15);
-    color: #4ac882;
-}
-
-.pin-setup-form {
-    margin-top: var(--space-md);
-}
-
-.pin-actions {
-    display: flex;
-    gap: var(--space-sm);
-    margin-top: var(--space-md);
-}
-
-.pin-actions .btn-primary,
-.pin-actions .btn-secondary {
-    flex: 1;
-    padding: var(--space-sm) var(--space-md);
-    font-size: 0.85rem;
-}
-
-.pin-settings-error {
-    color: var(--danger);
-    font-size: 0.8rem;
-    margin-top: var(--space-sm);
 }
 
 /* App hidden when locked */
