@@ -2681,11 +2681,33 @@ class JmeeDeepBreathApp {
 
     checkPINLock() {
         const pinHash = localStorage.getItem('deepbreath_pin_hash');
-        if (!pinHash) return false;
-
-        // Show lock screen, hide app
         const lockScreen = document.getElementById('pinLockScreen');
+        const unlockMode = document.getElementById('pinUnlockMode');
+        const setupMode = document.getElementById('pinSetupMode');
+
+        if (!pinHash) {
+            // No PIN yet — force setup on first launch
+            if (lockScreen) lockScreen.style.display = 'flex';
+            if (unlockMode) unlockMode.style.display = 'none';
+            if (setupMode) setupMode.style.display = 'block';
+            document.body.classList.add('app-locked');
+
+            const setupBtn = document.getElementById('pinSetupBtn');
+            const setupConfirm = document.getElementById('pinSetupConfirm');
+
+            setupBtn?.addEventListener('click', () => this.setupFirstPIN());
+            setupConfirm?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') this.setupFirstPIN();
+            });
+
+            setTimeout(() => document.getElementById('pinSetupNew')?.focus(), 300);
+            return true;
+        }
+
+        // PIN exists — show unlock mode
         if (lockScreen) lockScreen.style.display = 'flex';
+        if (unlockMode) unlockMode.style.display = 'block';
+        if (setupMode) setupMode.style.display = 'none';
         document.body.classList.add('app-locked');
 
         // Setup unlock handlers
@@ -2732,6 +2754,64 @@ class JmeeDeepBreathApp {
             pinInput.value = '';
             pinInput.focus();
         }
+    }
+
+    async setupFirstPIN() {
+        const newInput = document.getElementById('pinSetupNew');
+        const confirmInput = document.getElementById('pinSetupConfirm');
+        const errorEl = document.getElementById('pinSetupError');
+        if (!newInput || !confirmInput) return;
+
+        const newPIN = newInput.value.trim();
+        const confirmPIN = confirmInput.value.trim();
+
+        // Validate
+        if (!newPIN || newPIN.length < 4) {
+            if (errorEl) {
+                errorEl.textContent = 'Le PIN doit faire au moins 4 chiffres';
+                errorEl.style.display = 'block';
+            }
+            newInput.classList.add('shake');
+            setTimeout(() => newInput.classList.remove('shake'), 400);
+            return;
+        }
+
+        if (!/^\d+$/.test(newPIN)) {
+            if (errorEl) {
+                errorEl.textContent = 'Le PIN doit contenir uniquement des chiffres';
+                errorEl.style.display = 'block';
+            }
+            newInput.classList.add('shake');
+            setTimeout(() => newInput.classList.remove('shake'), 400);
+            return;
+        }
+
+        if (newPIN !== confirmPIN) {
+            if (errorEl) {
+                errorEl.textContent = 'Les PIN ne correspondent pas';
+                errorEl.style.display = 'block';
+            }
+            confirmInput.classList.add('shake');
+            setTimeout(() => confirmInput.classList.remove('shake'), 400);
+            confirmInput.value = '';
+            confirmInput.focus();
+            return;
+        }
+
+        // Save PIN hash
+        const pinHash = await this.hashPIN(newPIN);
+        localStorage.setItem('deepbreath_pin_hash', pinHash);
+
+        // Unlock and continue
+        const lockScreen = document.getElementById('pinLockScreen');
+        if (lockScreen) lockScreen.style.display = 'none';
+        document.body.classList.remove('app-locked');
+        newInput.value = '';
+        confirmInput.value = '';
+        if (errorEl) errorEl.style.display = 'none';
+
+        this.showToast('PIN active ! Votre app est protegee');
+        this.initApp();
     }
 
     async hashPIN(pin) {

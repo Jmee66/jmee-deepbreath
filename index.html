@@ -22,12 +22,29 @@
                 </svg>
             </div>
             <h2 class="pin-lock-title">Jmee DeepBreath</h2>
-            <p class="pin-lock-subtitle">Entrez votre code PIN</p>
-            <input type="password" id="pinInput" class="pin-input"
-                inputmode="numeric" pattern="[0-9]*" maxlength="8"
-                placeholder="PIN" autocomplete="off">
-            <button class="btn-primary pin-unlock-btn" id="pinUnlockBtn">Deverrouiller</button>
-            <p class="pin-error" id="pinError" style="display:none">PIN incorrect</p>
+
+            <!-- Mode unlock (PIN exists) -->
+            <div id="pinUnlockMode">
+                <p class="pin-lock-subtitle">Entrez votre code PIN</p>
+                <input type="password" id="pinInput" class="pin-input"
+                    inputmode="numeric" pattern="[0-9]*" maxlength="8"
+                    placeholder="PIN" autocomplete="off">
+                <button class="btn-primary pin-unlock-btn" id="pinUnlockBtn">Deverrouiller</button>
+                <p class="pin-error" id="pinError" style="display:none">PIN incorrect</p>
+            </div>
+
+            <!-- Mode setup (first launch, no PIN yet) -->
+            <div id="pinSetupMode" style="display:none">
+                <p class="pin-lock-subtitle">Creez votre code PIN pour proteger l'application</p>
+                <input type="password" id="pinSetupNew" class="pin-input"
+                    inputmode="numeric" pattern="[0-9]*" maxlength="8"
+                    placeholder="Nouveau PIN (4-8 chiffres)" autocomplete="off">
+                <input type="password" id="pinSetupConfirm" class="pin-input pin-input-confirm"
+                    inputmode="numeric" pattern="[0-9]*" maxlength="8"
+                    placeholder="Confirmer le PIN" autocomplete="off">
+                <button class="btn-primary pin-unlock-btn" id="pinSetupBtn">Proteger l'application</button>
+                <p class="pin-error" id="pinSetupError" style="display:none"></p>
+            </div>
         </div>
     </div>
 

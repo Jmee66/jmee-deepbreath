@@ -4425,6 +4425,10 @@ body.manual-mode .settings-manual-panel {
     color: var(--text-muted);
 }
 
+.pin-input-confirm {
+    margin-top: var(--space-sm);
+}
+
 .pin-unlock-btn {
     width: 100%;
     padding: var(--space-md) var(--space-lg);
@@ -4437,6 +4441,13 @@ body.manual-mode .settings-manual-panel {
     font-size: 0.85rem;
     margin-top: var(--space-md);
     font-weight: 500;
+}
+
+#pinSetupMode .pin-lock-subtitle {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: var(--space-md);
+    opacity: 0.85;
 }
 
 /* Shake animation on wrong PIN */
