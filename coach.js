@@ -905,7 +905,7 @@ class CoachAI {
         ).join('\n');
 
         const recentSessions = this.sessions.slice(-50).map(s =>
-            `${s.date?.slice(0, 10)} | ${s.exerciseName} | ${Math.floor(s.duration / 60)}min | Ressenti:${s.feeling || '?'}/5 | Stress:${s.stressBefore || '?'}->${s.stressAfter || '?'}${s.notes ? ' | Note: ' + s.notes : ''}`
+            `${s.date?.slice(0, 10)} | ${s.exerciseName} (${s.category || '?'}) | ${Math.floor(s.duration / 60)}min | Ressenti:${s.feeling || '?'}/5 | Stress:${s.stressBefore || '?'}->${s.stressAfter || '?'}${s.notes ? ' | Notes: ' + s.notes : ''}`
         ).join('\n');
 
         const stats = this.computeStats();
@@ -946,6 +946,7 @@ ${this.goals || 'Non definis — demande-lui ses objectifs.'}
 - Reponses courtes et directes (2-3 paragraphes max)
 - Quand tu proposes un exercice, utilise [EXERCICE:id] — c'est obligatoire
 - Propose des seances concretes, pas juste des conseils vagues
+- CONSULTE SYSTEMATIQUEMENT l'historique des sessions et les notes du journal de bord ci-dessus. Fais reference aux sessions recentes pour personnaliser tes conseils. Si les notes sont presentes, utilise-les pour comprendre l'etat physique et mental de l'eleve
 - Adapte l'intensite et le volume selon le PROFIL (records, niveau, etat actuel) et l'HISTORIQUE des sessions
 - Utilise les records de l'eleve (statique max, dry, dynamique, profondeur) pour calibrer les tables et durees
 - Si le profil indique "reprise" ou "fatigue", reduis l'intensite ; si "progression" ou "pic", pousse-le

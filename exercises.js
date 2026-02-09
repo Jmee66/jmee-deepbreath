@@ -1059,3 +1059,250 @@ const EXERCISES = {
 
 // Export for use
 window.EXERCISES = EXERCISES;
+
+// ==========================================
+// Guide Details — Science + Practice for each exercise
+// ==========================================
+
+window.GUIDE_DETAILS = {
+    'cyclic-sighing': {
+        science: "Le double soupir exploite un mécanisme réflexe : la seconde inspiration courte rouvre les alvéoles pulmonaires affaissées (atélectasie), maximisant la surface d'échange gazeux. L'expiration prolongée qui suit active le nerf vague via les barorécepteurs aortiques, provoquant une réduction immédiate de la fréquence cardiaque et du cortisol. Étude Stanford 2023 (Balban et al.) : 5 minutes par jour réduisent le stress 56% plus efficacement que la méditation de pleine conscience.",
+        practice: [
+            "Asseyez-vous ou allongez-vous confortablement, yeux fermés",
+            "Inspirez profondément par le nez (2s) pour remplir les poumons aux deux tiers",
+            "Sans expirer, prenez une seconde inspiration courte et vive (1s) pour remplir complètement",
+            "Expirez très lentement par la bouche (6s), en vidant complètement les poumons",
+            "Répétez pendant 5 minutes — l'effet apparaît dès le premier cycle mais se cumule"
+        ]
+    },
+    'coherent': {
+        science: "À exactement 5,5 respirations par minute, la variabilité de la fréquence cardiaque (HRV) entre en résonance avec le baroréflexe artériel. Ce couplage cardio-respiratoire optimise l'équilibre sympathique/parasympathique et réduit le cortisol de 23%. La fréquence de résonance individuelle varie entre 4,5 et 6,5 cycles/min, mais 5,5 est le point optimal moyen validé par l'Institut HeartMath.",
+        practice: [
+            "Installez-vous en position assise, dos droit, pieds à plat",
+            "Inspirez par le nez pendant 5,5 secondes en gonflant le ventre",
+            "Expirez par le nez ou la bouche pendant 5,5 secondes, sans forcer",
+            "Maintenez un rythme fluide et régulier, sans pause entre les phases",
+            "Pratiquez 10 minutes matin et soir pour un effet durable sur la HRV"
+        ]
+    },
+    'box': {
+        science: "Le carré respiratoire 4-4-4-4 augmente le tonus vagal en imposant un rythme lent et symétrique au système nerveux autonome. Les phases de rétention (poumons pleins et vides) augmentent la pression partielle de CO2, ce qui stimule la tolérance au CO2 et améliore la vasodilatation cérébrale. Technique adoptée par les Navy SEALs pour maintenir la clarté mentale sous stress extrême.",
+        practice: [
+            "Asseyez-vous droit, épaules relâchées, mains sur les cuisses",
+            "Inspirez par le nez pendant 4 secondes",
+            "Retenez poumons pleins pendant 4 secondes, corps détendu",
+            "Expirez lentement pendant 4 secondes",
+            "Retenez poumons vides pendant 4 secondes, sans crispation"
+        ]
+    },
+    'co2-tolerance': {
+        science: "Les expirations prolongées en ratio 1:2 augmentent progressivement la pression partielle de CO2 dans le sang (hypercapnie légère). Via l'effet Bohr, cette élévation du CO2 facilite la libération d'oxygène par l'hémoglobine vers les tissus. Au fil des semaines, les chémorécepteurs centraux recalibrent leur seuil de déclenchement, reculant l'envie de respirer et améliorant la capacité aérobie.",
+        practice: [
+            "Position confortable, respiration nasale exclusivement",
+            "Inspirez par le nez pendant 4 secondes",
+            "Expirez par le nez très lentement pendant 8 secondes, comme à travers une paille",
+            "Gardez le rythme régulier pendant 5 minutes",
+            "Si le ratio 1:2 est difficile, commencez à 4:6 et augmentez progressivement"
+        ]
+    },
+    'wimhof': {
+        science: "L'hyperventilation contrôlée provoque une alcalose respiratoire temporaire (le pH sanguin augmente) et abaisse fortement le CO2, supprimant l'envie de respirer pendant la rétention. Pendant la phase de rétention poumons vides, l'adrénaline est libérée, activant le système immunitaire inné. Étude Radboud University 2014 (Kox et al.) : les pratiquants présentent une réponse immunitaire modulée avec moins de symptômes inflammatoires.",
+        practice: [
+            "Allongez-vous dans un endroit sûr (jamais dans l'eau ni en voiture)",
+            "30 respirations profondes : inspirez à fond par le nez/bouche, relâchement passif",
+            "Après la 30e expiration, retenez poumons vides aussi longtemps que confortable",
+            "Quand l'envie de respirer arrive, inspirez à fond et retenez 15 secondes",
+            "Répétez 3 rounds — les rétentions s'allongent naturellement à chaque round"
+        ]
+    },
+    'relaxation': {
+        science: "La rétention de 7 secondes poumons pleins augmente la pression intrathoracique et stimule le nerf vague via les barorécepteurs. L'expiration de 8 secondes prolonge l'activation parasympathique. Ce ratio spécifique, conçu par le Dr Andrew Weil, fonctionne comme un tranquillisant naturel pour le système nerveux. Avec la pratique, l'effet sédatif s'intensifie par conditionnement pavlovien.",
+        practice: [
+            "Placez la pointe de la langue derrière les incisives supérieures",
+            "Inspirez silencieusement par le nez pendant 4 secondes",
+            "Retenez votre souffle pendant 7 secondes",
+            "Expirez complètement par la bouche avec un son 'whoosh' pendant 8 secondes",
+            "4 cycles maximum au début. Augmentez à 8 cycles après 4 semaines de pratique"
+        ]
+    },
+    'co2-table': {
+        science: "Le repos décroissant entre des apnées de durée fixe force les chémorécepteurs centraux (situés dans le bulbe rachidien) à fonctionner avec des niveaux de CO2 croissants. Cette surcharge progressive recalibre le seuil de déclenchement des contractions diaphragmatiques. Après 4 à 6 semaines d'entraînement régulier, le seuil de première contraction recule significativement, permettant des apnées plus longues et plus confortables.",
+        practice: [
+            "Déterminez votre record personnel d'apnée (PB). L'apnée sera fixée à 50% du PB",
+            "Commencez avec 1min45 de repos, puis réduisez de 15s à chaque cycle (8 cycles)",
+            "Restez parfaitement détendu pendant chaque apnée, mâchoire relâchée",
+            "Respirez calmement entre les apnées, pas d'hyperventilation",
+            "Pratiquez 2-3x/semaine à sec. Ne dépassez jamais le temps fixé"
+        ]
+    },
+    'o2-table': {
+        science: "Le repos constant de 2 minutes assure une récupération complète de la SpO2 entre chaque apnée, tandis que la durée croissante des rétentions expose progressivement le corps à des niveaux d'oxygène plus bas (hypoxie contrôlée). Cela stimule la production d'érythropoïétine (EPO) et l'angiogenèse, améliorant le transport d'oxygène à long terme — similaire à l'entraînement en altitude.",
+        practice: [
+            "Repos constant de 2 minutes entre chaque apnée",
+            "Commencez à 30% de votre PB, augmentez de 5-10% à chaque cycle (8 cycles)",
+            "Respirez normalement pendant les repos, pas d'hyperventilation",
+            "Si une apnée est trop difficile, répétez le même palier au cycle suivant",
+            "Pratiquez 1-2x/semaine — plus exigeant que les tables CO2, respectez la fatigue"
+        ]
+    },
+    'no-contraction': {
+        science: "En arrêtant systématiquement l'apnée AVANT la première contraction diaphragmatique, le cerveau associe l'apnée à une expérience positive et contrôlée plutôt qu'à une lutte. Ce conditionnement positif réduit l'anxiété anticipatoire et construit une base de confiance essentielle. Les débutants qui commencent par cette méthode progressent plus vite à long terme que ceux qui forcent d'emblée.",
+        practice: [
+            "Faites 6 apnées courtes avec 1 minute de repos entre chaque",
+            "Arrêtez IMMÉDIATEMENT dès la première envie légère de respirer",
+            "Ne cherchez jamais la performance : l'objectif est le confort total",
+            "Notez vos temps — ils augmenteront naturellement au fil des semaines",
+            "Méthode idéale pour débuter ou reprendre après une pause"
+        ]
+    },
+    'contraction-tolerance': {
+        science: "Les contractions diaphragmatiques ne signalent pas un manque d'oxygène dangereux mais un seuil de CO2 atteint. La réinterprétation cognitive (reframing) transforme la perception de menace en signal neutre. Études en psychologie du sport : cette technique de recadrage réduit l'anxiété de 35% et prolonge les apnées de 15-25%. Programme progressif sur 6 semaines pour recalibrer la réponse émotionnelle aux spasmes.",
+        practice: [
+            "Semaines 1-2 : arrêtez 10s après la 1ère contraction. Semaines 3-4 : 15s. Semaines 5-6 : 30s",
+            "Appuyez sur le bouton 'Contraction' à chaque spasme pour le marquer",
+            "Écoutez les messages de recadrage : les contractions sont un signal, pas un danger",
+            "4 apnées par session avec 2 minutes de repos entre chaque",
+            "Relâchement total pendant les contractions : mâchoire, épaules, mains ouvertes"
+        ]
+    },
+    'body-scan-apnea': {
+        science: "La théorie du portillon attentionnel (gate control theory, Melzack & Wall) montre que l'attention dirigée vers des zones neutres du corps réduit la perception des sensations désagréables. En guidant l'attention zone par zone pendant l'apnée, le cerveau occupe ses ressources attentionnelles sur des stimuli non-menaçants, réduisant la perception de l'envie de respirer de 20%.",
+        practice: [
+            "3 cycles d'apnée à 40%, 50% puis 60% de votre PB",
+            "Pendant l'apnée, suivez le scan corporel guidé à travers 10 zones",
+            "En fin d'apnée, le scan accélère pour occuper l'attention plus intensément",
+            "Respirez calmement pendant les 2 minutes de repos entre les cycles",
+            "Avec la pratique, vous pourrez faire le scan seul, sans guidage"
+        ]
+    },
+    'hook-breathing': {
+        science: "Après une longue apnée, la SpO2 peut chuter rapidement (hypoxie de remontée). Le hook breathing maintient une pression intrathoracique positive en verrouillant la glotte après chaque inspiration, ce qui ralentit la chute de SpO2 et prévient le blackout (syncope hypoxique). Études militaires : cette technique réduit le temps de récupération de la SpO2 de 50%.",
+        practice: [
+            "Immédiatement après chaque apnée : inspirez profondément par la bouche",
+            "Fermez la glotte en disant 'K' mentalement, pressez le diaphragme vers le bas, maintenez 2-3s",
+            "Expirez lentement, puis répétez immédiatement",
+            "3 hook breaths minimum après CHAQUE apnée, même courte",
+            "Pratiquez en 3 rounds progressifs (lent → normal → rapide) jusqu'à automatisme"
+        ]
+    },
+    'dive-reflex': {
+        science: "Le réflexe de plongée mammalien est un arc réflexe trigéminale-vagal : l'immersion du visage dans l'eau froide (10-15°C) stimule le nerf trijumeau, qui active le nerf vague, provoquant une bradycardie (réduction de 10-25% de la FC), une vasoconstriction périphérique et un blood shift vers les organes vitaux. Les apnéistes entraînés atteignent 20-24 bpm contre 40-60 bpm chez les non-entraînés.",
+        practice: [
+            "Préparez un bol d'eau froide (10-15°C) ou utilisez la douche froide sur le visage",
+            "Respirez calmement pendant 1-2 minutes pour abaisser la FC",
+            "Inspirez, retenez, et plongez le visage dans l'eau 20-30 secondes",
+            "3 immersions progressives (20s, 30s, 40s) avec 1 minute de repos",
+            "Notez votre FC avant et après : la bradycardie s'améliore avec l'entraînement"
+        ]
+    },
+    'diaphragm': {
+        science: "La respiration diaphragmatique en 3 étages (abdominale, costale, claviculaire) exploite la totalité de la capacité pulmonaire, contrairement à la respiration thoracique superficielle qui n'utilise que 30-40% du volume disponible. Le diaphragme, principal muscle inspiratoire, descend de 1 à 10 cm lors d'une inspiration complète. Son entraînement spécifique augmente la capacité vitale et le volume courant — fondation de toute pratique d'apnée.",
+        practice: [
+            "Allongez-vous, une main sur le ventre, une sur la poitrine",
+            "Étage 1 : gonflez le ventre comme un ballon (4s), la main sur la poitrine ne bouge pas",
+            "Étage 2 : sans expirer, élargissez les côtes latéralement (3s)",
+            "Étage 3 : soulevez légèrement la poitrine (2s), puis pause 1s",
+            "Expirez passivement en 8 secondes, en relâchant dans l'ordre inverse"
+        ]
+    },
+    'lung-stretch': {
+        science: "La souplesse thoracique est un facteur limitant en apnée profonde : lors de la descente, le volume pulmonaire se comprime selon la loi de Boyle-Mariotte (divisé par 2 à 10m, par 3 à 20m). L'Uddiyana Bandha (verrou abdominal) crée une pression négative intrathoracique qui étire les tissus intercostaux et le diaphragme. En 8 semaines, la capacité vitale peut augmenter de 0,5 à 1 litre.",
+        practice: [
+            "Pratiquez à jeun (estomac vide depuis 2h minimum)",
+            "Échauffement : 5 respirations profondes pour mobiliser le thorax",
+            "Étirements latéraux : inspirez à fond, bras au-dessus, penchez latéralement, maintenez 15-20s",
+            "Uddiyana Bandha : expirez complètement, fermez la glotte, tirez l'abdomen vers le haut et l'intérieur, 10-15s",
+            "3 répétitions de chaque — progressez très doucement pour éviter les blessures intercostales"
+        ]
+    },
+    'breathe-up-structure': {
+        science: "Le breathe-up structuré en 3 phases optimise la saturation en oxygène (SpO2) sans hyperventiler — l'hyperventilation causerait une hypocapnie dangereuse qui masque l'envie de respirer et augmente le risque de syncope. La phase tidale 1:2 active le parasympathique. La phase segmentaire maximise le volume pulmonaire. L'inspiration finale en 3 étages remplit 100% de la capacité. Protocole utilisé par les champions du monde.",
+        practice: [
+            "Phase 1 (2,5 min) : respiration tidale ratio 1:2, inspirez 4s par le nez, expirez 8s par la bouche",
+            "Phase 2 (1 min) : respirations segmentaires en 3 étages (ventre → côtes → poitrine), expirez lentement",
+            "Phase 3 (30s) : inspiration finale ventre 4s + côtes 3s + poitrine 2s, poumons complètement pleins",
+            "Ne JAMAIS hyperventiler : gardez un rythme lent et contrôlé",
+            "Utilisez ce protocole avant CHAQUE apnée en eau"
+        ]
+    },
+    'preperf-protocol': {
+        science: "Ce protocole combine 3 techniques validées en psychologie du sport : la relaxation musculaire rapide (réduit la tension résiduelle), la cohérence cardiaque courte (synchronise le système nerveux autonome en 2-3 min), et la visualisation ciblée (active les circuits moteurs et émotionnels). L'enchaînement en 5 minutes crée un état de 'calme alerte' optimal pour la performance.",
+        practice: [
+            "Fermez les yeux, scannez rapidement et relâchez : mâchoire, épaules, mains (30s)",
+            "Respirez en cohérence cardiaque 5s/5s pendant 1,5 minute",
+            "Visualisez votre performance parfaite dans les moindres détails (1 min)",
+            "Choisissez un mot-clé d'ancrage ('focus', 'calme', 'go') et répétez-le 3 fois",
+            "Ouvrez les yeux — vous êtes en état optimal"
+        ]
+    },
+    'pettlep': {
+        science: "Le protocole PETTLEP (Physical, Environment, Task, Timing, Learning, Emotion, Perspective) est basé sur la théorie de l'équivalence fonctionnelle : l'imagerie mentale active les mêmes aires corticales motrices que l'exécution réelle (cortex prémoteur, aire motrice supplémentaire). L'IRM fonctionnelle montre un chevauchement de 60-80% des activations. Utilisé par 70-90% des athlètes olympiques, ce protocole améliore la performance de 10-15%.",
+        practice: [
+            "Adoptez la position physique de votre performance (combinaison, palmes mentales, etc.)",
+            "Visualisez l'environnement en détail : sons sous-marins, température, lumière, odeurs",
+            "Exécutez mentalement chaque geste technique EN TEMPS RÉEL, pas en accéléré",
+            "Ajoutez les émotions : confiance, détermination, plaisir",
+            "Restez en perspective 1ère personne (à travers vos yeux, pas comme un spectateur)"
+        ]
+    },
+    'body-scan': {
+        science: "Le body scan systématique active le cortex somatosensoriel et l'insula, renforçant l'intéroception (conscience des signaux corporels). Cette pratique réduit l'activité de l'amygdale (centre de la peur) et augmente l'activité du cortex préfrontal (régulation émotionnelle). Études MBSR (Kabat-Zinn) : 8 semaines de pratique régulière réduisent l'anxiété de 30-40% et améliorent la conscience corporelle de manière mesurable à l'IRM.",
+        practice: [
+            "Allongez-vous sur le dos, bras le long du corps, yeux fermés",
+            "Portez attention à chaque zone pendant 30-60 secondes, des pieds au crâne",
+            "Observez les sensations sans les juger ni chercher à les modifier",
+            "Si l'esprit vagabonde, ramenez doucement l'attention sur la dernière zone",
+            "Terminez par une perception globale du corps entier, unifié et détendu"
+        ]
+    },
+    'sophro': {
+        science: "La méthode IRTER (Inspiration-Rétention-Tension-Expiration-Relâchement) exploite le contraste neuromusculaire : une contraction isométrique de 5 secondes suivie d'un relâchement brusque provoque une inhibition post-tétanique qui détend le muscle bien au-delà de son tonus de repos. Appliquée aux 5 zones corporelles, elle induit une relaxation profonde mesurable par EMG en 10-15 minutes. Essai contrôlé randomisé 2019 : efficace contre l'anxiété.",
+        practice: [
+            "Debout ou assis, sentez vos pieds ancrés au sol",
+            "Pour chaque zone : inspirez, retenez, contractez la zone 5 secondes avec force",
+            "Expirez brusquement et relâchez complètement — savourez la différence",
+            "Parcourez les 5 zones (tête, épaules, bras, abdomen, jambes), puis contractez le corps entier",
+            "Terminez par une visualisation d'un lieu de paix pendant 2 minutes"
+        ]
+    },
+    'meditation-lacher-prise': {
+        science: "Basée sur l'ACT (Acceptance and Commitment Therapy, Hayes 2004), cette méditation utilise la défusion cognitive : plutôt que de lutter contre les sensations désagréables, on les observe comme des événements mentaux passagers. En apnée, la lutte contre l'envie de respirer augmente la consommation d'O2 de 15-20%. Le lâcher-prise réduit cette surconsommation. Le mot-clé ('lâche') crée un conditionnement pavlovien relaxation-signal.",
+        practice: [
+            "Laissez votre respiration se faire seule, sans la contrôler ni la guider",
+            "Relâchez progressivement : corps, souffle, puis attention elle-même",
+            "Quand une tension apparaît, dites 'Je remarque cette tension' sans la combattre",
+            "Sur chaque expiration, prononcez mentalement 'lâche' pour ancrer le conditionnement",
+            "Utilisez le mot-clé 'lâche' avant chaque apnée pour activer le lâcher-prise instantanément"
+        ]
+    },
+    'dry-to-wet-bridge': {
+        science: "L'écart de performance entre apnée à sec et en eau (souvent 20-40%) est principalement psychologique : l'anxiété aquatique augmente la FC, la consommation d'O2 et la tension musculaire. La désensibilisation systématique (Wolpe, 1958) expose progressivement au stimulus anxiogène tout en maintenant un état de relaxation. Ce programme en 8 semaines réduit l'anxiété aquatique de 60% en procédant par paliers.",
+        practice: [
+            "Semaines 1-2 : entraînement dry + immersion faciale quotidienne pour associer l'eau au calme",
+            "Semaines 3-4 : courtes apnées en baignoire à 50% du PB dry, focus sur le confort",
+            "Semaines 5-6 : apnée en piscine avec buddy, début à 40% du PB dry, +10%/session si confortable",
+            "Semaines 7-8 : extension progressive par paliers de 10s, objectif 60-70% du PB dry en eau",
+            "RÈGLE ABSOLUE : ne JAMAIS pratiquer l'apnée dans l'eau seul — toujours avec un buddy formé"
+        ]
+    },
+    'hypno-apnee-debutant': {
+        science: "L'auto-hypnose utilise l'induction progressive (relaxation + comptage descendant) pour atteindre un état de conscience modifié où la suggestibilité augmente. L'ancrage neuro-associatif (geste pouce-index + état de calme) crée un réflexe conditionné via le couplage stimulus-réponse. Après 5-10 répétitions, le simple geste déclenche automatiquement l'état de calme associé. Utilisé en sophrologie sportive et dans les protocoles EMDR.",
+        practice: [
+            "Installez-vous très confortablement, yeux fermés",
+            "Descendez mentalement un escalier de 10 marches, chaque marche approfondissant la détente",
+            "En bas de l'escalier, pressez pouce contre index et associez ce geste au calme profond",
+            "Répétez le geste 3 fois pour renforcer l'ancrage",
+            "Testez l'ancre en contexte d'apnée imaginaire : pressez pouce-index et visualisez une apnée calme"
+        ]
+    },
+    'flow-dynamique': {
+        science: "L'état de flow (Csikszentmihalyi, 1990) correspond à un fonctionnement cérébral où le cortex préfrontal dorsolatéral se désactive temporairement (hypofrontalité transitoire), réduisant l'autocritique et la conscience du temps. Les mantras rythmiques ('Glisse-Relâche') synchronisent l'activité motrice avec un pattern verbal automatique, facilitant l'entrée en flow. En apnée dynamique, cette dissociation réduit la consommation d'O2 de 10-15%.",
+        practice: [
+            "Visualisez la séparation moteur (jambes) / passager (buste détendu)",
+            "Créez votre mantra de palmage : 'Glisse' sur le coup de palme, 'Relâche' sur le retour",
+            "Répétez jusqu'à ce que le mantra devienne automatique, sans effort conscient",
+            "Visualisez une dynamique complète : départ, premier virage, retour, sortie",
+            "Ancrez l'état avec pouce-index. Activez avant chaque dynamique en disant 'Glisse... Relâche...'"
+        ]
+    }
+};

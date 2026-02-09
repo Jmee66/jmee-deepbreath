@@ -1204,6 +1204,8 @@ class JmeeDeepBreathApp {
 
         // Keyboard controls
         document.addEventListener('keydown', (e) => {
+            const tag = e.target.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
             if (!modal.classList.contains('active')) return;
 
             if (e.code === 'Space') {
@@ -1533,6 +1535,7 @@ class JmeeDeepBreathApp {
 
         // Wait for spacebar — store on this for cleanup in closeExercise()
         this.wimHofSpaceHandler = (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
             if (e.code === 'Space' && this.isRunning) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
@@ -2626,10 +2629,45 @@ class JmeeDeepBreathApp {
             });
         });
 
-        // Click on exercise item → navigate to exercise and start it
+        // Inject guide details (science + practice) into cards
+        this.injectGuideDetails();
+
+        // Click on exercise item → toggle details panel (accordion)
         document.querySelectorAll('.guide-exercise-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const exerciseId = item.dataset.exerciseId;
+            item.addEventListener('click', (e) => {
+                // If clicking the "start" button inside details, don't toggle
+                if (e.target.closest('.guide-detail-start')) return;
+
+                const details = item.querySelector('.guide-exercise-details');
+                if (!details) return;
+
+                // Accordion: close other open details
+                document.querySelectorAll('.guide-exercise-item.guide-expanded').forEach(other => {
+                    if (other !== item) {
+                        other.classList.remove('guide-expanded');
+                        const otherDetails = other.querySelector('.guide-exercise-details');
+                        if (otherDetails) otherDetails.classList.add('collapsed');
+                    }
+                });
+
+                // Toggle this card
+                details.classList.toggle('collapsed');
+                item.classList.toggle('guide-expanded');
+
+                // Scroll into view if expanded
+                if (!details.classList.contains('collapsed')) {
+                    setTimeout(() => {
+                        item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }, 100);
+                }
+            });
+        });
+
+        // Click "Lancer l'exercice" button inside details
+        document.querySelectorAll('.guide-detail-start').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const exerciseId = btn.dataset.exerciseId;
                 if (exerciseId && EXERCISES[exerciseId]) {
                     this.startExercise(exerciseId);
                 }
@@ -2637,7 +2675,57 @@ class JmeeDeepBreathApp {
         });
     }
 
+    injectGuideDetails() {
+        const details = window.GUIDE_DETAILS || {};
+
+        document.querySelectorAll('.guide-exercise-item[data-exercise-id]').forEach(item => {
+            const id = item.dataset.exerciseId;
+            const data = details[id];
+            if (!data) return;
+
+            // Add toggle chevron to header
+            const header = item.querySelector('.guide-exercise-header');
+            if (header && !header.querySelector('.guide-detail-toggle')) {
+                const toggle = document.createElement('span');
+                toggle.className = 'guide-detail-toggle';
+                toggle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>';
+                header.appendChild(toggle);
+            }
+
+            // Build details section
+            const detailsDiv = document.createElement('div');
+            detailsDiv.className = 'guide-exercise-details collapsed';
+
+            const scienceHtml = `
+                <div class="guide-detail-science">
+                    <h5>🔬 Principe scientifique</h5>
+                    <p>${data.science}</p>
+                </div>`;
+
+            const practiceItems = data.practice.map(step => `<li>${step}</li>`).join('');
+            const practiceHtml = `
+                <div class="guide-detail-practice">
+                    <h5>🎯 Comment pratiquer</h5>
+                    <ul>${practiceItems}</ul>
+                </div>`;
+
+            const startBtn = EXERCISES[id]
+                ? `<button class="guide-detail-start" data-exercise-id="${id}">▶ Lancer l'exercice</button>`
+                : '';
+
+            detailsDiv.innerHTML = scienceHtml + practiceHtml + startBtn;
+            item.appendChild(detailsDiv);
+        });
+    }
+
     filterGuideExercises() {
+        // Collapse any expanded card when filters change
+        document.querySelectorAll('.guide-exercise-item.guide-expanded').forEach(item => {
+            item.classList.remove('guide-expanded');
+            const d = item.querySelector('.guide-exercise-details');
+            if (d) d.classList.add('collapsed');
+        });
+
         const activeObjective = document.querySelector('.guide-objective-btn.active')?.dataset.objective || 'all';
         const activeLevel = document.querySelector('.guide-level-btn.active')?.dataset.level || 'all';
 
