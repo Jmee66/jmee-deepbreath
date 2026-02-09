@@ -197,6 +197,14 @@ class JmeeDeepBreathApp {
         this.setupSpotifyControls();
         this.setupGuide();
         this.setupWakeLock();
+        this.initJournal();
+    }
+
+    initJournal() {
+        if (typeof JournalView !== 'undefined') {
+            window.journal = new JournalView();
+            window.journal.init();
+        }
     }
 
     // ==========================================

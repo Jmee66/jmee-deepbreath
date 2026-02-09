@@ -124,6 +124,16 @@
                 </svg>
                 Coach
             </button>
+            <button class="nav-link" data-section="journal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <line x1="3" y1="9" x2="21" y2="9"/>
+                    <line x1="3" y1="15" x2="21" y2="15"/>
+                    <line x1="9" y1="3" x2="9" y2="21"/>
+                    <line x1="15" y1="3" x2="15" y2="21"/>
+                </svg>
+                Journal
+            </button>
             <button class="nav-link" data-section="respiration">Respiration</button>
             <button class="nav-link" data-section="visualisation">Visualisation</button>
             <button class="nav-link" data-section="apnee">Apnée</button>
@@ -169,6 +179,21 @@
                         </div>
                         <h3>Coach IA</h3>
                         <p>Entrainement apnee au sec, programmes sur mesure, suivi de progression</p>
+                    </div>
+
+                    <div class="feature-card" data-goto="journal">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="24" cy="24" r="20" opacity="0.3"/>
+                                <rect x="12" y="12" width="24" height="24" rx="2"/>
+                                <line x1="12" y1="20" x2="36" y2="20"/>
+                                <line x1="12" y1="28" x2="36" y2="28"/>
+                                <line x1="20" y1="12" x2="20" y2="36"/>
+                                <line x1="28" y1="12" x2="28" y2="36"/>
+                            </svg>
+                        </div>
+                        <h3>Journal</h3>
+                        <p>Tableau de bord de tous vos entrainements, ajout et modification</p>
                     </div>
 
                     <div class="feature-card" data-goto="respiration">
@@ -272,6 +297,42 @@
                         <p>Aide au choix des exercices selon votre objectif, votre niveau et votre blocage</p>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- Journal Section -->
+        <section class="section" id="journal">
+            <div class="section-header">
+                <h2>Journal d'entrainement</h2>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="journal-toolbar">
+                <div class="journal-stats">
+                    <span id="journalCount">0 sessions</span>
+                </div>
+                <input type="search" id="journalSearch" class="journal-search" placeholder="Rechercher...">
+                <button class="btn-primary journal-add-btn" id="journalAddBtn">+ Ajouter</button>
+            </div>
+
+            <!-- Table wrapper (horizontal scroll on mobile) -->
+            <div class="journal-table-wrapper">
+                <table class="journal-table" id="journalTable">
+                    <thead>
+                        <tr>
+                            <th data-sort="date">Date ↕</th>
+                            <th data-sort="exerciseName">Exercice ↕</th>
+                            <th data-sort="category">Categorie ↕</th>
+                            <th data-sort="duration">Duree ↕</th>
+                            <th data-sort="feeling" class="journal-col-hide">Ressenti ↕</th>
+                            <th data-sort="stressBefore" class="journal-col-hide">Stress Av. ↕</th>
+                            <th data-sort="stressAfter" class="journal-col-hide">Stress Ap. ↕</th>
+                            <th class="journal-col-hide">Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="journalBody"></tbody>
+                </table>
             </div>
         </section>
 
@@ -3028,6 +3089,7 @@
     <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
     <script src="coach.js"></script>
+    <script src="journal.js"></script>
     <script src="multi-timer.js"></script>
 </body>
 </html>

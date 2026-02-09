@@ -392,6 +392,7 @@ class CoachAI {
         this.closeFeedbackModal();
         this.updateStatsDisplay();
         this.renderRecentSessions();
+        if (window.journal) window.journal.render();
 
         if (window.app) window.app.showToast('Session enregistree');
     }
@@ -412,6 +413,7 @@ class CoachAI {
             this.saveSessions();
             this.updateStatsDisplay();
             this.renderRecentSessions();
+            if (window.journal) window.journal.render();
         }
 
         this.closeFeedbackModal();
@@ -1363,6 +1365,7 @@ ${this.goals || 'Non definis — demande-lui ses objectifs.'}
 
                     this.updateStatsDisplay();
                     this.renderRecentSessions();
+                    if (window.journal) window.journal.render();
                     if (window.app) window.app.showToast(`${newSessions.length} session${newSessions.length > 1 ? 's' : ''} importee${newSessions.length > 1 ? 's' : ''}`);
                 } else {
                     throw new Error('Format invalide');
@@ -1426,6 +1429,7 @@ ${this.goals || 'Non definis — demande-lui ses objectifs.'}
 
                 this.updateStatsDisplay();
                 this.renderRecentSessions();
+                if (window.journal) window.journal.render();
                 if (window.app) window.app.showToast(
                     `${newSessions.length} session${newSessions.length > 1 ? 's' : ''} importee${newSessions.length > 1 ? 's' : ''}`
                 );
