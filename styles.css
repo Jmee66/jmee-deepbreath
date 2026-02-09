@@ -4336,6 +4336,163 @@ body.manual-mode .settings-manual-panel {
 }
 
 /* ==========================================
+   PIN Lock Screen
+   ========================================== */
+
+.pin-lock-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    background: rgba(10, 15, 30, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pin-lock-content {
+    text-align: center;
+    padding: var(--space-xxl);
+    max-width: 320px;
+    width: 100%;
+}
+
+.pin-lock-logo {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto var(--space-lg);
+    color: var(--accent-primary);
+}
+
+.pin-lock-logo svg {
+    width: 100%;
+    height: 100%;
+}
+
+.pin-lock-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+}
+
+.pin-lock-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+}
+
+.pin-input {
+    width: 100%;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    font-size: 1.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5em;
+    text-align: center;
+    padding: var(--space-md) var(--space-lg);
+    outline: none;
+    transition: border-color var(--transition-fast);
+    margin-bottom: var(--space-lg);
+}
+
+.pin-input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.15);
+}
+
+.pin-input::placeholder {
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    font-weight: 400;
+    color: var(--text-muted);
+}
+
+.pin-unlock-btn {
+    width: 100%;
+    padding: var(--space-md) var(--space-lg);
+    font-size: 1rem;
+    border-radius: var(--radius-lg);
+}
+
+.pin-error {
+    color: var(--danger);
+    font-size: 0.85rem;
+    margin-top: var(--space-md);
+    font-weight: 500;
+}
+
+/* Shake animation on wrong PIN */
+@keyframes pinShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-12px); }
+    40% { transform: translateX(12px); }
+    60% { transform: translateX(-8px); }
+    80% { transform: translateX(8px); }
+}
+
+.pin-input.shake {
+    animation: pinShake 0.4s ease;
+    border-color: var(--danger);
+}
+
+/* PIN Settings in Settings page */
+.pin-settings {
+    padding: var(--space-sm) 0;
+}
+
+.pin-status {
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+}
+
+.pin-status.active {
+    background: rgba(74, 200, 130, 0.15);
+    color: #4ac882;
+}
+
+.pin-setup-form {
+    margin-top: var(--space-md);
+}
+
+.pin-actions {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+}
+
+.pin-actions .btn-primary,
+.pin-actions .btn-secondary {
+    flex: 1;
+    padding: var(--space-sm) var(--space-md);
+    font-size: 0.85rem;
+}
+
+.pin-settings-error {
+    color: var(--danger);
+    font-size: 0.8rem;
+    margin-top: var(--space-sm);
+}
+
+/* App hidden when locked */
+.app-locked .main-nav,
+.app-locked .main-content,
+.app-locked .audio-controls,
+.app-locked .spotify-panel {
+    display: none !important;
+}
+
+/* ==========================================
    Coach Responsive
    ========================================== */
 
