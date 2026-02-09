@@ -2638,7 +2638,7 @@
 
             <!-- Security / PIN -->
             <div class="settings-card">
-                <div class="settings-card-header" data-toggle="securitySettings">
+                <div class="settings-card-header">
                     <h3>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;vertical-align:middle;margin-right:6px;">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
@@ -2646,9 +2646,11 @@
                         </svg>
                         Securite
                     </h3>
-                    <svg class="settings-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="6,9 12,15 18,9"/>
-                    </svg>
+                    <button class="btn-expand" data-target="securitySettings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6,9 12,15 18,9"/>
+                        </svg>
+                    </button>
                 </div>
                 <div class="settings-card-body collapsed" id="securitySettings">
                     <div class="pin-settings">
