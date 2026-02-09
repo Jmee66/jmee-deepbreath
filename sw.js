@@ -3,7 +3,7 @@
  * Enables offline functionality
  */
 
-const CACHE_NAME = 'jmee-deepbreath-v9';
+const CACHE_NAME = 'jmee-deepbreath-v10';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -57,6 +57,13 @@ self.addEventListener('activate', (event) => {
             return self.clients.claim();
         })
     );
+});
+
+// Listen for skip waiting message from client
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });
 
 // Fetch event - serve from cache when offline

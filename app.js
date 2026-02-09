@@ -310,7 +310,10 @@ class JmeeDeepBreathApp {
             const registration = await navigator.serviceWorker.register('/sw.js');
             console.log('Service Worker registered:', registration.scope);
 
-            // Force update if there's a waiting worker
+            // Force check for updates
+            registration.update();
+
+            // Force activate waiting worker
             if (registration.waiting) {
                 registration.waiting.postMessage({ type: 'SKIP_WAITING' });
             }
@@ -318,8 +321,13 @@ class JmeeDeepBreathApp {
             registration.addEventListener('updatefound', () => {
                 const newWorker = registration.installing;
                 newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        console.log('New Service Worker available');
+                    if (newWorker.state === 'installed') {
+                        if (navigator.serviceWorker.controller) {
+                            // New version available — activate and reload
+                            newWorker.postMessage({ type: 'SKIP_WAITING' });
+                            console.log('New Service Worker installed, reloading...');
+                            window.location.reload();
+                        }
                     }
                 });
             });
