@@ -3801,7 +3801,7 @@ body.manual-mode .settings-manual-panel {
     background: var(--bg-tertiary);
     border: 1px solid var(--border-subtle);
     border-radius: 24px;
-    padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-lg);
+    padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-sm);
     transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
@@ -3810,7 +3810,42 @@ body.manual-mode .settings-manual-panel {
     box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.1);
 }
 
-.coach-chat-input textarea {
+/* Attach button (paperclip) */
+.coach-attach-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: var(--space-xs);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: var(--transition-base);
+}
+
+.coach-attach-btn:hover {
+    color: var(--accent-primary);
+    background: var(--accent-soft);
+}
+
+.coach-attach-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Input wrapper (file badge + textarea) */
+.coach-input-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.coach-input-wrapper textarea {
     flex: 1;
     background: transparent;
     color: var(--text-primary);
@@ -3823,10 +3858,49 @@ body.manual-mode .settings-manual-panel {
     max-height: 160px;
     line-height: 1.5;
     outline: none;
+    width: 100%;
 }
 
-.coach-chat-input textarea::placeholder {
+.coach-input-wrapper textarea::placeholder {
     color: var(--text-muted);
+}
+
+/* Attached file badge */
+.coach-attached-file {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-soft);
+    border: 1px solid rgba(74, 158, 255, 0.2);
+    border-radius: var(--radius-full);
+    padding: 3px 8px 3px 12px;
+    margin: var(--space-xs) 0;
+    max-width: 100%;
+}
+
+.attached-file-name {
+    font-size: 0.8rem;
+    color: var(--accent-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.attached-file-remove {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0 2px;
+    border-radius: 50%;
+    transition: var(--transition-fast);
+}
+
+.attached-file-remove:hover {
+    color: var(--danger);
 }
 
 .coach-send-btn {

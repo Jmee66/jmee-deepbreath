@@ -493,6 +493,9 @@ class CoachAI {
         const sendBtn = document.getElementById('coachSendBtn');
         const input = document.getElementById('coachInput');
 
+        this.attachedFileText = null;
+        this.attachedFileName = null;
+
         sendBtn?.addEventListener('click', () => this.sendMessage());
 
         input?.addEventListener('keydown', (e) => {
@@ -505,7 +508,7 @@ class CoachAI {
         // Auto-resize textarea
         input?.addEventListener('input', () => {
             input.style.height = 'auto';
-            input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+            input.style.height = Math.min(input.scrollHeight, 160) + 'px';
         });
 
         // Quick action buttons
@@ -519,6 +522,67 @@ class CoachAI {
                 }
             });
         });
+
+        // File attachment
+        const attachBtn = document.getElementById('coachAttachBtn');
+        const fileInput = document.getElementById('coachFileInput');
+        const attachedDiv = document.getElementById('coachAttachedFile');
+        const fileNameSpan = document.getElementById('attachedFileName');
+        const removeBtn = document.getElementById('attachedFileRemove');
+
+        attachBtn?.addEventListener('click', () => fileInput?.click());
+
+        fileInput?.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            e.target.value = '';
+
+            try {
+                const text = await this.extractFileText(file);
+                if (text && text.trim()) {
+                    this.attachedFileText = text.trim();
+                    this.attachedFileName = file.name;
+                    if (fileNameSpan) fileNameSpan.textContent = file.name;
+                    if (attachedDiv) attachedDiv.style.display = 'inline-flex';
+                } else {
+                    if (window.app) window.app.showToast('Fichier vide ou illisible', 'warning');
+                }
+            } catch (err) {
+                console.error('File extraction error:', err);
+                if (window.app) window.app.showToast('Impossible de lire ce fichier', 'warning');
+            }
+        });
+
+        removeBtn?.addEventListener('click', () => {
+            this.clearAttachment();
+        });
+    }
+
+    clearAttachment() {
+        this.attachedFileText = null;
+        this.attachedFileName = null;
+        const attachedDiv = document.getElementById('coachAttachedFile');
+        if (attachedDiv) attachedDiv.style.display = 'none';
+    }
+
+    async extractFileText(file) {
+        const ext = file.name.split('.').pop().toLowerCase();
+
+        if (ext === 'txt') {
+            return await file.text();
+        }
+
+        if ((ext === 'docx' || ext === 'doc') && typeof mammoth !== 'undefined') {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer });
+            return result.value;
+        }
+
+        if (ext === 'docx' || ext === 'doc') {
+            throw new Error('Librairie mammoth non chargee');
+        }
+
+        throw new Error('Format non supporte');
     }
 
     showWelcomeMessage() {
@@ -543,21 +607,44 @@ class CoachAI {
 
     async sendMessage() {
         const input = document.getElementById('coachInput');
-        if (!input || !input.value.trim() || this.isLoading) return;
+        const hasText = input && input.value.trim();
+        const hasFile = this.attachedFileText;
 
-        const userMessage = input.value.trim();
-        input.value = '';
-        input.style.height = 'auto';
+        if ((!hasText && !hasFile) || this.isLoading) return;
+
+        let userMessage = (input?.value || '').trim();
+        let displayMessage = userMessage;
+        let aiMessage = userMessage;
+
+        // Si fichier attache, l'integrer dans le message AI
+        if (hasFile) {
+            const fileLabel = this.attachedFileName || 'fichier';
+            displayMessage = userMessage
+                ? `📎 ${fileLabel}\n\n${userMessage}`
+                : `📎 ${fileLabel}`;
+
+            const fileContent = this.attachedFileText.slice(0, 8000); // Limiter la taille
+            aiMessage = userMessage
+                ? `Voici le contenu du fichier "${fileLabel}" :\n\n---\n${fileContent}\n---\n\nMa demande : ${userMessage}`
+                : `Voici le contenu du fichier "${fileLabel}" que je veux que tu analyses :\n\n---\n${fileContent}\n---\n\nAnalyse ce document et donne-moi tes recommandations.`;
+
+            this.clearAttachment();
+        }
+
+        if (input) {
+            input.value = '';
+            input.style.height = 'auto';
+        }
 
         // Show user message
-        this.renderMessage(userMessage, 'user');
+        this.renderMessage(displayMessage, 'user');
 
         // Show loading indicator
         this.showTypingIndicator();
         this.isLoading = true;
 
         // Call AI
-        const response = await this.callAI(userMessage);
+        const response = await this.callAI(aiMessage);
         this.isLoading = false;
 
         // Remove loading indicator

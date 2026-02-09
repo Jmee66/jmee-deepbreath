@@ -3,7 +3,7 @@
  * Enables offline functionality
  */
 
-const CACHE_NAME = 'jmee-deepbreath-v8';
+const CACHE_NAME = 'jmee-deepbreath-v9';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -16,7 +16,8 @@ const ASSETS_TO_CACHE = [
     '/coach.js',
     '/multi-timer.js',
     'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js',
-    'https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js'
+    'https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js',
+    'https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js'
 ];
 
 // Install event - cache all assets

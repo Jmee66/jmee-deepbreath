@@ -1884,9 +1884,21 @@
                         </button>
                     </div>
                     <div class="coach-chat-input">
-                        <textarea id="coachInput" rows="2"
-                            placeholder="Demande une seance, un programme, un bilan..."
-                            maxlength="1000"></textarea>
+                        <button class="coach-attach-btn" id="coachAttachBtn" title="Joindre un fichier (.docx, .txt, .pdf)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                            </svg>
+                        </button>
+                        <input type="file" id="coachFileInput" accept=".docx,.txt,.doc" style="display:none">
+                        <div class="coach-input-wrapper">
+                            <div class="coach-attached-file" id="coachAttachedFile" style="display:none">
+                                <span class="attached-file-name" id="attachedFileName"></span>
+                                <button class="attached-file-remove" id="attachedFileRemove">&times;</button>
+                            </div>
+                            <textarea id="coachInput" rows="2"
+                                placeholder="Demande une seance, un programme, un bilan..."
+                                maxlength="2000"></textarea>
+                        </div>
                         <button class="coach-send-btn" id="coachSendBtn">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="22" y1="2" x2="11" y2="13"/>
@@ -2989,6 +3001,7 @@
     <script src="app.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
     <script src="coach.js"></script>
     <script src="multi-timer.js"></script>
 </body>
