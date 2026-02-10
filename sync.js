@@ -36,6 +36,15 @@ class DataSync {
         window.addEventListener('online', () => {
             if (this.pendingPush) this.push();
         });
+
+        // Push immediately when app goes to background (avoid losing data on close)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && this.enabled && this.pushDebounceTimer) {
+                clearTimeout(this.pushDebounceTimer);
+                this.pushDebounceTimer = null;
+                this.push();
+            }
+        });
     }
 
     // ==========================================
@@ -204,14 +213,17 @@ class DataSync {
             if (merged) {
                 // Write merged data back to localStorage (without triggering push)
                 this._writeWithoutIntercept(merged);
-                // Reload all modules
-                this._reloadModules();
+                console.log('[Sync] Pull: merged data written to localStorage', Object.keys(merged));
             }
+
+            // Always reload modules to sync memory ↔ localStorage
+            this._reloadModules();
 
             this.lastPullTimestamp = new Date();
             this.isSyncing = false;
             this._updateStatusUI('synced');
-            return true;
+            console.log('[Sync] Pull complete, data applied:', !!merged);
+            return !!merged;
 
         } catch (e) {
             this.isSyncing = false;
@@ -227,10 +239,12 @@ class DataSync {
     async push() {
         if (!this.enabled || this.isSyncing) {
             this.pendingPush = true;
+            console.log('[Sync] Push deferred (enabled:', this.enabled, 'syncing:', this.isSyncing, ')');
             return false;
         }
         if (!navigator.onLine) {
             this.pendingPush = true;
+            console.log('[Sync] Push deferred (offline)');
             return false;
         }
 
@@ -240,6 +254,8 @@ class DataSync {
 
         try {
             const payload = this._buildPayload();
+            const sessionCount = payload.data?.deepbreath_sessions?.length || 0;
+            console.log('[Sync] Pushing', sessionCount, 'sessions to Gist');
             const resp = await fetch(`https://api.github.com/gists/${this.gistId}`, {
                 method: 'PATCH',
                 headers: {
@@ -265,12 +281,14 @@ class DataSync {
             this.etag = resp.headers.get('ETag');
             this.isSyncing = false;
             this._updateStatusUI('synced');
+            console.log('[Sync] Push success');
             return true;
 
         } catch (e) {
             this.isSyncing = false;
             this.pendingPush = true;
             this._updateStatusUI('error', e.message);
+            console.warn('[Sync] Push error:', e.message);
             return false;
         }
     }
@@ -329,16 +347,18 @@ class DataSync {
     // ==========================================
 
     _merge(remote) {
-        if (!remote?.data) return null;
+        if (!remote?.data) { console.log('[Sync] Merge: no remote data'); return null; }
 
         const localTimestamp = this.lastPullTimestamp || new Date(0);
         const remoteTimestamp = new Date(remote.lastModified || 0);
         const remoteData = remote.data;
         let changed = false;
+        console.log('[Sync] Merge: remote from', remote.deviceId, 'at', remote.lastModified);
 
         // Sessions — union by ID
         if (remoteData.deepbreath_sessions) {
             const localSessions = this._getLocal('deepbreath_sessions', []);
+            console.log('[Sync] Sessions: local', localSessions.length, 'remote', remoteData.deepbreath_sessions.length);
             const merged = this._mergeSessions(localSessions, remoteData.deepbreath_sessions);
             if (merged.length !== localSessions.length || JSON.stringify(merged) !== JSON.stringify(localSessions)) {
                 remoteData.deepbreath_sessions = merged;
@@ -397,6 +417,7 @@ class DataSync {
             }
         }
 
+        console.log('[Sync] Merge result: changed =', changed);
         return changed ? remoteData : null;
     }
 

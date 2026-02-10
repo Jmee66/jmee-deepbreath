@@ -300,7 +300,16 @@ class JmeeDeepBreathApp {
             if (btnDisconnect) btnDisconnect.style.display = '';
             // Auto-pull on open
             sync.pull().then(pulled => {
-                if (pulled) this.showToast('Données synchronisées');
+                if (pulled) {
+                    this.showToast('Données synchronisées');
+                    // Force re-render all UI after sync
+                    if (window.coach) {
+                        window.coach.sessions = window.coach.loadSessions();
+                        if (window.coach.updateStatsDisplay) window.coach.updateStatsDisplay();
+                        if (window.coach.renderRecentSessions) window.coach.renderRecentSessions();
+                    }
+                    if (window.journal) window.journal.render();
+                }
             });
         }
 
