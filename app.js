@@ -1218,7 +1218,7 @@ class JmeeDeepBreathApp {
         document.querySelectorAll('.exercise-card').forEach(card => {
             const startBtn = card.querySelector('.btn-start');
             if (startBtn) {
-                startBtn.addEventListener('click', () => {
+                startBtn.addEventListener('click', async () => {
                     // Initialize audio on user click (required by browsers)
                     if (window.breathSounds) {
                         // Create AudioContext synchronously on click
@@ -1226,7 +1226,7 @@ class JmeeDeepBreathApp {
                             window.breathSounds.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                         }
                         if (window.breathSounds.audioContext.state === 'suspended') {
-                            window.breathSounds.audioContext.resume();
+                            await window.breathSounds.audioContext.resume();
                         }
                         // Make sure sounds are enabled
                         window.breathSounds.enabled = true;
@@ -1326,7 +1326,7 @@ class JmeeDeepBreathApp {
     // Exercise Control
     // ==========================================
 
-    startExercise(exerciseId) {
+    async startExercise(exerciseId) {
         const exercise = this.getExerciseParams(exerciseId);
         if (!exercise) return;
 
@@ -1347,9 +1347,9 @@ class JmeeDeepBreathApp {
             if (!window.breathSounds.audioContext) {
                 window.breathSounds.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
-            // Resume if suspended
+            // Resume if suspended — MUST await on mobile
             if (window.breathSounds.audioContext.state === 'suspended') {
-                window.breathSounds.audioContext.resume();
+                try { await window.breathSounds.audioContext.resume(); } catch(e) {}
             }
             // Force enable sounds
             window.breathSounds.enabled = true;
