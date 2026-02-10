@@ -345,15 +345,23 @@ class JmeeDeepBreathApp {
             });
         }
 
-        // Manual sync
+        // Manual sync — always push first (send local data), then pull (get remote data)
         if (btnSyncNow) {
             btnSyncNow.addEventListener('click', async () => {
                 btnSyncNow.textContent = 'Sync...';
                 btnSyncNow.disabled = true;
+                // Push local data first
+                await sync.forcePush();
+                // Then pull remote data (merge)
                 const pulled = await sync.pull();
-                if (!pulled) await sync.push();
-                if (pulled) this.showToast('Données synchronisées');
-                else this.showToast('Push effectué');
+                // Force UI refresh
+                if (window.coach) {
+                    window.coach.sessions = window.coach.loadSessions();
+                    if (window.coach.updateStatsDisplay) window.coach.updateStatsDisplay();
+                    if (window.coach.renderRecentSessions) window.coach.renderRecentSessions();
+                }
+                if (window.journal) window.journal.render();
+                this.showToast(pulled ? 'Données synchronisées ✓' : 'Push effectué ✓');
                 btnSyncNow.textContent = 'Sync maintenant';
                 btnSyncNow.disabled = false;
             });

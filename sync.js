@@ -303,6 +303,17 @@ class DataSync {
         this.pushDebounceTimer = setTimeout(() => this.push(), this.DEBOUNCE_MS);
     }
 
+    async forcePush() {
+        // Bypass debounce — immediate push
+        clearTimeout(this.pushDebounceTimer);
+        this.pushDebounceTimer = null;
+        // Wait if currently syncing
+        if (this.isSyncing) {
+            await new Promise(r => setTimeout(r, 500));
+        }
+        return this.push();
+    }
+
     // ==========================================
     // Build sync payload
     // ==========================================
