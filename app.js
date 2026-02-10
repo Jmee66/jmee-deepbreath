@@ -1104,6 +1104,48 @@ class JmeeDeepBreathApp {
                 exercise.phases[2].duration = userSettings.exhale || exercise.phases[2].duration;
                 break;
 
+            case 'pranayama-142':
+                exercise.duration = userSettings.duration || exercise.duration;
+                exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
+                exercise.phases[1].duration = userSettings.hold || exercise.phases[1].duration;
+                exercise.phases[2].duration = userSettings.exhale || exercise.phases[2].duration;
+                break;
+
+            case 'nadi-shodhana':
+                exercise.duration = userSettings.duration || exercise.duration;
+                if (userSettings.phaseTime) {
+                    exercise.phases.forEach(p => p.duration = userSettings.phaseTime);
+                }
+                break;
+
+            case 'kapalabhati':
+                exercise.cycles = userSettings.cycles || exercise.cycles;
+                if (userSettings.speed) {
+                    const half = userSettings.speed / 2;
+                    exercise.phases[0].duration = half;
+                    exercise.phases[1].duration = half;
+                }
+                break;
+
+            case 'ujjayi':
+                exercise.duration = userSettings.duration || exercise.duration;
+                exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
+                exercise.phases[1].duration = userSettings.exhale || exercise.phases[1].duration;
+                break;
+
+            case 'bhramari':
+                exercise.duration = userSettings.duration || exercise.duration;
+                exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
+                exercise.phases[1].duration = userSettings.exhale || exercise.phases[1].duration;
+                break;
+
+            case 'surya-bhedana':
+                exercise.duration = userSettings.duration || exercise.duration;
+                exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
+                exercise.phases[1].duration = userSettings.hold || exercise.phases[1].duration;
+                exercise.phases[2].duration = userSettings.exhale || exercise.phases[2].duration;
+                break;
+
             case 'diaphragm':
                 exercise.duration = userSettings.duration || exercise.duration;
                 break;

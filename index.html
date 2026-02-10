@@ -536,6 +536,12 @@
                     </div>
                     <div class="exercise-actions">
                         <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="kapalabhati">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
@@ -551,6 +557,12 @@
                     </div>
                     <div class="exercise-actions">
                         <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="ujjayi">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
@@ -566,6 +578,12 @@
                     </div>
                     <div class="exercise-actions">
                         <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="bhramari">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
@@ -581,6 +599,12 @@
                     </div>
                     <div class="exercise-actions">
                         <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="surya-bhedana">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -2420,6 +2444,162 @@
                             <label>Expiration</label>
                             <div class="input-with-unit">
                                 <input type="number" min="4" max="16" value="8" data-param="exhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pranayama 1-4-2 -->
+                    <div class="exercise-settings" data-exercise="pranayama-142">
+                        <h4>Pranayama 1-4-2</h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="30" value="10" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Inspiration (Pūraka)</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="8" value="4" data-param="inhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Rétention (Kumbhaka)</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="4" max="32" value="16" data-param="hold">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Expiration (Rechaka)</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="4" max="16" value="8" data-param="exhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nadi Shodhana -->
+                    <div class="exercise-settings" data-exercise="nadi-shodhana">
+                        <h4>Nadi Shodhana</h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="30" value="10" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Durée par phase</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="8" value="4" data-param="phaseTime">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kapalabhati -->
+                    <div class="exercise-settings" data-exercise="kapalabhati">
+                        <h4>Kapalabhati</h4>
+                        <div class="settings-row">
+                            <label>Nombre de rounds</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="10" value="3" data-param="cycles">
+                                <span>rounds</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Vitesse (1 cycle)</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="0.5" max="2" value="1" step="0.1" data-param="speed">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ujjayi -->
+                    <div class="exercise-settings" data-exercise="ujjayi">
+                        <h4>Ujjayi</h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="30" value="10" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Inspiration</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="3" max="10" value="5" data-param="inhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Expiration</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="3" max="10" value="5" data-param="exhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bhramari -->
+                    <div class="exercise-settings" data-exercise="bhramari">
+                        <h4>Bhramari</h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="20" value="5" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Inspiration</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="8" value="4" data-param="inhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Bourdonnement (Expir)</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="4" max="16" value="8" data-param="exhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Surya Bhedana -->
+                    <div class="exercise-settings" data-exercise="surya-bhedana">
+                        <h4>Surya Bhedana</h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="20" value="5" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Inspiration (droite)</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="8" value="4" data-param="inhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Rétention</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="4" max="16" value="8" data-param="hold">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Expiration (gauche)</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="3" max="12" value="6" data-param="exhale">
                                 <span>sec</span>
                             </div>
                         </div>
