@@ -1,0 +1,523 @@
+/**
+ * DataSync — Cross-device sync via GitHub Gist (private)
+ * Intercepts localStorage writes to auto-push, pulls on app open.
+ * API key is NEVER synced.
+ */
+
+class DataSync {
+    constructor() {
+        this.gistId = localStorage.getItem('deepbreath_sync_gistId') || '';
+        this.token = localStorage.getItem('deepbreath_sync_token') || '';
+        this.enabled = !!(this.gistId && this.token);
+        this.isSyncing = false;
+        this.pendingPush = false;
+        this.pushDebounceTimer = null;
+        this.DEBOUNCE_MS = 3000;
+        this.lastPullTimestamp = null;
+        this.etag = null;
+        this.deviceId = this.getOrCreateDeviceId();
+
+        // Keys to sync (order matters for display)
+        this.SYNC_KEYS = [
+            'deepbreath_sessions',
+            'deepbreath_profile',
+            'deepbreath_goals',
+            'deepbreath_chat_history',
+            'deepbreath_settings',
+            'deepbreath_coach_settings',
+            'deepbreath_sequences',
+            'deepbreath_contraction_history'
+        ];
+
+        // Intercept localStorage writes for auto-push
+        this._interceptLocalStorage();
+
+        // Online/offline handlers
+        window.addEventListener('online', () => {
+            if (this.pendingPush) this.push();
+        });
+    }
+
+    // ==========================================
+    // Device ID
+    // ==========================================
+
+    getOrCreateDeviceId() {
+        let id = localStorage.getItem('deepbreath_sync_deviceId');
+        if (!id) {
+            const ua = navigator.userAgent;
+            const short = ua.includes('iPhone') ? 'iPhone' :
+                          ua.includes('iPad') ? 'iPad' :
+                          ua.includes('Android') ? 'Android' :
+                          ua.includes('Mac') ? 'Mac' :
+                          ua.includes('Windows') ? 'Windows' : 'Device';
+            id = `${short}-${Date.now().toString(36)}`;
+            localStorage.setItem('deepbreath_sync_deviceId', id);
+        }
+        return id;
+    }
+
+    // ==========================================
+    // Setup — Create Gist
+    // ==========================================
+
+    async setup(token) {
+        this.token = token.trim();
+        if (!this.token) throw new Error('Token vide');
+
+        // Test token validity
+        const testResp = await fetch('https://api.github.com/user', {
+            headers: { 'Authorization': `Bearer ${this.token}` }
+        });
+        if (!testResp.ok) throw new Error('Token GitHub invalide');
+
+        // Create private Gist with current data
+        const payload = this._buildPayload();
+        const resp = await fetch('https://api.github.com/gists', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                description: 'Jmee DeepBreath — Sync Data (auto-generated)',
+                public: false,
+                files: {
+                    'deepbreath-sync.json': {
+                        content: JSON.stringify(payload, null, 2)
+                    }
+                }
+            })
+        });
+
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            throw new Error(err.message || `Erreur GitHub ${resp.status}`);
+        }
+
+        const gist = await resp.json();
+        this.gistId = gist.id;
+        this.enabled = true;
+
+        localStorage.setItem('deepbreath_sync_token', this.token);
+        localStorage.setItem('deepbreath_sync_gistId', this.gistId);
+
+        return this.gistId;
+    }
+
+    // ==========================================
+    // Connect to existing Gist
+    // ==========================================
+
+    async connect(token, gistId) {
+        this.token = token.trim();
+        this.gistId = gistId.trim();
+        if (!this.token || !this.gistId) throw new Error('Token ou Gist ID manquant');
+
+        // Verify access
+        const resp = await fetch(`https://api.github.com/gists/${this.gistId}`, {
+            headers: { 'Authorization': `Bearer ${this.token}` }
+        });
+        if (!resp.ok) throw new Error(`Gist introuvable ou token invalide (${resp.status})`);
+
+        this.enabled = true;
+        localStorage.setItem('deepbreath_sync_token', this.token);
+        localStorage.setItem('deepbreath_sync_gistId', this.gistId);
+
+        // Pull immediately
+        await this.pull();
+    }
+
+    // ==========================================
+    // Disconnect
+    // ==========================================
+
+    disconnect() {
+        this.enabled = false;
+        this.gistId = '';
+        this.token = '';
+        this.etag = null;
+        localStorage.removeItem('deepbreath_sync_token');
+        localStorage.removeItem('deepbreath_sync_gistId');
+        this._updateStatusUI('disconnected');
+    }
+
+    // ==========================================
+    // Pull (fetch from Gist + merge)
+    // ==========================================
+
+    async pull() {
+        if (!this.enabled || this.isSyncing) return false;
+        if (!navigator.onLine) return false;
+
+        this.isSyncing = true;
+        this._updateStatusUI('syncing');
+
+        try {
+            const headers = { 'Authorization': `Bearer ${this.token}` };
+            if (this.etag) headers['If-None-Match'] = this.etag;
+
+            const resp = await fetch(`https://api.github.com/gists/${this.gistId}`, { headers });
+
+            if (resp.status === 304) {
+                // Not modified
+                this.isSyncing = false;
+                this._updateStatusUI('synced');
+                return false;
+            }
+
+            if (resp.status === 401) {
+                this._updateStatusUI('error', 'Token invalide');
+                this.isSyncing = false;
+                return false;
+            }
+
+            if (resp.status === 404) {
+                this._updateStatusUI('error', 'Gist supprimé');
+                this.isSyncing = false;
+                return false;
+            }
+
+            if (!resp.ok) {
+                this._updateStatusUI('error', `Erreur ${resp.status}`);
+                this.isSyncing = false;
+                return false;
+            }
+
+            this.etag = resp.headers.get('ETag');
+            const gist = await resp.json();
+            const file = gist.files?.['deepbreath-sync.json'];
+            if (!file?.content) {
+                this.isSyncing = false;
+                this._updateStatusUI('synced');
+                return false;
+            }
+
+            const remote = JSON.parse(file.content);
+            if (!remote?.data) {
+                this.isSyncing = false;
+                return false;
+            }
+
+            // Merge remote into local
+            const merged = this._merge(remote);
+            if (merged) {
+                // Write merged data back to localStorage (without triggering push)
+                this._writeWithoutIntercept(merged);
+                // Reload all modules
+                this._reloadModules();
+            }
+
+            this.lastPullTimestamp = new Date();
+            this.isSyncing = false;
+            this._updateStatusUI('synced');
+            return true;
+
+        } catch (e) {
+            this.isSyncing = false;
+            this._updateStatusUI('error', e.message);
+            return false;
+        }
+    }
+
+    // ==========================================
+    // Push (upload to Gist)
+    // ==========================================
+
+    async push() {
+        if (!this.enabled || this.isSyncing) {
+            this.pendingPush = true;
+            return false;
+        }
+        if (!navigator.onLine) {
+            this.pendingPush = true;
+            return false;
+        }
+
+        this.isSyncing = true;
+        this.pendingPush = false;
+        this._updateStatusUI('syncing');
+
+        try {
+            const payload = this._buildPayload();
+            const resp = await fetch(`https://api.github.com/gists/${this.gistId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    files: {
+                        'deepbreath-sync.json': {
+                            content: JSON.stringify(payload, null, 2)
+                        }
+                    }
+                })
+            });
+
+            if (!resp.ok) {
+                this._updateStatusUI('error', `Push échoué (${resp.status})`);
+                this.pendingPush = true;
+                this.isSyncing = false;
+                return false;
+            }
+
+            this.etag = resp.headers.get('ETag');
+            this.isSyncing = false;
+            this._updateStatusUI('synced');
+            return true;
+
+        } catch (e) {
+            this.isSyncing = false;
+            this.pendingPush = true;
+            this._updateStatusUI('error', e.message);
+            return false;
+        }
+    }
+
+    // ==========================================
+    // Debounced push scheduler
+    // ==========================================
+
+    schedulePush() {
+        if (!this.enabled) return;
+        clearTimeout(this.pushDebounceTimer);
+        this.pushDebounceTimer = setTimeout(() => this.push(), this.DEBOUNCE_MS);
+    }
+
+    // ==========================================
+    // Build sync payload
+    // ==========================================
+
+    _buildPayload() {
+        const data = {};
+
+        for (const key of this.SYNC_KEYS) {
+            const raw = localStorage.getItem(key);
+            if (raw === null) continue;
+
+            if (key === 'deepbreath_coach_settings') {
+                // Strip API key — never sync it
+                try {
+                    const parsed = JSON.parse(raw);
+                    const { apiKey, ...safe } = parsed;
+                    data[key] = safe;
+                } catch {
+                    data[key] = raw;
+                }
+            } else if (key === 'deepbreath_goals') {
+                data[key] = raw; // String, not JSON
+            } else {
+                try {
+                    data[key] = JSON.parse(raw);
+                } catch {
+                    data[key] = raw;
+                }
+            }
+        }
+
+        return {
+            version: 1,
+            lastModified: new Date().toISOString(),
+            deviceId: this.deviceId,
+            data
+        };
+    }
+
+    // ==========================================
+    // Merge strategies
+    // ==========================================
+
+    _merge(remote) {
+        if (!remote?.data) return null;
+
+        const localTimestamp = this.lastPullTimestamp || new Date(0);
+        const remoteTimestamp = new Date(remote.lastModified || 0);
+        const remoteData = remote.data;
+        let changed = false;
+
+        // Sessions — union by ID
+        if (remoteData.deepbreath_sessions) {
+            const localSessions = this._getLocal('deepbreath_sessions', []);
+            const merged = this._mergeSessions(localSessions, remoteData.deepbreath_sessions);
+            if (merged.length !== localSessions.length || JSON.stringify(merged) !== JSON.stringify(localSessions)) {
+                remoteData.deepbreath_sessions = merged;
+                changed = true;
+            } else {
+                remoteData.deepbreath_sessions = localSessions;
+            }
+        }
+
+        // Contraction history — union by date+weekLevel
+        if (remoteData.deepbreath_contraction_history) {
+            const localHist = this._getLocal('deepbreath_contraction_history', []);
+            const merged = this._mergeContractionHistory(localHist, remoteData.deepbreath_contraction_history);
+            if (merged.length !== localHist.length) {
+                remoteData.deepbreath_contraction_history = merged;
+                changed = true;
+            } else {
+                remoteData.deepbreath_contraction_history = localHist;
+            }
+        }
+
+        // Sequences — union by key
+        if (remoteData.deepbreath_sequences) {
+            const localSeq = this._getLocal('deepbreath_sequences', {});
+            const merged = { ...remoteData.deepbreath_sequences, ...localSeq };
+            if (Object.keys(merged).length !== Object.keys(localSeq).length) {
+                remoteData.deepbreath_sequences = merged;
+                changed = true;
+            } else {
+                remoteData.deepbreath_sequences = localSeq;
+            }
+        }
+
+        // Coach settings — merge but preserve local API key
+        if (remoteData.deepbreath_coach_settings) {
+            const localCoach = this._getLocal('deepbreath_coach_settings', {});
+            const localKey = localCoach.apiKey; // preserve
+            remoteData.deepbreath_coach_settings = {
+                ...remoteData.deepbreath_coach_settings,
+                apiKey: localKey // re-inject local API key
+            };
+            changed = true;
+        }
+
+        // Last-write-wins for simple keys
+        const lwwKeys = ['deepbreath_profile', 'deepbreath_goals', 'deepbreath_chat_history', 'deepbreath_settings'];
+        for (const key of lwwKeys) {
+            if (remoteData[key] !== undefined) {
+                const localVal = localStorage.getItem(key);
+                const remoteVal = key === 'deepbreath_goals'
+                    ? remoteData[key]
+                    : JSON.stringify(remoteData[key]);
+                if (localVal !== remoteVal) {
+                    changed = true;
+                }
+            }
+        }
+
+        return changed ? remoteData : null;
+    }
+
+    _mergeSessions(local, remote) {
+        const byId = new Map();
+        for (const s of (remote || [])) { if (s?.id) byId.set(s.id, s); }
+        for (const s of (local || [])) { if (s?.id) byId.set(s.id, s); } // local wins
+        return Array.from(byId.values())
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+
+    _mergeContractionHistory(local, remote) {
+        const key = (s) => `${s.date}_${s.weekLevel}`;
+        const byKey = new Map();
+        for (const s of (remote || [])) byKey.set(key(s), s);
+        for (const s of (local || [])) byKey.set(key(s), s);
+        return Array.from(byKey.values())
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+
+    // ==========================================
+    // localStorage helpers
+    // ==========================================
+
+    _getLocal(key, fallback) {
+        try {
+            const raw = localStorage.getItem(key);
+            return raw ? JSON.parse(raw) : fallback;
+        } catch {
+            return fallback;
+        }
+    }
+
+    _writeWithoutIntercept(data) {
+        this._skipIntercept = true;
+        for (const key of this.SYNC_KEYS) {
+            if (data[key] === undefined) continue;
+            const val = key === 'deepbreath_goals'
+                ? data[key]
+                : JSON.stringify(data[key]);
+            localStorage.setItem(key, val);
+        }
+        this._skipIntercept = false;
+    }
+
+    // ==========================================
+    // localStorage interception
+    // ==========================================
+
+    _interceptLocalStorage() {
+        const originalSetItem = localStorage.setItem.bind(localStorage);
+        const sync = this;
+
+        localStorage.setItem = function(key, value) {
+            originalSetItem(key, value);
+            if (!sync._skipIntercept && key.startsWith('deepbreath_') && sync.enabled) {
+                sync.schedulePush();
+            }
+        };
+    }
+
+    // ==========================================
+    // Reload app modules after merge
+    // ==========================================
+
+    _reloadModules() {
+        // Coach
+        if (window.coach) {
+            window.coach.sessions = window.coach.loadSessions();
+            window.coach.profile = window.coach.loadProfile();
+            window.coach.goals = localStorage.getItem('deepbreath_goals') || '';
+            window.coach.chatHistory = window.coach.loadChatHistory();
+            if (window.coach.updateStatsDisplay) window.coach.updateStatsDisplay();
+            if (window.coach.renderRecentSessions) window.coach.renderRecentSessions();
+        }
+        // Journal
+        if (window.journal) {
+            window.journal.render();
+        }
+        // MultiTimer
+        if (window.multiTimer) {
+            window.multiTimer.sequences = window.multiTimer.loadSequences();
+            window.multiTimer.renderSequenceCards();
+        }
+        // App settings
+        if (window.app) {
+            window.app.settings = window.app.loadSettings();
+        }
+    }
+
+    // ==========================================
+    // Status UI updates
+    // ==========================================
+
+    _updateStatusUI(status, message) {
+        const btn = document.getElementById('syncStatusBtn');
+        const statusText = document.getElementById('syncStatusText');
+        const lastSyncEl = document.getElementById('syncLastTime');
+
+        if (btn) {
+            btn.className = 'sync-status-btn';
+            btn.classList.add(`sync-${status}`);
+            btn.title = status === 'synced' ? 'Synchronisé'
+                      : status === 'syncing' ? 'Synchronisation...'
+                      : status === 'error' ? `Erreur: ${message}`
+                      : 'Sync non configurée';
+        }
+
+        if (statusText) {
+            statusText.textContent = status === 'synced' ? 'Synchronisé'
+                                   : status === 'syncing' ? 'Synchronisation...'
+                                   : status === 'error' ? `Erreur : ${message}`
+                                   : 'Non configuré';
+            statusText.className = `sync-status-label sync-${status}`;
+        }
+
+        if (lastSyncEl && status === 'synced') {
+            lastSyncEl.textContent = 'à l\'instant';
+        }
+    }
+}
+
+// Create global instance
+window.dataSync = new DataSync();

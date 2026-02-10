@@ -3,12 +3,13 @@
  * Enables offline functionality
  */
 
-const CACHE_NAME = 'jmee-deepbreath-v22';
+const CACHE_NAME = 'jmee-deepbreath-v23';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
     '/styles.css',
     '/app.js',
+    '/sync.js',
     '/exercises.js',
     '/breath-sounds.js',
     '/ocean-sound.js',

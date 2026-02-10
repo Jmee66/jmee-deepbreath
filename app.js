@@ -198,6 +198,7 @@ class JmeeDeepBreathApp {
         this.setupGuide();
         this.setupWakeLock();
         this.initJournal();
+        this.setupSync();
     }
 
     initJournal() {
@@ -275,6 +276,93 @@ class JmeeDeepBreathApp {
     // ==========================================
     // Offline Mode (Service Worker)
     // ==========================================
+
+    // ==========================================
+    // Sync — Cross-device via GitHub Gist
+    // ==========================================
+
+    setupSync() {
+        const sync = window.dataSync;
+        if (!sync) return;
+
+        const tokenInput = document.getElementById('syncToken');
+        const gistIdInput = document.getElementById('syncGistId');
+        const btnSetup = document.getElementById('btnSyncSetup');
+        const btnSyncNow = document.getElementById('btnSyncNow');
+        const btnDisconnect = document.getElementById('btnSyncDisconnect');
+
+        // Restore UI state
+        if (sync.enabled) {
+            if (tokenInput) tokenInput.value = '••••••••';
+            if (gistIdInput) gistIdInput.value = sync.gistId;
+            if (btnSetup) btnSetup.style.display = 'none';
+            if (btnSyncNow) btnSyncNow.style.display = '';
+            if (btnDisconnect) btnDisconnect.style.display = '';
+            // Auto-pull on open
+            sync.pull().then(pulled => {
+                if (pulled) this.showToast('Données synchronisées');
+            });
+        }
+
+        // Setup button
+        if (btnSetup) {
+            btnSetup.addEventListener('click', async () => {
+                const token = tokenInput?.value?.trim();
+                const existingGistId = gistIdInput?.value?.trim();
+                if (!token || token === '••••••••') {
+                    this.showToast('Entrez votre token GitHub');
+                    return;
+                }
+                btnSetup.disabled = true;
+                btnSetup.textContent = 'Configuration...';
+                try {
+                    if (existingGistId && existingGistId.length > 10) {
+                        await sync.connect(token, existingGistId);
+                        this.showToast('Connecté au Gist existant');
+                    } else {
+                        const gistId = await sync.setup(token);
+                        if (gistIdInput) gistIdInput.value = gistId;
+                        this.showToast('Sync configurée ! Gist créé.');
+                    }
+                    if (tokenInput) tokenInput.value = '••••••••';
+                    btnSetup.style.display = 'none';
+                    if (btnSyncNow) btnSyncNow.style.display = '';
+                    if (btnDisconnect) btnDisconnect.style.display = '';
+                } catch (e) {
+                    this.showToast(`Erreur : ${e.message}`);
+                }
+                btnSetup.disabled = false;
+                btnSetup.textContent = 'Configurer';
+            });
+        }
+
+        // Manual sync
+        if (btnSyncNow) {
+            btnSyncNow.addEventListener('click', async () => {
+                btnSyncNow.textContent = 'Sync...';
+                btnSyncNow.disabled = true;
+                const pulled = await sync.pull();
+                if (!pulled) await sync.push();
+                if (pulled) this.showToast('Données synchronisées');
+                else this.showToast('Push effectué');
+                btnSyncNow.textContent = 'Sync maintenant';
+                btnSyncNow.disabled = false;
+            });
+        }
+
+        // Disconnect
+        if (btnDisconnect) {
+            btnDisconnect.addEventListener('click', () => {
+                sync.disconnect();
+                if (tokenInput) tokenInput.value = '';
+                if (gistIdInput) gistIdInput.value = '';
+                if (btnSetup) btnSetup.style.display = '';
+                if (btnSyncNow) btnSyncNow.style.display = 'none';
+                btnDisconnect.style.display = 'none';
+                this.showToast('Sync déconnectée');
+            });
+        }
+    }
 
     setupOfflineMode() {
         const offlineToggle = document.getElementById('offlineToggle');
