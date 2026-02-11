@@ -67,15 +67,12 @@ class DataSync {
             try {
                 console.log('[Sync] Button clicked, enabled:', sync.enabled);
                 if (sync.enabled) {
-                    // Visual feedback immediately
                     btn.classList.add('sync-syncing');
-                    const beforeCount = sync._getLocal('deepbreath_sessions', []).length;
-                    await sync.fullSync();
+                    const diag = await sync.fullSync();
                     sync._reloadModules();
-                    const afterCount = sync._getLocal('deepbreath_sessions', []).length;
-                    const msg = `Sync: ${beforeCount} → ${afterCount} sessions`;
-                    console.log('[Sync]', msg);
-                    sync._showSyncToast(msg);
+                    const msg = `local=${diag.localBefore} gist=${diag.gistSessions} → ${diag.localAfter}`;
+                    console.log('[Sync]', msg, diag);
+                    sync._showSyncToast(msg + (diag.error ? ' ⚠️' + diag.error : ''));
                 } else {
                     const navLink = document.querySelector('[data-section="settings"]');
                     if (navLink) navLink.click();
@@ -86,7 +83,7 @@ class DataSync {
                 }
             } catch (e) {
                 console.error('[Sync] Button handler error:', e);
-                sync._showSyncToast('Erreur sync: ' + e.message);
+                sync._showSyncToast('Erreur: ' + e.message);
             }
         });
         console.log('[Sync] Button handler attached to', btn);
@@ -391,10 +388,11 @@ class DataSync {
 
     /**
      * Full sync: pull remote (merge), then push merged result.
-     * Clears etag to force a fresh fetch (avoids 304).
+     * Returns diagnostic object for UI display.
      */
     async fullSync() {
-        if (!this.enabled) return;
+        const diag = { localBefore: 0, gistSessions: 0, localAfter: 0, pulled: false, pushed: false, error: null };
+        if (!this.enabled) { diag.error = 'sync disabled'; return diag; }
         console.log('[Sync] fullSync start');
         clearTimeout(this.pushDebounceTimer);
         this.pushDebounceTimer = null;
@@ -402,18 +400,45 @@ class DataSync {
         for (let i = 0; i < 10 && this.isSyncing; i++) {
             await new Promise(r => setTimeout(r, 500));
         }
-        // Force unlock if still stuck
         this.isSyncing = false;
+
+        diag.localBefore = this._getLocal('deepbreath_sessions', []).length;
+
+        try {
+            // 0. Peek at Gist to count remote sessions
+            const peekResp = await fetch(`https://api.github.com/gists/${this.gistId}`, {
+                headers: { 'Authorization': `Bearer ${this.token}` }
+            });
+            if (peekResp.ok) {
+                const gist = await peekResp.json();
+                const file = gist.files?.['deepbreath-sync.json'];
+                if (file?.content) {
+                    const remote = JSON.parse(file.content);
+                    diag.gistSessions = remote.data?.deepbreath_sessions?.length || 0;
+                    diag.gistDevice = remote.deviceId || '?';
+                }
+            } else {
+                diag.error = `Gist fetch: ${peekResp.status}`;
+            }
+            console.log('[Sync] Gist has', diag.gistSessions, 'sessions from', diag.gistDevice);
+        } catch (e) {
+            diag.error = e.message;
+            console.error('[Sync] Peek error:', e);
+        }
+
         // Clear etag to force fresh pull (not 304)
         this.etag = null;
         // 1. Pull remote data + merge into local
-        const pulled = await this.pull();
-        console.log('[Sync] fullSync pull result:', pulled);
+        diag.pulled = await this.pull();
+        console.log('[Sync] fullSync pull result:', diag.pulled);
         // 2. Push merged local data back to Gist
         this._dirty = true;
-        const pushed = await this.push();
-        console.log('[Sync] fullSync push result:', pushed);
-        console.log('[Sync] fullSync complete');
+        diag.pushed = await this.push();
+        console.log('[Sync] fullSync push result:', diag.pushed);
+
+        diag.localAfter = this._getLocal('deepbreath_sessions', []).length;
+        console.log('[Sync] fullSync complete:', JSON.stringify(diag));
+        return diag;
     }
 
     /**
