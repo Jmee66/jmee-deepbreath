@@ -3,7 +3,7 @@
  * Enables offline functionality
  */
 
-const CACHE_NAME = 'jmee-deepbreath-v35';
+const CACHE_NAME = 'jmee-deepbreath-v36';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -63,12 +63,10 @@ self.addEventListener('message', (event) => {
     }
 });
 
-// Fetch event - serve from cache when offline
+// Fetch event — network-first for app files, cache-first for CDN
 self.addEventListener('fetch', (event) => {
-    // Only handle GET requests
     if (event.request.method !== 'GET') return;
 
-    // Only cache same-origin and known CDN requests
     const url = new URL(event.request.url);
     const isSameOrigin = url.origin === self.location.origin;
     const isKnownCDN = url.hostname === 'cdn.sheetjs.com'
@@ -76,35 +74,20 @@ self.addEventListener('fetch', (event) => {
         || url.hostname === 'fonts.googleapis.com'
         || url.hostname === 'fonts.gstatic.com';
 
-    event.respondWith(
-        caches.match(event.request)
-            .then((cachedResponse) => {
-                // Return cached version if available
-                if (cachedResponse) {
-                    return cachedResponse;
-                }
-
-                // Otherwise fetch from network
-                return fetch(event.request)
-                    .then((response) => {
-                        // Don't cache non-successful responses
-                        if (!response || response.status !== 200) {
-                            return response;
-                        }
-
-                        // Only cache same-origin and known CDN responses
-                        if (isSameOrigin || isKnownCDN) {
-                            const responseToCache = response.clone();
-                            caches.open(CACHE_NAME)
-                                .then((cache) => {
-                                    cache.put(event.request, responseToCache);
-                                });
-                        }
-
-                        return response;
-                    })
-                    .catch(() => {
-                        // Fallback offline response
+    if (isSameOrigin) {
+        // Network-first for our own files — always get fresh code
+        event.respondWith(
+            fetch(event.request)
+                .then((response) => {
+                    if (response && response.status === 200) {
+                        const clone = response.clone();
+                        caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+                    }
+                    return response;
+                })
+                .catch(() => {
+                    return caches.match(event.request).then(cached => {
+                        if (cached) return cached;
                         if (event.request.destination === 'document') {
                             return caches.match('/index.html');
                         }
@@ -114,6 +97,21 @@ self.addEventListener('fetch', (event) => {
                             headers: { 'Content-Type': 'text/plain; charset=utf-8' }
                         });
                     });
+                })
+        );
+    } else if (isKnownCDN) {
+        // Cache-first for CDN (they don't change)
+        event.respondWith(
+            caches.match(event.request).then(cached => {
+                if (cached) return cached;
+                return fetch(event.request).then(response => {
+                    if (response && response.status === 200) {
+                        const clone = response.clone();
+                        caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+                    }
+                    return response;
+                });
             })
-    );
+        );
+    }
 });
