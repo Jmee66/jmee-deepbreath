@@ -58,27 +58,52 @@ class DataSync {
 
     _initSyncButton() {
         const btn = document.getElementById('syncStatusBtn');
-        if (!btn) return;
+        if (!btn) {
+            console.warn('[Sync] syncStatusBtn not found in DOM');
+            return;
+        }
         const sync = this;
         btn.addEventListener('click', async () => {
-            console.log('[Sync] Button clicked, enabled:', sync.enabled);
-            if (sync.enabled) {
-                const beforeCount = sync._getLocal('deepbreath_sessions', []).length;
-                await sync.fullSync();
-                sync._reloadModules();
-                const afterCount = sync._getLocal('deepbreath_sessions', []).length;
-                if (window.app) window.app.showToast(`Sync: ${beforeCount} → ${afterCount} sessions`);
-            } else {
-                // Navigate to settings
-                const navLink = document.querySelector('[data-section="settings"]');
-                if (navLink) navLink.click();
-                setTimeout(() => {
-                    document.getElementById('syncToken')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 200);
-                if (window.app) window.app.showToast('Configurez la sync');
+            try {
+                console.log('[Sync] Button clicked, enabled:', sync.enabled);
+                if (sync.enabled) {
+                    // Visual feedback immediately
+                    btn.classList.add('sync-syncing');
+                    const beforeCount = sync._getLocal('deepbreath_sessions', []).length;
+                    await sync.fullSync();
+                    sync._reloadModules();
+                    const afterCount = sync._getLocal('deepbreath_sessions', []).length;
+                    const msg = `Sync: ${beforeCount} → ${afterCount} sessions`;
+                    console.log('[Sync]', msg);
+                    sync._showSyncToast(msg);
+                } else {
+                    const navLink = document.querySelector('[data-section="settings"]');
+                    if (navLink) navLink.click();
+                    setTimeout(() => {
+                        document.getElementById('syncToken')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 200);
+                    sync._showSyncToast('Configurez la sync');
+                }
+            } catch (e) {
+                console.error('[Sync] Button handler error:', e);
+                sync._showSyncToast('Erreur sync: ' + e.message);
             }
         });
-        console.log('[Sync] Button handler attached');
+        console.log('[Sync] Button handler attached to', btn);
+    }
+
+    _showSyncToast(msg) {
+        // Try app.showToast, fallback to native toast
+        if (window.app && window.app.showToast) {
+            window.app.showToast(msg);
+        } else {
+            // Fallback: create simple toast directly
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:8px;z-index:9999;font-size:14px;';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
     }
 
     // ==========================================
