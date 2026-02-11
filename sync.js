@@ -46,6 +46,37 @@ class DataSync {
                 this._pushKeepalive();
             }
         });
+
+        // Setup sync status button click (top bar)
+        this._initSyncButton();
+
+        // Show correct status on load
+        if (this.enabled) {
+            this._updateStatusUI('synced');
+        }
+    }
+
+    _initSyncButton() {
+        const btn = document.getElementById('syncStatusBtn');
+        if (!btn) return;
+        const sync = this;
+        btn.addEventListener('click', async () => {
+            console.log('[Sync] Button clicked, enabled:', sync.enabled);
+            if (sync.enabled) {
+                await sync.fullSync();
+                sync._reloadModules();
+                if (window.app) window.app.showToast('Synchronisé ✓');
+            } else {
+                // Navigate to settings
+                const navLink = document.querySelector('[data-section="settings"]');
+                if (navLink) navLink.click();
+                setTimeout(() => {
+                    document.getElementById('syncToken')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 200);
+                if (window.app) window.app.showToast('Configurez la sync');
+            }
+        });
+        console.log('[Sync] Button handler attached');
     }
 
     // ==========================================
@@ -323,20 +354,25 @@ class DataSync {
      */
     async fullSync() {
         if (!this.enabled) return;
+        console.log('[Sync] fullSync start');
         clearTimeout(this.pushDebounceTimer);
         this.pushDebounceTimer = null;
-        // Wait if currently syncing
-        if (this.isSyncing) {
+        // Wait for any in-flight sync to finish (up to 5s)
+        for (let i = 0; i < 10 && this.isSyncing; i++) {
             await new Promise(r => setTimeout(r, 500));
         }
+        // Force unlock if still stuck
+        this.isSyncing = false;
         // Clear etag to force fresh pull (not 304)
         this.etag = null;
         // 1. Pull remote data + merge into local
-        await this.pull();
+        const pulled = await this.pull();
+        console.log('[Sync] fullSync pull result:', pulled);
         // 2. Push merged local data back to Gist
         this._dirty = true;
-        await this.push();
-        console.log('[Sync] Full sync complete');
+        const pushed = await this.push();
+        console.log('[Sync] fullSync push result:', pushed);
+        console.log('[Sync] fullSync complete');
     }
 
     /**

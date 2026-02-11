@@ -349,26 +349,6 @@ class JmeeDeepBreathApp {
             });
         }
 
-        // Sync status button in top bar — click to sync or go to settings
-        const syncStatusBtn = document.getElementById('syncStatusBtn');
-        if (syncStatusBtn) {
-            syncStatusBtn.addEventListener('click', async () => {
-                if (sync.enabled) {
-                    await sync.fullSync();
-                    this._refreshUIAfterSync();
-                    this.showToast('Synchronisé ✓');
-                } else {
-                    // Navigate to settings section
-                    const navLink = document.querySelector('[data-section="settings"]');
-                    if (navLink) navLink.click();
-                    setTimeout(() => {
-                        document.getElementById('syncToken')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 200);
-                    this.showToast('Configurez la sync dans les paramètres');
-                }
-            });
-        }
-
         // Disconnect
         if (btnDisconnect) {
             btnDisconnect.addEventListener('click', () => {
