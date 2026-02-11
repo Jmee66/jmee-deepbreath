@@ -12,7 +12,8 @@ class DataSync {
         this.isSyncing = false;
         this.pendingPush = false;
         this.pushDebounceTimer = null;
-        this.DEBOUNCE_MS = 3000;
+        this.DEBOUNCE_MS = 500;
+        this._dirty = false;
         this.lastPullTimestamp = null;
         this.etag = null;
         this.deviceId = this.getOrCreateDeviceId();
@@ -37,12 +38,12 @@ class DataSync {
             if (this.pendingPush) this.push();
         });
 
-        // Push immediately when app goes to background (avoid losing data on close)
+        // Push when app goes to background — keepalive survives page close
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden' && this.enabled && this.pushDebounceTimer) {
+            if (document.visibilityState === 'hidden' && this.enabled && this._dirty) {
                 clearTimeout(this.pushDebounceTimer);
                 this.pushDebounceTimer = null;
-                this.push();
+                this._pushKeepalive();
             }
         });
     }
@@ -280,6 +281,7 @@ class DataSync {
 
             this.etag = resp.headers.get('ETag');
             this.isSyncing = false;
+            this._dirty = false;
             this._updateStatusUI('synced');
             console.log('[Sync] Push success');
             return true;
@@ -299,6 +301,7 @@ class DataSync {
 
     schedulePush() {
         if (!this.enabled) return;
+        this._dirty = true;
         clearTimeout(this.pushDebounceTimer);
         this.pushDebounceTimer = setTimeout(() => this.push(), this.DEBOUNCE_MS);
     }
@@ -312,6 +315,36 @@ class DataSync {
             await new Promise(r => setTimeout(r, 500));
         }
         return this.push();
+    }
+
+    /**
+     * Fire-and-forget push with keepalive — survives page close.
+     * Used by visibilitychange handler when user leaves the app.
+     */
+    _pushKeepalive() {
+        if (!this.enabled || !navigator.onLine) return;
+        try {
+            const payload = this._buildPayload();
+            console.log('[Sync] Keepalive push:', payload.data?.deepbreath_sessions?.length || 0, 'sessions');
+            fetch(`https://api.github.com/gists/${this.gistId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    files: {
+                        'deepbreath-sync.json': {
+                            content: JSON.stringify(payload, null, 2)
+                        }
+                    }
+                }),
+                keepalive: true
+            });
+            this._dirty = false;
+        } catch (e) {
+            console.warn('[Sync] Keepalive push failed:', e);
+        }
     }
 
     // ==========================================
@@ -485,7 +518,13 @@ class DataSync {
         localStorage.setItem = function(key, value) {
             originalSetItem(key, value);
             if (!sync._skipIntercept && key.startsWith('deepbreath_') && sync.enabled) {
-                sync.schedulePush();
+                if (key === 'deepbreath_sessions') {
+                    // Sessions: push immediately (no debounce) — critical data
+                    sync._dirty = true;
+                    sync.push();
+                } else {
+                    sync.schedulePush();
+                }
             }
         };
     }
