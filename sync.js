@@ -1,7 +1,7 @@
 /**
  * DataSync — Cross-device sync via GitHub Gist (private)
- * Intercepts localStorage writes to auto-push, pulls on app open.
- * API key is NEVER synced.
+ * Push ONLY via manual sync button (fullSync). No auto-push.
+ * Pull on app open (merge remote into local). API key is NEVER synced.
  */
 
 class DataSync {
@@ -10,9 +10,6 @@ class DataSync {
         this.token = localStorage.getItem('deepbreath_sync_token') || '';
         this.enabled = !!(this.gistId && this.token);
         this.isSyncing = false;
-        this.pendingPush = false;
-        this.pushDebounceTimer = null;
-        this.DEBOUNCE_MS = 500;
         this._dirty = false;
         this.lastPullTimestamp = null;
         this.etag = null;
@@ -30,24 +27,11 @@ class DataSync {
             'deepbreath_contraction_history'
         ];
 
-        // Intercept localStorage writes for auto-push
+        // Intercept localStorage writes to mark dirty (NO auto-push)
         this._interceptLocalStorage();
 
-        // Online/offline handlers
-        window.addEventListener('online', () => {
-            if (this.pendingPush) this.push();
-        });
-
-        // Mark dirty when app goes to background (push only via manual sync)
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden' && this.enabled && this._dirty) {
-                clearTimeout(this.pushDebounceTimer);
-                this.pushDebounceTimer = null;
-                // Don't auto-push — risk of overwriting other device's data
-                // Push will happen on next manual sync
-                console.log('[Sync] App hidden, dirty data will push on next manual sync');
-            }
-        });
+        // NO auto-push on online/visibility — push ONLY via manual sync button
+        // This prevents one device from overwriting the other's data
 
         // Setup sync status button click (top bar)
         this._initSyncButton();
@@ -309,19 +293,20 @@ class DataSync {
     // ==========================================
 
     async push() {
-        if (!this.enabled || this.isSyncing) {
-            this.pendingPush = true;
-            console.log('[Sync] Push deferred (enabled:', this.enabled, 'syncing:', this.isSyncing, ')');
+        if (!this.enabled) {
+            console.log('[Sync] Push skipped (disabled)');
+            return false;
+        }
+        if (this.isSyncing) {
+            console.log('[Sync] Push skipped (already syncing)');
             return false;
         }
         if (!navigator.onLine) {
-            this.pendingPush = true;
-            console.log('[Sync] Push deferred (offline)');
+            console.log('[Sync] Push skipped (offline)');
             return false;
         }
 
         this.isSyncing = true;
-        this.pendingPush = false;
         this._updateStatusUI('syncing');
 
         try {
@@ -345,7 +330,6 @@ class DataSync {
 
             if (!resp.ok) {
                 this._updateStatusUI('error', `Push échoué (${resp.status})`);
-                this.pendingPush = true;
                 this.isSyncing = false;
                 return false;
             }
@@ -359,45 +343,22 @@ class DataSync {
 
         } catch (e) {
             this.isSyncing = false;
-            this.pendingPush = true;
             this._updateStatusUI('error', e.message);
             console.warn('[Sync] Push error:', e.message);
             return false;
         }
     }
 
-    // ==========================================
-    // Debounced push scheduler
-    // ==========================================
-
-    schedulePush() {
-        if (!this.enabled) return;
-        this._dirty = true;
-        clearTimeout(this.pushDebounceTimer);
-        this.pushDebounceTimer = setTimeout(() => this.push(), this.DEBOUNCE_MS);
-    }
-
-    async forcePush() {
-        // Bypass debounce — immediate push
-        clearTimeout(this.pushDebounceTimer);
-        this.pushDebounceTimer = null;
-        // Wait if currently syncing
-        if (this.isSyncing) {
-            await new Promise(r => setTimeout(r, 500));
-        }
-        return this.push();
-    }
-
     /**
-     * Full sync: pull remote (merge), then push merged result.
+     * Full sync: peek Gist → pull (merge) → push merged result.
+     * This is the ONLY way data gets pushed. No auto-push anywhere.
      * Returns diagnostic object for UI display.
      */
     async fullSync() {
         const diag = { localBefore: 0, gistSessions: 0, localAfter: 0, pulled: false, pushed: false, error: null };
         if (!this.enabled) { diag.error = 'sync disabled'; return diag; }
         console.log('[Sync] fullSync start');
-        clearTimeout(this.pushDebounceTimer);
-        this.pushDebounceTimer = null;
+
         // Wait for any in-flight sync to finish (up to 5s)
         for (let i = 0; i < 10 && this.isSyncing; i++) {
             await new Promise(r => setTimeout(r, 500));
@@ -441,36 +402,6 @@ class DataSync {
         diag.localAfter = this._getLocal('deepbreath_sessions', []).length;
         console.log('[Sync] fullSync complete:', JSON.stringify(diag));
         return diag;
-    }
-
-    /**
-     * Fire-and-forget push with keepalive — survives page close.
-     * Used by visibilitychange handler when user leaves the app.
-     */
-    _pushKeepalive() {
-        if (!this.enabled || !navigator.onLine) return;
-        try {
-            const payload = this._buildPayload();
-            console.log('[Sync] Keepalive push:', payload.data?.deepbreath_sessions?.length || 0, 'sessions');
-            fetch(`https://api.github.com/gists/${this.gistId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    files: {
-                        'deepbreath-sync.json': {
-                            content: JSON.stringify(payload, null, 2)
-                        }
-                    }
-                }),
-                keepalive: true
-            });
-            this._dirty = false;
-        } catch (e) {
-            console.warn('[Sync] Keepalive push failed:', e);
-        }
     }
 
     // ==========================================
