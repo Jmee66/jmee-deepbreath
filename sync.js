@@ -167,7 +167,8 @@ class DataSync {
 
         // Verify access
         const resp = await fetch(`https://api.github.com/gists/${this.gistId}`, {
-            headers: { 'Authorization': `Bearer ${this.token}` }
+            headers: { 'Authorization': `Bearer ${this.token}` },
+            cache: 'no-store'
         });
         if (!resp.ok) throw new Error(`Gist introuvable ou token invalide (${resp.status})`);
 
@@ -208,7 +209,10 @@ class DataSync {
             const headers = { 'Authorization': `Bearer ${this.token}` };
             if (this.etag) headers['If-None-Match'] = this.etag;
 
-            const resp = await fetch(`https://api.github.com/gists/${this.gistId}`, { headers });
+            const resp = await fetch(`https://api.github.com/gists/${this.gistId}`, {
+                headers,
+                cache: 'no-store'   // CRITICAL: bypass browser HTTP cache
+            });
 
             if (resp.status === 304) {
                 // Not modified
@@ -325,7 +329,8 @@ class DataSync {
                             content: JSON.stringify(payload, null, 2)
                         }
                     }
-                })
+                }),
+                cache: 'no-store'
             });
 
             if (!resp.ok) {
@@ -350,8 +355,9 @@ class DataSync {
     }
 
     /**
-     * Full sync: peek Gist → pull (merge) → push merged result.
+     * Full sync: fetch Gist (no cache) → merge → push merged result.
      * This is the ONLY way data gets pushed. No auto-push anywhere.
+     * Single fetch replaces peek+pull to avoid stale cache issues.
      * Returns diagnostic object for UI display.
      */
     async fullSync() {
@@ -368,33 +374,47 @@ class DataSync {
         diag.localBefore = this._getLocal('deepbreath_sessions', []).length;
 
         try {
-            // 0. Peek at Gist to count remote sessions
-            const peekResp = await fetch(`https://api.github.com/gists/${this.gistId}`, {
-                headers: { 'Authorization': `Bearer ${this.token}` }
+            // 1. Single fetch from Gist — NO CACHE, NO ETAG
+            const resp = await fetch(`https://api.github.com/gists/${this.gistId}`, {
+                headers: { 'Authorization': `Bearer ${this.token}` },
+                cache: 'no-store'   // CRITICAL: bypass browser HTTP cache
             });
-            if (peekResp.ok) {
-                const gist = await peekResp.json();
-                const file = gist.files?.['deepbreath-sync.json'];
-                if (file?.content) {
-                    const remote = JSON.parse(file.content);
-                    diag.gistSessions = remote.data?.deepbreath_sessions?.length || 0;
-                    diag.gistDevice = remote.deviceId || '?';
+
+            if (!resp.ok) {
+                diag.error = `Gist: ${resp.status}`;
+                console.error('[Sync] fullSync fetch failed:', resp.status);
+                return diag;
+            }
+
+            const gist = await resp.json();
+            const file = gist.files?.['deepbreath-sync.json'];
+
+            if (file?.content) {
+                const remote = JSON.parse(file.content);
+                diag.gistSessions = remote.data?.deepbreath_sessions?.length || 0;
+                diag.gistDevice = remote.deviceId || '?';
+                console.log('[Sync] Gist has', diag.gistSessions, 'sessions from', diag.gistDevice);
+
+                // 2. Merge remote into local
+                if (remote?.data) {
+                    const merged = this._merge(remote);
+                    if (merged) {
+                        this._writeWithoutIntercept(merged);
+                        diag.pulled = true;
+                        console.log('[Sync] Merged. Sessions now:', merged.deepbreath_sessions?.length || 0);
+                    } else {
+                        console.log('[Sync] No changes after merge');
+                    }
                 }
             } else {
-                diag.error = `Gist fetch: ${peekResp.status}`;
+                console.log('[Sync] Gist file empty or missing');
             }
-            console.log('[Sync] Gist has', diag.gistSessions, 'sessions from', diag.gistDevice);
         } catch (e) {
             diag.error = e.message;
-            console.error('[Sync] Peek error:', e);
+            console.error('[Sync] fullSync fetch/merge error:', e);
         }
 
-        // Clear etag to force fresh pull (not 304)
-        this.etag = null;
-        // 1. Pull remote data + merge into local
-        diag.pulled = await this.pull();
-        console.log('[Sync] fullSync pull result:', diag.pulled);
-        // 2. Push merged local data back to Gist
+        // 3. Push merged local data back to Gist
         this._dirty = true;
         diag.pushed = await this.push();
         console.log('[Sync] fullSync push result:', diag.pushed);
