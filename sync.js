@@ -63,9 +63,11 @@ class DataSync {
         btn.addEventListener('click', async () => {
             console.log('[Sync] Button clicked, enabled:', sync.enabled);
             if (sync.enabled) {
+                const beforeCount = sync._getLocal('deepbreath_sessions', []).length;
                 await sync.fullSync();
                 sync._reloadModules();
-                if (window.app) window.app.showToast('Synchronisé ✓');
+                const afterCount = sync._getLocal('deepbreath_sessions', []).length;
+                if (window.app) window.app.showToast(`Sync: ${beforeCount} → ${afterCount} sessions`);
             } else {
                 // Navigate to settings
                 const navLink = document.querySelector('[data-section="settings"]');
@@ -236,16 +238,30 @@ class DataSync {
 
             const remote = JSON.parse(file.content);
             if (!remote?.data) {
+                console.log('[Sync] Pull: remote has no data field');
                 this.isSyncing = false;
                 return false;
             }
 
+            const remoteSessions = remote.data?.deepbreath_sessions;
+            const localSessions = this._getLocal('deepbreath_sessions', []);
+            console.log('[Sync] Pull: remote device:', remote.deviceId,
+                        '| remote sessions:', remoteSessions?.length || 0,
+                        '| local sessions:', localSessions.length);
+
             // Merge remote into local
             const merged = this._merge(remote);
             if (merged) {
+                const mergedSessions = merged.deepbreath_sessions;
+                console.log('[Sync] Pull: merged sessions:', mergedSessions?.length || 0);
                 // Write merged data back to localStorage (without triggering push)
                 this._writeWithoutIntercept(merged);
-                console.log('[Sync] Pull: merged data written to localStorage', Object.keys(merged));
+                console.log('[Sync] Pull: written to localStorage');
+                // Verify write
+                const verify = this._getLocal('deepbreath_sessions', []);
+                console.log('[Sync] Pull: verify localStorage sessions:', verify.length);
+            } else {
+                console.log('[Sync] Pull: no changes detected by merge');
             }
 
             // Always reload modules to sync memory ↔ localStorage
