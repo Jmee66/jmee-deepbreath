@@ -298,8 +298,9 @@ class JmeeDeepBreathApp {
             if (btnSetup) btnSetup.style.display = 'none';
             if (btnSyncNow) btnSyncNow.style.display = '';
             if (btnDisconnect) btnDisconnect.style.display = '';
-            // Auto full sync on open (pull remote, merge, push merged)
-            sync.fullSync().then(() => {
+            // Auto pull on open (get remote data, DON'T push — avoid overwriting)
+            sync.etag = null; // force fresh fetch
+            sync.pull().then(() => {
                 this._refreshUIAfterSync();
             });
         }
@@ -341,9 +342,9 @@ class JmeeDeepBreathApp {
             btnSyncNow.addEventListener('click', async () => {
                 btnSyncNow.textContent = 'Sync...';
                 btnSyncNow.disabled = true;
-                await sync.fullSync();
+                const diag = await sync.fullSync();
                 this._refreshUIAfterSync();
-                this.showToast('Synchronisé ✓');
+                this.showToast(`local=${diag.localBefore} gist=${diag.gistSessions} → ${diag.localAfter}`);
                 btnSyncNow.textContent = 'Sync maintenant';
                 btnSyncNow.disabled = false;
             });
