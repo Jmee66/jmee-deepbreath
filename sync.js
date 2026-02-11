@@ -38,12 +38,14 @@ class DataSync {
             if (this.pendingPush) this.push();
         });
 
-        // Push when app goes to background — keepalive survives page close
+        // Mark dirty when app goes to background (push only via manual sync)
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden' && this.enabled && this._dirty) {
                 clearTimeout(this.pushDebounceTimer);
                 this.pushDebounceTimer = null;
-                this._pushKeepalive();
+                // Don't auto-push — risk of overwriting other device's data
+                // Push will happen on next manual sync
+                console.log('[Sync] App hidden, dirty data will push on next manual sync');
             }
         });
 
@@ -642,13 +644,10 @@ class DataSync {
         localStorage.setItem = function(key, value) {
             originalSetItem(key, value);
             if (!sync._skipIntercept && key.startsWith('deepbreath_') && sync.enabled) {
-                if (key === 'deepbreath_sessions') {
-                    // Sessions: push immediately (no debounce) — critical data
-                    sync._dirty = true;
-                    sync.push();
-                } else {
-                    sync.schedulePush();
-                }
+                // Just mark dirty — push only via manual sync button
+                // Auto-push was overwriting other device's data on the Gist
+                sync._dirty = true;
+                console.log('[Sync] Data changed:', key, '(dirty, will push on manual sync)');
             }
         };
     }
