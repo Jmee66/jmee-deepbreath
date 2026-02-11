@@ -318,6 +318,28 @@ class DataSync {
     }
 
     /**
+     * Full sync: pull remote (merge), then push merged result.
+     * Clears etag to force a fresh fetch (avoids 304).
+     */
+    async fullSync() {
+        if (!this.enabled) return;
+        clearTimeout(this.pushDebounceTimer);
+        this.pushDebounceTimer = null;
+        // Wait if currently syncing
+        if (this.isSyncing) {
+            await new Promise(r => setTimeout(r, 500));
+        }
+        // Clear etag to force fresh pull (not 304)
+        this.etag = null;
+        // 1. Pull remote data + merge into local
+        await this.pull();
+        // 2. Push merged local data back to Gist
+        this._dirty = true;
+        await this.push();
+        console.log('[Sync] Full sync complete');
+    }
+
+    /**
      * Fire-and-forget push with keepalive — survives page close.
      * Used by visibilitychange handler when user leaves the app.
      */

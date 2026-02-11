@@ -298,18 +298,9 @@ class JmeeDeepBreathApp {
             if (btnSetup) btnSetup.style.display = 'none';
             if (btnSyncNow) btnSyncNow.style.display = '';
             if (btnDisconnect) btnDisconnect.style.display = '';
-            // Auto-pull on open
-            sync.pull().then(pulled => {
-                if (pulled) {
-                    this.showToast('Données synchronisées');
-                    // Force re-render all UI after sync
-                    if (window.coach) {
-                        window.coach.sessions = window.coach.loadSessions();
-                        if (window.coach.updateStatsDisplay) window.coach.updateStatsDisplay();
-                        if (window.coach.renderRecentSessions) window.coach.renderRecentSessions();
-                    }
-                    if (window.journal) window.journal.render();
-                }
+            // Auto full sync on open (pull remote, merge, push merged)
+            sync.fullSync().then(() => {
+                this._refreshUIAfterSync();
             });
         }
 
@@ -345,23 +336,14 @@ class JmeeDeepBreathApp {
             });
         }
 
-        // Manual sync — always push first (send local data), then pull (get remote data)
+        // Manual sync — pull first (get remote + merge), then push (send merged result)
         if (btnSyncNow) {
             btnSyncNow.addEventListener('click', async () => {
                 btnSyncNow.textContent = 'Sync...';
                 btnSyncNow.disabled = true;
-                // Push local data first
-                await sync.forcePush();
-                // Then pull remote data (merge)
-                const pulled = await sync.pull();
-                // Force UI refresh
-                if (window.coach) {
-                    window.coach.sessions = window.coach.loadSessions();
-                    if (window.coach.updateStatsDisplay) window.coach.updateStatsDisplay();
-                    if (window.coach.renderRecentSessions) window.coach.renderRecentSessions();
-                }
-                if (window.journal) window.journal.render();
-                this.showToast(pulled ? 'Données synchronisées ✓' : 'Push effectué ✓');
+                await sync.fullSync();
+                this._refreshUIAfterSync();
+                this.showToast('Synchronisé ✓');
                 btnSyncNow.textContent = 'Sync maintenant';
                 btnSyncNow.disabled = false;
             });
@@ -372,22 +354,13 @@ class JmeeDeepBreathApp {
         if (syncStatusBtn) {
             syncStatusBtn.addEventListener('click', async () => {
                 if (sync.enabled) {
-                    // Trigger sync
-                    syncStatusBtn.classList.add('sync-syncing');
-                    await sync.forcePush();
-                    const pulled = await sync.pull();
-                    if (window.coach) {
-                        window.coach.sessions = window.coach.loadSessions();
-                        if (window.coach.updateStatsDisplay) window.coach.updateStatsDisplay();
-                        if (window.coach.renderRecentSessions) window.coach.renderRecentSessions();
-                    }
-                    if (window.journal) window.journal.render();
-                    this.showToast(pulled ? 'Synchronisé ✓' : 'Push ✓');
+                    await sync.fullSync();
+                    this._refreshUIAfterSync();
+                    this.showToast('Synchronisé ✓');
                 } else {
                     // Navigate to settings section
                     const navLink = document.querySelector('[data-section="settings"]');
                     if (navLink) navLink.click();
-                    // Scroll to sync settings
                     setTimeout(() => {
                         document.getElementById('syncToken')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }, 200);
@@ -408,6 +381,15 @@ class JmeeDeepBreathApp {
                 this.showToast('Sync déconnectée');
             });
         }
+    }
+
+    _refreshUIAfterSync() {
+        if (window.coach) {
+            window.coach.sessions = window.coach.loadSessions();
+            if (window.coach.updateStatsDisplay) window.coach.updateStatsDisplay();
+            if (window.coach.renderRecentSessions) window.coach.renderRecentSessions();
+        }
+        if (window.journal) window.journal.render();
     }
 
     setupOfflineMode() {
