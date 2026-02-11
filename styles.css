@@ -4659,6 +4659,15 @@ body.manual-mode .settings-manual-panel {
     .feedback-actions .btn-primary,
     .feedback-actions .btn-secondary {
         width: 100%;
+        padding: var(--space-md) var(--space-xl);
+        font-size: 1.05rem;
+        font-weight: 600;
+    }
+
+    .feedback-actions .btn-primary {
+        background: var(--accent-primary);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(74, 158, 255, 0.3);
     }
 }
 
