@@ -56,8 +56,8 @@ class DataSync {
                     btn.classList.add('sync-syncing');
                     const diag = await sync.fullSync();
                     sync._reloadModules();
-                    const dev = (diag.gistDevice || '?').substring(0, 10);
-                    const msg = `${dev}: L${diag.localBefore}+G${diag.gistSessions}→${diag.mergedCount} push=${diag.pushed?'✓':'✗'} gist=${diag.verified}`;
+                    const gid = (sync.gistId || '?').substring(0, 8);
+                    const msg = `[${gid}] L${diag.localBefore}+G${diag.gistSessions}→${diag.mergedCount} push=${diag.pushed?'✓':'✗'} v=${diag.verified}`;
                     console.log('[Sync]', msg, diag);
                     sync._showSyncToast(msg + (diag.error ? ' ⚠️' + diag.error : ''));
                 } else {
