@@ -367,6 +367,35 @@ class JmeeDeepBreathApp {
             });
         }
 
+        // Sync status button in top bar — click to sync or go to settings
+        const syncStatusBtn = document.getElementById('syncStatusBtn');
+        if (syncStatusBtn) {
+            syncStatusBtn.addEventListener('click', async () => {
+                if (sync.enabled) {
+                    // Trigger sync
+                    syncStatusBtn.classList.add('sync-syncing');
+                    await sync.forcePush();
+                    const pulled = await sync.pull();
+                    if (window.coach) {
+                        window.coach.sessions = window.coach.loadSessions();
+                        if (window.coach.updateStatsDisplay) window.coach.updateStatsDisplay();
+                        if (window.coach.renderRecentSessions) window.coach.renderRecentSessions();
+                    }
+                    if (window.journal) window.journal.render();
+                    this.showToast(pulled ? 'Synchronisé ✓' : 'Push ✓');
+                } else {
+                    // Navigate to settings section
+                    const navLink = document.querySelector('[data-section="settings"]');
+                    if (navLink) navLink.click();
+                    // Scroll to sync settings
+                    setTimeout(() => {
+                        document.getElementById('syncToken')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 200);
+                    this.showToast('Configurez la sync dans les paramètres');
+                }
+            });
+        }
+
         // Disconnect
         if (btnDisconnect) {
             btnDisconnect.addEventListener('click', () => {
