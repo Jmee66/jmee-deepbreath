@@ -344,7 +344,8 @@ class JmeeDeepBreathApp {
                 btnSyncNow.disabled = true;
                 const diag = await sync.fullSync();
                 this._refreshUIAfterSync();
-                this.showToast(`local=${diag.localBefore} gist=${diag.gistSessions} → ${diag.localAfter}`);
+                const dev = (diag.gistDevice || '?').substring(0, 10);
+                this.showToast(`${dev}: L${diag.localBefore}+G${diag.gistSessions}→${diag.mergedCount} push=${diag.pushed?'✓':'✗'} gist=${diag.verified}`);
                 btnSyncNow.textContent = 'Sync maintenant';
                 btnSyncNow.disabled = false;
             });
