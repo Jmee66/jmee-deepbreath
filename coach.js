@@ -800,8 +800,8 @@ class CoachAI {
 
         const systemPrompt = this.buildSystemPrompt();
 
-        // Add to chat history
-        this.chatHistory.push({ role: 'user', content: userMessage });
+        // Add to chat history (with timestamp for cross-device merge)
+        this.chatHistory.push({ role: 'user', content: userMessage, ts: Date.now() });
 
         // Keep last 50 messages for context
         const messages = this.chatHistory.slice(-50);
@@ -814,7 +814,7 @@ class CoachAI {
                 result = await this.callOpenAI(systemPrompt, messages, settings);
             }
 
-            this.chatHistory.push({ role: 'assistant', content: result.text });
+            this.chatHistory.push({ role: 'assistant', content: result.text, ts: Date.now() });
             this.saveChatHistory();
             return result;
         } catch (e) {

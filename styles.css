@@ -164,6 +164,7 @@ body::before {
     opacity: 0;
     visibility: hidden;
     transition: var(--transition-base);
+    cursor: pointer;
 }
 
 .offline-badge.visible {

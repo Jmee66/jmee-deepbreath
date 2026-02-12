@@ -494,6 +494,8 @@ class JmeeDeepBreathApp {
             badge = document.createElement('div');
             badge.className = 'offline-badge';
             badge.textContent = 'Hors-ligne';
+            // Click to dismiss
+            badge.addEventListener('click', () => badge.classList.remove('visible'));
             document.body.appendChild(badge);
         }
 

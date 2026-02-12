@@ -561,6 +561,18 @@ class DataSync {
             }
         }
 
+        // Chat history — union merge by timestamp (keeps both devices' conversations)
+        if (remoteData.deepbreath_chat_history) {
+            const localChat = this._getLocal('deepbreath_chat_history', []);
+            const merged = this._mergeChatHistory(localChat, remoteData.deepbreath_chat_history);
+            if (merged.length !== localChat.length || JSON.stringify(merged) !== JSON.stringify(localChat)) {
+                remoteData.deepbreath_chat_history = merged;
+                changed = true;
+            } else {
+                remoteData.deepbreath_chat_history = localChat;
+            }
+        }
+
         // Coach settings — merge but preserve local API key
         if (remoteData.deepbreath_coach_settings) {
             const localCoach = this._getLocal('deepbreath_coach_settings', {});
@@ -573,7 +585,7 @@ class DataSync {
         }
 
         // Last-write-wins for simple keys
-        const lwwKeys = ['deepbreath_profile', 'deepbreath_goals', 'deepbreath_chat_history', 'deepbreath_settings'];
+        const lwwKeys = ['deepbreath_profile', 'deepbreath_goals', 'deepbreath_settings'];
         for (const key of lwwKeys) {
             if (remoteData[key] !== undefined) {
                 const localVal = localStorage.getItem(key);
@@ -605,6 +617,24 @@ class DataSync {
         for (const s of (local || [])) byKey.set(key(s), s);
         return Array.from(byKey.values())
             .sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+
+    _mergeChatHistory(local, remote) {
+        // Union merge by timestamp (ts). Messages without ts use role+content as key.
+        const byKey = new Map();
+        for (const m of (remote || [])) {
+            const k = m.ts ? `${m.ts}` : `${m.role}:${m.content?.substring(0, 50)}`;
+            byKey.set(k, m);
+        }
+        for (const m of (local || [])) {
+            const k = m.ts ? `${m.ts}` : `${m.role}:${m.content?.substring(0, 50)}`;
+            byKey.set(k, m); // local wins on conflict
+        }
+        // Sort by timestamp (messages without ts go first — they're older)
+        const merged = Array.from(byKey.values())
+            .sort((a, b) => (a.ts || 0) - (b.ts || 0));
+        // Keep last 100 messages max
+        return merged.slice(-100);
     }
 
     // ==========================================
