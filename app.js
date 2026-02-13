@@ -200,6 +200,7 @@ class JmeeDeepBreathApp {
         this.initJournal();
         this.setupSync();
         this.updateComfortZoneProgress();
+        this.updateFrcComfortProgress();
     }
 
     initJournal() {
@@ -2120,9 +2121,11 @@ class JmeeDeepBreathApp {
         const exercise = this.currentExercise;
         this.comfortCycle = 1;
         this.comfortHolds = [];
+        this.comfortIsFrc = exercise.isFrc || false;
 
         // Read settings from HTML if available
-        const settingsPanel = document.querySelector('.exercise-settings[data-exercise="comfort-zone"]');
+        const settingsKey = this.comfortIsFrc ? 'comfort-zone-frc' : 'comfort-zone';
+        const settingsPanel = document.querySelector(`.exercise-settings[data-exercise="${settingsKey}"]`);
         if (settingsPanel) {
             const cyclesInput = settingsPanel.querySelector('[data-param="cycles"]');
             const restInput = settingsPanel.querySelector('[data-param="restDuration"]');
@@ -2186,12 +2189,16 @@ class JmeeDeepBreathApp {
         if (!this.isRunning) return;
         const exercise = this.currentExercise;
 
-        document.getElementById('breathPhase').textContent = 'Apnée';
+        document.getElementById('breathPhase').textContent = this.comfortIsFrc ? 'Apnée FRC' : 'Apnée';
         document.getElementById('exerciseInstruction').textContent = exercise.instructions.hold;
 
         const circle = document.getElementById('breathCircle');
-        circle.classList.remove('inhale', 'exhale', 'holdEmpty');
-        circle.classList.add('hold', 'active');
+        circle.classList.remove('inhale', 'exhale', 'holdEmpty', 'hold', 'active');
+        if (this.comfortIsFrc) {
+            circle.classList.add('holdEmpty', 'active');
+        } else {
+            circle.classList.add('hold', 'active');
+        }
 
         // Show comfort stop button
         const btnStop = document.getElementById('btnComfortStop');
@@ -2259,7 +2266,8 @@ class JmeeDeepBreathApp {
         });
 
         // Voice feedback
-        const feedback = `${this.formatTime(holdDuration)} en zone de confort. Bravo !`;
+        const label = this.comfortIsFrc ? 'en apnée FRC' : 'en zone de confort';
+        const feedback = `${this.formatTime(holdDuration)} ${label}. Bravo !`;
         document.getElementById('exerciseInstruction').textContent = feedback;
 
         if (window.voiceGuide && window.voiceGuide.enabled) {
@@ -2302,7 +2310,7 @@ class JmeeDeepBreathApp {
             const best = Math.max(...durations);
             const average = Math.round(durations.reduce((a, b) => a + b, 0) / durations.length);
 
-            const historyKey = 'deepbreath_comfort_zone_history';
+            const historyKey = this.comfortIsFrc ? 'deepbreath_frc_comfort_history' : 'deepbreath_comfort_zone_history';
             const existing = JSON.parse(localStorage.getItem(historyKey) || '[]');
             existing.push({
                 date: new Date().toISOString(),
@@ -2316,11 +2324,16 @@ class JmeeDeepBreathApp {
 
             // Show summary in instruction
             const summary = this.comfortHolds.map(h => this.formatTime(h.duration)).join(', ');
+            const typeLabel = this.comfortIsFrc ? 'FRC' : '';
             document.getElementById('exerciseInstruction').textContent =
-                `Rounds: ${summary} — Record: ${this.formatTime(best)} — Moyenne: ${this.formatTime(average)}`;
+                `${typeLabel} Rounds: ${summary} — Record: ${this.formatTime(best)} — Moyenne: ${this.formatTime(average)}`;
 
             // Update progression display
-            this.updateComfortZoneProgress();
+            if (this.comfortIsFrc) {
+                this.updateFrcComfortProgress();
+            } else {
+                this.updateComfortZoneProgress();
+            }
         } catch (e) {
             console.warn('Could not save comfort zone history:', e);
         }
@@ -2377,6 +2390,57 @@ class JmeeDeepBreathApp {
             }
         } catch (e) {
             console.warn('Could not update comfort zone progress:', e);
+        }
+    }
+
+    updateFrcComfortProgress() {
+        const container = document.getElementById('frcComfortProgress');
+        const chart = document.getElementById('frcComfortChart');
+        const bestEl = document.getElementById('frcComfortBest');
+        if (!container || !chart) return;
+
+        try {
+            const history = JSON.parse(localStorage.getItem('deepbreath_frc_comfort_history') || '[]');
+            if (history.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = '';
+            const last10 = history.slice(-10);
+            const maxBest = Math.max(...last10.map(s => s.best));
+
+            // Build bar chart
+            let html = '<div class="comfort-bars">';
+            for (const session of last10) {
+                const pct = maxBest > 0 ? Math.round((session.best / maxBest) * 100) : 0;
+                const date = new Date(session.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+                html += `<div class="comfort-bar-row">
+                    <span class="comfort-bar-date">${date}</span>
+                    <div class="comfort-bar-track">
+                        <div class="comfort-bar-fill" style="width:${pct}%"></div>
+                    </div>
+                    <span class="comfort-bar-value">${this.formatTime(session.best)}</span>
+                </div>`;
+            }
+            html += '</div>';
+            chart.innerHTML = html;
+
+            // Best overall
+            const allTimeBest = Math.max(...history.map(s => s.best));
+            if (bestEl) {
+                bestEl.textContent = `Record FRC: ${this.formatTime(allTimeBest)}`;
+            }
+
+            // Trend
+            if (last10.length >= 2) {
+                const recent = last10[last10.length - 1].best;
+                const previous = last10[last10.length - 2].best;
+                const trend = recent > previous ? ' ↑' : recent < previous ? ' ↓' : ' →';
+                if (bestEl) bestEl.textContent += trend;
+            }
+        } catch (e) {
+            console.warn('Could not update FRC comfort progress:', e);
         }
     }
 

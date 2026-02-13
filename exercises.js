@@ -484,6 +484,25 @@ const EXERCISES = {
         }
     },
 
+    'comfort-zone-frc': {
+        name: 'Zone de Confort FRC',
+        category: 'apnee',
+        description: 'Apnée FRC poumons vides — expirez normalement, retenez, arrêtez dès l\'inconfort',
+        science: 'L\'apnée FRC (Functional Residual Capacity) après expiration normale développe une forte tolérance au CO2 avec moins d\'oxygène disponible. C\'est un entraînement plus exigeant qui accélère l\'adaptation physiologique et renforce le réflexe de plongée.',
+        isComfortZone: true,
+        isFrc: true,
+        cycles: 5,
+        restDuration: 120,
+        breatheUpDuration: 60,
+        maxHoldDuration: 180,
+        instructions: {
+            start: 'Installez-vous confortablement. Respirez calmement.',
+            breathe: 'Respirez calmement et naturellement.',
+            hold: 'Expirez normalement… puis retenez. Restez détendu. Arrêtez dès la moindre gêne.',
+            stop: 'Bravo ! Respirez calmement.'
+        }
+    },
+
     'dive-reflex': {
         name: 'Réflexe de Plongée',
         category: 'apnee',
