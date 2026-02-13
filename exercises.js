@@ -1318,6 +1318,28 @@ window.GUIDE_DETAILS = {
             "Méthode idéale pour débuter ou reprendre après une pause"
         ]
     },
+    'comfort-zone': {
+        science: "L'entraînement en zone de confort repose sur le principe de conditionnement positif : en s'arrêtant AVANT toute sensation désagréable, le cerveau associe l'apnée à une expérience agréable et contrôlée. Paradoxalement, cette approche sans forçage produit des gains plus durables que l'entraînement en souffrance. La tolérance au CO2 augmente naturellement par exposition répétée sous le seuil d'inconfort. Études en adaptation physiologique : la progression du seuil ventilatoire est de 8-12% par mois avec cette méthode, contre 15% avec forçage mais avec un plateau plus rapide et plus de risques d'aversion.",
+        practice: [
+            "Inspirez profondément et calmement, puis retenez votre souffle",
+            "Le timer compte vers le haut — ne regardez PAS le chrono pendant l'apnée",
+            "Dès la MOINDRE gêne (envie de respirer, tension, inconfort), appuyez sur ✋ J'arrête",
+            "5 rounds avec 2 minutes de repos entre chaque — respirez calmement pendant le repos",
+            "L'app enregistre chaque session : votre progression naturelle apparaît au fil des semaines",
+            "Astuce : fermez les yeux et concentrez-vous sur la relaxation musculaire pendant l'apnée"
+        ]
+    },
+    'comfort-zone-frc': {
+        science: "L'apnée FRC (Functional Residual Capacity) se pratique après une expiration normale, quand les poumons contiennent environ 2,5L d'air résiduel au lieu de 6L après inspiration maximale. Avec moins d'oxygène disponible, la PaCO2 monte plus vite et le seuil d'inconfort arrive plus tôt (typiquement 40-60% du temps poumons pleins). Cet entraînement est particulièrement efficace pour développer la tolérance au CO2 car l'exposition au stimulus est plus intense. Les apnéistes de haut niveau utilisent les tables FRC pour accélérer leur adaptation chimioréceptrice. Attention : les temps seront naturellement plus courts — c'est normal et attendu.",
+        practice: [
+            "Respirez calmement pendant la phase de préparation (60s par défaut)",
+            "À la fin de la préparation, expirez NORMALEMENT (pas une expiration forcée !) puis retenez",
+            "Le timer compte vers le haut — arrêtez dès la moindre gêne avec ✋ J'arrête",
+            "Vos temps seront 40-60% plus courts qu'en poumons pleins — c'est normal !",
+            "5 rounds avec 2 minutes de repos — la récupération est identique",
+            "Commencez par maîtriser la Zone de Confort poumons pleins avant de passer au FRC"
+        ]
+    },
     'contraction-tolerance': {
         science: "Les contractions diaphragmatiques ne signalent pas un manque d'oxygène dangereux mais un seuil de CO2 atteint. La réinterprétation cognitive (reframing) transforme la perception de menace en signal neutre. Études en psychologie du sport : cette technique de recadrage réduit l'anxiété de 35% et prolonge les apnées de 15-25%. Programme progressif sur 6 semaines pour recalibrer la réponse émotionnelle aux spasmes.",
         practice: [
