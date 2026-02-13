@@ -24,7 +24,8 @@ class DataSync {
             'deepbreath_settings',
             'deepbreath_coach_settings',
             'deepbreath_sequences',
-            'deepbreath_contraction_history'
+            'deepbreath_contraction_history',
+            'deepbreath_comfort_zone_history'
         ];
 
         // Intercept localStorage writes to mark dirty (NO auto-push)
@@ -549,6 +550,18 @@ class DataSync {
             }
         }
 
+        // Comfort zone history — union by date
+        if (remoteData.deepbreath_comfort_zone_history) {
+            const localHist = this._getLocal('deepbreath_comfort_zone_history', []);
+            const merged = this._mergeComfortZoneHistory(localHist, remoteData.deepbreath_comfort_zone_history);
+            if (merged.length !== localHist.length) {
+                remoteData.deepbreath_comfort_zone_history = merged;
+                changed = true;
+            } else {
+                remoteData.deepbreath_comfort_zone_history = localHist;
+            }
+        }
+
         // Sequences — union by key
         if (remoteData.deepbreath_sequences) {
             const localSeq = this._getLocal('deepbreath_sequences', {});
@@ -608,6 +621,16 @@ class DataSync {
         for (const s of (local || [])) { if (s?.id) byId.set(s.id, s); } // local wins
         return Array.from(byId.values())
             .sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+
+    _mergeComfortZoneHistory(local, remote) {
+        const key = (s) => s.date;
+        const byKey = new Map();
+        for (const s of (remote || [])) byKey.set(key(s), s);
+        for (const s of (local || [])) byKey.set(key(s), s);
+        return Array.from(byKey.values())
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .slice(-50); // Keep last 50
     }
 
     _mergeContractionHistory(local, remote) {

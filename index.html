@@ -127,7 +127,7 @@
             </svg>
             <div class="nav-brand-text">
                 <span>Jmee DeepBreath</span>
-                <span class="beta-badge">BETA v0.45 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
+                <span class="beta-badge">BETA v0.46 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
             </div>
         </div>
         <div class="nav-links">
@@ -842,6 +842,32 @@
                                 <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
                             </svg>
                         </button>
+                    </div>
+                </div>
+
+                <!-- Comfort Zone -->
+                <div class="exercise-card" data-exercise="comfort-zone">
+                    <div class="exercise-badge">Progression</div>
+                    <h3>Zone de Confort</h3>
+                    <p>Apnée libre : arrêtez dès l'inconfort. Suivez votre progression naturelle au fil des sessions.</p>
+                    <div class="exercise-meta">
+                        <span>5 rounds</span>
+                        <span>•</span>
+                        <span>Timer libre ↑</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="comfort-zone">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- Inline progression display -->
+                    <div id="comfortZoneProgress" class="comfort-progress" style="display:none;">
+                        <div class="comfort-chart" id="comfortZoneChart"></div>
+                        <div class="comfort-best" id="comfortZoneBest"></div>
                     </div>
                 </div>
 
@@ -2952,6 +2978,32 @@
                         </div>
                     </div>
 
+                    <!-- Comfort Zone -->
+                    <div class="exercise-settings" data-exercise="comfort-zone">
+                        <h4>Zone de Confort</h4>
+                        <div class="settings-row">
+                            <label>Nombre de rounds</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="10" value="5" data-param="cycles">
+                                <span>rounds</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Repos entre rounds</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="30" max="300" value="120" data-param="restDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Préparation respiratoire</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="30" max="120" value="60" data-param="breatheUpDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Diaphragm -->
                     <div class="exercise-settings" data-exercise="diaphragm">
                         <h4>Respiration Diaphragmatique</h4>
@@ -3188,6 +3240,11 @@
                 <div class="contraction-counter" id="contractionCounter" style="display:none;">
                     Contractions : 0
                 </div>
+
+                <!-- Comfort Zone Stop Button (hidden by default) -->
+                <button class="btn-comfort-stop" id="btnComfortStop" style="display:none;">
+                    ✋ J'arrête
+                </button>
 
                 <!-- Controls -->
                 <div class="exercise-controls">

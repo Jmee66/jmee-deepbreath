@@ -199,6 +199,7 @@ class JmeeDeepBreathApp {
         this.setupWakeLock();
         this.initJournal();
         this.setupSync();
+        this.updateComfortZoneProgress();
     }
 
     initJournal() {
@@ -1400,7 +1401,9 @@ class JmeeDeepBreathApp {
         document.getElementById('exerciseTitle').textContent = exercise.name;
 
         // Determine exercise type and start
-        if (exercise.isApneaWithGuidance) {
+        if (exercise.isComfortZone) {
+            this.startComfortZone();
+        } else if (exercise.isApneaWithGuidance) {
             this.startApneaWithGuidance();
         } else if (exercise.isContractionTable) {
             this.startContractionTable();
@@ -2107,6 +2110,274 @@ class JmeeDeepBreathApp {
         if (counterDiv) counterDiv.style.display = 'none';
 
         this.completeExercise();
+    }
+
+    // ==========================================
+    // Comfort Zone Static Apnea
+    // ==========================================
+
+    startComfortZone() {
+        const exercise = this.currentExercise;
+        this.comfortCycle = 1;
+        this.comfortHolds = [];
+
+        // Read settings from HTML if available
+        const settingsPanel = document.querySelector('.exercise-settings[data-exercise="comfort-zone"]');
+        if (settingsPanel) {
+            const cyclesInput = settingsPanel.querySelector('[data-param="cycles"]');
+            const restInput = settingsPanel.querySelector('[data-param="restDuration"]');
+            const breatheInput = settingsPanel.querySelector('[data-param="breatheUpDuration"]');
+            if (cyclesInput) exercise.cycles = parseInt(cyclesInput.value) || exercise.cycles;
+            if (restInput) exercise.restDuration = parseInt(restInput.value) || exercise.restDuration;
+            if (breatheInput) exercise.breatheUpDuration = parseInt(breatheInput.value) || exercise.breatheUpDuration;
+        }
+
+        document.getElementById('cycleCounter').textContent =
+            `Round ${this.comfortCycle} / ${exercise.cycles}`;
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.start;
+
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.start);
+        }
+
+        // Setup stop button handler
+        const btnStop = document.getElementById('btnComfortStop');
+        if (btnStop) {
+            btnStop.onclick = () => {
+                if (this._comfortHoldStart) {
+                    const elapsed = (Date.now() - this._comfortHoldStart - this._comfortPausedTime) / 1000;
+                    this.endComfortHold(elapsed);
+                }
+            };
+        }
+
+        setTimeout(() => this.runComfortCycle(), 3000);
+    }
+
+    runComfortCycle() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+
+        document.getElementById('cycleCounter').textContent =
+            `Round ${this.comfortCycle} / ${exercise.cycles}`;
+
+        // Phase 1: Breathing preparation
+        document.getElementById('breathPhase').textContent = 'Respirez';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.breathe;
+
+        const circle = document.getElementById('breathCircle');
+        circle.classList.remove('hold', 'active', 'holdEmpty');
+        circle.classList.add('inhale');
+
+        if (window.breathSounds) {
+            window.breathSounds.playPhase('inhale', exercise.breatheUpDuration);
+        }
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.breathe);
+        }
+
+        this.startPhaseTimer(exercise.breatheUpDuration, () => {
+            if (!this.isRunning) return;
+            this.startComfortHold();
+        });
+    }
+
+    startComfortHold() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+
+        document.getElementById('breathPhase').textContent = 'Apnée';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.hold;
+
+        const circle = document.getElementById('breathCircle');
+        circle.classList.remove('inhale', 'exhale', 'holdEmpty');
+        circle.classList.add('hold', 'active');
+
+        // Show comfort stop button
+        const btnStop = document.getElementById('btnComfortStop');
+        if (btnStop) btnStop.style.display = '';
+
+        // Count-up timer
+        const timerDisplay = document.getElementById('breathTimer');
+        const progressBar = document.getElementById('progressBar');
+        const circumference = 2 * Math.PI * 90;
+        this._comfortHoldStart = Date.now();
+        this._comfortPausedTime = 0;
+        let pauseStart = null;
+
+        if (this.phaseTimer) clearInterval(this.phaseTimer);
+
+        if (window.breathSounds) {
+            window.breathSounds.playPhase('hold', exercise.maxHoldDuration || 300);
+        }
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.hold);
+        }
+
+        this.phaseTimer = setInterval(() => {
+            if (!this.isRunning) {
+                clearInterval(this.phaseTimer);
+                return;
+            }
+            if (this.isPaused) {
+                if (!pauseStart) pauseStart = Date.now();
+                return;
+            }
+            if (pauseStart) {
+                this._comfortPausedTime += Date.now() - pauseStart;
+                pauseStart = null;
+            }
+
+            const elapsed = (Date.now() - this._comfortHoldStart - this._comfortPausedTime) / 1000;
+            timerDisplay.textContent = this.formatTime(elapsed);
+
+            // Progress based on apneaMax or 120s default
+            const estimatedMax = this.settings.apneaMax || 120;
+            const progress = Math.min(elapsed / estimatedMax, 1);
+            progressBar.style.strokeDashoffset = circumference * (1 - progress);
+
+            // Safety: auto-stop at maxHoldDuration
+            const maxDuration = exercise.maxHoldDuration || 300;
+            if (elapsed >= maxDuration) {
+                this.endComfortHold(elapsed);
+            }
+        }, 100);
+    }
+
+    endComfortHold(holdDuration) {
+        clearInterval(this.phaseTimer);
+        this.phaseTimer = null;
+
+        // Hide stop button
+        const btnStop = document.getElementById('btnComfortStop');
+        if (btnStop) btnStop.style.display = 'none';
+
+        // Save hold time
+        this.comfortHolds.push({
+            cycle: this.comfortCycle,
+            duration: Math.round(holdDuration)
+        });
+
+        // Voice feedback
+        const feedback = `${this.formatTime(holdDuration)} en zone de confort. Bravo !`;
+        document.getElementById('exerciseInstruction').textContent = feedback;
+
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(feedback);
+        }
+
+        // Next cycle or complete
+        this.comfortCycle++;
+        const exercise = this.currentExercise;
+
+        if (this.comfortCycle > exercise.cycles) {
+            // All rounds done
+            setTimeout(() => this.completeComfortZone(), 2000);
+        } else {
+            // Rest phase then next round
+            document.getElementById('breathPhase').textContent = 'Repos';
+            document.getElementById('exerciseInstruction').textContent = exercise.instructions.stop;
+            document.getElementById('cycleCounter').textContent =
+                `Repos — Round ${this.comfortCycle} / ${exercise.cycles} suivant`;
+
+            const circle = document.getElementById('breathCircle');
+            circle.classList.remove('hold', 'active');
+            circle.classList.add('inhale');
+
+            if (window.breathSounds) {
+                window.breathSounds.playPhase('inhale', exercise.restDuration);
+            }
+
+            this.startPhaseTimer(exercise.restDuration, () => {
+                if (!this.isRunning) return;
+                this.runComfortCycle();
+            });
+        }
+    }
+
+    completeComfortZone() {
+        // Save to comfort zone history
+        try {
+            const durations = this.comfortHolds.map(h => h.duration);
+            const best = Math.max(...durations);
+            const average = Math.round(durations.reduce((a, b) => a + b, 0) / durations.length);
+
+            const historyKey = 'deepbreath_comfort_zone_history';
+            const existing = JSON.parse(localStorage.getItem(historyKey) || '[]');
+            existing.push({
+                date: new Date().toISOString(),
+                holds: this.comfortHolds,
+                best,
+                average
+            });
+            // Keep last 50 sessions
+            if (existing.length > 50) existing.splice(0, existing.length - 50);
+            localStorage.setItem(historyKey, JSON.stringify(existing));
+
+            // Show summary in instruction
+            const summary = this.comfortHolds.map(h => this.formatTime(h.duration)).join(', ');
+            document.getElementById('exerciseInstruction').textContent =
+                `Rounds: ${summary} — Record: ${this.formatTime(best)} — Moyenne: ${this.formatTime(average)}`;
+
+            // Update progression display
+            this.updateComfortZoneProgress();
+        } catch (e) {
+            console.warn('Could not save comfort zone history:', e);
+        }
+
+        // Trigger standard exercise completion (feedback modal)
+        this.completeExercise();
+    }
+
+    updateComfortZoneProgress() {
+        const container = document.getElementById('comfortZoneProgress');
+        const chart = document.getElementById('comfortZoneChart');
+        const bestEl = document.getElementById('comfortZoneBest');
+        if (!container || !chart) return;
+
+        try {
+            const history = JSON.parse(localStorage.getItem('deepbreath_comfort_zone_history') || '[]');
+            if (history.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = '';
+            const last10 = history.slice(-10);
+            const maxBest = Math.max(...last10.map(s => s.best));
+
+            // Build bar chart
+            let html = '<div class="comfort-bars">';
+            for (const session of last10) {
+                const pct = maxBest > 0 ? Math.round((session.best / maxBest) * 100) : 0;
+                const date = new Date(session.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+                html += `<div class="comfort-bar-row">
+                    <span class="comfort-bar-date">${date}</span>
+                    <div class="comfort-bar-track">
+                        <div class="comfort-bar-fill" style="width:${pct}%"></div>
+                    </div>
+                    <span class="comfort-bar-value">${this.formatTime(session.best)}</span>
+                </div>`;
+            }
+            html += '</div>';
+            chart.innerHTML = html;
+
+            // Best overall
+            const allTimeBest = Math.max(...history.map(s => s.best));
+            if (bestEl) {
+                bestEl.textContent = `Record: ${this.formatTime(allTimeBest)}`;
+            }
+
+            // Trend
+            if (last10.length >= 2) {
+                const recent = last10[last10.length - 1].best;
+                const previous = last10[last10.length - 2].best;
+                const trend = recent > previous ? ' ↑' : recent < previous ? ' ↓' : ' →';
+                if (bestEl) bestEl.textContent += trend;
+            }
+        } catch (e) {
+            console.warn('Could not update comfort zone progress:', e);
+        }
     }
 
     // ==========================================

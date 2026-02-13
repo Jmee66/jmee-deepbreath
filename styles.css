@@ -5050,3 +5050,99 @@ body.manual-mode .settings-manual-panel {
 .btn-danger-outline:hover {
     background: rgba(239, 68, 68, 0.1);
 }
+
+/* ========================================
+   Comfort Zone — Stop Button & Progress
+   ======================================== */
+
+.btn-comfort-stop {
+    display: block;
+    margin: 20px auto;
+    padding: 18px 44px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    background: var(--danger, #f87171);
+    color: white;
+    border: none;
+    border-radius: var(--radius-full, 50px);
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    animation: pulse-comfort 2s infinite ease-in-out;
+    box-shadow: 0 4px 20px rgba(248, 113, 113, 0.3);
+    transition: transform 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-comfort-stop:active {
+    transform: scale(0.95);
+}
+
+@keyframes pulse-comfort {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(248, 113, 113, 0.3); }
+    50% { transform: scale(1.06); box-shadow: 0 4px 30px rgba(248, 113, 113, 0.5); }
+}
+
+/* Progression chart */
+.comfort-progress {
+    margin: var(--space-lg) 0;
+    padding: var(--space-lg);
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+}
+
+.comfort-progress h4 {
+    margin: 0 0 var(--space-md);
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.comfort-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.comfort-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.comfort-bar-date {
+    flex: 0 0 55px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: right;
+}
+
+.comfort-bar-track {
+    flex: 1;
+    height: 14px;
+    background: var(--bg-tertiary);
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.comfort-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-primary), var(--success));
+    border-radius: 7px;
+    min-width: 4px;
+    transition: width 0.4s ease;
+}
+
+.comfort-bar-value {
+    flex: 0 0 48px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.comfort-best {
+    margin-top: var(--space-md);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    text-align: center;
+}

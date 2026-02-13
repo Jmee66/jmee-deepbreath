@@ -466,6 +466,24 @@ const EXERCISES = {
         restDuration: 60
     },
 
+    'comfort-zone': {
+        name: 'Zone de Confort',
+        category: 'apnee',
+        description: 'Apnée libre — arrêtez dès l\'inconfort pour progresser naturellement',
+        science: 'L\'entraînement en zone de confort développe la tolérance au CO2 sans stress, favorisant une progression durable et une meilleure relaxation en apnée.',
+        isComfortZone: true,
+        cycles: 5,
+        restDuration: 120,
+        breatheUpDuration: 60,
+        maxHoldDuration: 300,
+        instructions: {
+            start: 'Installez-vous confortablement. Respirez calmement.',
+            breathe: 'Respirez lentement et profondément.',
+            hold: 'Apnée. Restez détendu. Arrêtez dès la moindre gêne.',
+            stop: 'Bravo ! Respirez calmement.'
+        }
+    },
+
     'dive-reflex': {
         name: 'Réflexe de Plongée',
         category: 'apnee',
