@@ -525,11 +525,55 @@ class JournalView {
                 }
                 return;
             }
+
+            // Fallback: calculate expected duration from exercise definition
+            if ((!session.duration || session.duration < 10) && session.exerciseId) {
+                const expected = this.calculateExpectedDuration(session.exerciseId);
+                if (expected && expected > 0) {
+                    session.duration = expected;
+                    repaired = true;
+                }
+            }
         });
 
         if (repaired && window.coach) {
             window.coach.saveSessions();
         }
+    }
+
+    calculateExpectedDuration(exerciseId) {
+        if (typeof EXERCISES === 'undefined') return null;
+        const exercise = EXERCISES[exerciseId];
+        if (!exercise) return null;
+
+        // Exercices avec phases (respiration classique)
+        if (exercise.phases && !exercise.isApneaTable && !exercise.isWimHof) {
+            const cycleDuration = exercise.phases.reduce((sum, p) => sum + (p.duration || 0), 0);
+            if (cycleDuration <= 0) return null;
+            const cycles = exercise.cycles || Math.floor((exercise.duration || 5) * 60 / cycleDuration);
+            return Math.round(cycles * cycleDuration);
+        }
+
+        // Exercices guidés avec segments
+        if (exercise.isGuided && exercise.segments) {
+            return Math.round(exercise.segments.reduce((sum, s) => sum + (s.duration || 0), 0));
+        }
+
+        // Wim Hof : estimer la partie fixe (breathing + recovery, pas les holds)
+        if (exercise.isWimHof) {
+            const rounds = exercise.rounds || 3;
+            const breaths = exercise.breathsPerRound || 30;
+            const breathTime = rounds * breaths * 3;
+            const recovery = rounds * 15;
+            return Math.round(breathTime + recovery);
+        }
+
+        // Si duration en minutes est indiquée directement
+        if (exercise.duration && !exercise.isApneaTable && !exercise.isComfortZone && !exercise.isContractionTable) {
+            return Math.round(exercise.duration * 60);
+        }
+
+        return null;
     }
 
     // ==========================================
