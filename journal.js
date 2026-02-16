@@ -33,6 +33,9 @@ class JournalView {
         // Add session
         this.addBtn?.addEventListener('click', () => this.addSession());
 
+        // Repair sessions with missing/zero durations from detailed data
+        this.repairDurations();
+
         // Initial render
         this.render();
     }
@@ -463,6 +466,68 @@ class JournalView {
     }
 
     // ==========================================
+    // Repair missing durations from detailed data
+    // ==========================================
+
+    repairDurations() {
+        const sessions = this.getSessions();
+        if (!sessions || sessions.length === 0) return;
+
+        let repaired = false;
+
+        // Load all detailed histories once
+        let czHistory, frcHistory, ctHistory;
+        try { czHistory = JSON.parse(localStorage.getItem('deepbreath_comfort_zone_history') || '[]'); } catch(e) { czHistory = []; }
+        try { frcHistory = JSON.parse(localStorage.getItem('deepbreath_frc_comfort_history') || '[]'); } catch(e) { frcHistory = []; }
+        try { ctHistory = JSON.parse(localStorage.getItem('deepbreath_contraction_history') || '[]'); } catch(e) { ctHistory = []; }
+
+        sessions.forEach(session => {
+            // Only repair sessions with missing or very short durations (< 10s)
+            if (session.duration && session.duration >= 10) return;
+
+            const sessionDate = new Date(session.date).getTime();
+            if (isNaN(sessionDate)) return;
+
+            // Try comfort zone
+            const czMatch = czHistory.find(h => Math.abs(new Date(h.date).getTime() - sessionDate) < 60000);
+            if (czMatch && czMatch.holds && czMatch.holds.length > 0) {
+                const totalHoldTime = czMatch.holds.reduce((sum, h) => sum + (h.duration || 0), 0);
+                // Estimate: holds + rest between rounds (restDuration defaults to 120s)
+                const restTime = (czMatch.holds.length - 1) * (czMatch.restDuration || 120);
+                const breatheUpTime = czMatch.holds.length * (czMatch.breatheUpDuration || 60);
+                session.duration = Math.round(totalHoldTime + restTime + breatheUpTime);
+                repaired = true;
+                return;
+            }
+
+            // Try FRC
+            const frcMatch = frcHistory.find(h => Math.abs(new Date(h.date).getTime() - sessionDate) < 60000);
+            if (frcMatch && frcMatch.holds && frcMatch.holds.length > 0) {
+                const totalHoldTime = frcMatch.holds.reduce((sum, h) => sum + (h.duration || 0), 0);
+                const restTime = (frcMatch.holds.length - 1) * (frcMatch.restDuration || 120);
+                const breatheUpTime = frcMatch.holds.length * (frcMatch.breatheUpDuration || 60);
+                session.duration = Math.round(totalHoldTime + restTime + breatheUpTime);
+                repaired = true;
+                return;
+            }
+
+            // Try contraction
+            const ctMatch = ctHistory.find(h => Math.abs(new Date(h.date).getTime() - sessionDate) < 60000);
+            if (ctMatch && ctMatch.cycles && ctMatch.cycles.length > 0) {
+                const totalHoldTime = ctMatch.cycles.reduce((sum, c) => sum + (c.holdDuration || 0), 0);
+                const restTime = (ctMatch.cycles.length - 1) * 120;
+                session.duration = Math.round(totalHoldTime + restTime);
+                repaired = true;
+                return;
+            }
+        });
+
+        if (repaired && window.coach) {
+            window.coach.saveSessions();
+        }
+    }
+
+    // ==========================================
     // Session detail view (accordion)
     // ==========================================
 
@@ -761,7 +826,9 @@ class JournalView {
     }
 
     formatDuration(seconds) {
-        if (!seconds) return '—';
+        if (seconds == null || seconds === '' || isNaN(seconds)) return '—';
+        seconds = Math.round(Number(seconds));
+        if (seconds <= 0) return '—';
         const min = Math.floor(seconds / 60);
         const sec = seconds % 60;
         return sec > 0 ? `${min}m${sec.toString().padStart(2, '0')}s` : `${min} min`;
