@@ -753,6 +753,7 @@ class DataSync {
         // App settings
         if (window.app) {
             window.app.settings = window.app.loadSettings();
+            if (window.app.populateSettingsUI) window.app.populateSettingsUI();
         }
     }
 

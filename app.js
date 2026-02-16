@@ -176,9 +176,9 @@ class JmeeDeepBreathApp {
         return result;
     }
 
-    saveSettings() {
+    saveSettings(silent = false) {
         localStorage.setItem('deepbreath_settings', JSON.stringify(this.settings));
-        this.showToast('Paramètres enregistrés');
+        if (!silent) this.showToast('Paramètres enregistrés');
     }
 
     init() {
@@ -378,6 +378,10 @@ class JmeeDeepBreathApp {
     }
 
     _refreshUIAfterSync() {
+        // Reload settings from localStorage (may have been updated by sync)
+        this.settings = this.loadSettings();
+        this.populateSettingsUI();
+
         if (window.coach) {
             window.coach.sessions = window.coach.loadSessions();
             if (window.coach.updateStatsDisplay) window.coach.updateStatsDisplay();
@@ -693,6 +697,7 @@ class JmeeDeepBreathApp {
                 this.settings.mode = btn.dataset.mode;
                 this.applySettingsMode();
                 this.updateComputedValues();
+                this.saveSettings(true);
             });
         });
 
@@ -786,10 +791,14 @@ class JmeeDeepBreathApp {
             input.value = this.settings[inputId];
             valueDisplay.textContent = input.value + '%';
 
+            let saveTimeout;
             input.addEventListener('input', () => {
                 valueDisplay.textContent = input.value + '%';
                 this.settings[inputId] = parseInt(input.value);
                 this.updateComputedValues();
+                // Debounce save (slider fires many events)
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => this.saveSettings(true), 300);
             });
         }
     }
@@ -849,6 +858,7 @@ class JmeeDeepBreathApp {
             pauseInput.value = this.settings.guidedPauseAfterVoice || 8;
             pauseInput.addEventListener('change', () => {
                 this.settings.guidedPauseAfterVoice = parseInt(pauseInput.value) || 8;
+                this.saveSettings(true);
             });
         }
 
@@ -859,6 +869,7 @@ class JmeeDeepBreathApp {
                 btn.classList.add('active');
                 this.settings.guidedTimingMode = btn.dataset.timing;
                 this.updateGuidedTimingUI(btn.dataset.timing);
+                this.saveSettings(true);
             });
         });
     }
@@ -904,6 +915,7 @@ class JmeeDeepBreathApp {
                     } else {
                         this.settings.exercises[exerciseId][param] = parseFloat(input.value);
                     }
+                    this.saveSettings(true);
                 });
             });
         });
