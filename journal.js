@@ -143,6 +143,22 @@ class JournalView {
     renderRow(session) {
         const tr = document.createElement('tr');
         tr.dataset.id = session.id;
+        tr.classList.add('journal-row-clickable');
+
+        // Row click → toggle detail (but not if editing)
+        tr.addEventListener('click', (e) => {
+            // Don't toggle if clicking on a button, input, select, or editing cell
+            const target = e.target;
+            if (target.closest('.journal-actions') ||
+                target.closest('.journal-notes-edit') ||
+                target.tagName === 'INPUT' ||
+                target.tagName === 'SELECT' ||
+                target.tagName === 'BUTTON' ||
+                target.closest('.journal-cell.editing')) {
+                return;
+            }
+            this.toggleDetail(session, tr);
+        });
 
         // Date
         const tdDate = this.createCell(session, 'date', this.formatDate(session.date));
@@ -221,7 +237,11 @@ class JournalView {
         span.className = 'journal-cell-text';
         span.textContent = displayValue;
         td.appendChild(span);
-        td.addEventListener('click', () => this.startEdit(td, session.id, field));
+        // Double-click to edit inline (single click opens detail)
+        td.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            this.startEdit(td, session.id, field);
+        });
         return td;
     }
 
@@ -405,6 +425,13 @@ class JournalView {
         const existing = document.querySelector('.journal-notes-edit');
         if (existing) existing.remove();
 
+        // Close any open detail row
+        const openDetails = this.tbody.querySelectorAll('.journal-detail-row');
+        openDetails.forEach(row => {
+            row.previousElementSibling?.classList.remove('journal-row-expanded');
+            row.remove();
+        });
+
         // Create inline edit row below the current row
         const editRow = document.createElement('tr');
         editRow.className = 'journal-notes-edit';
@@ -433,6 +460,209 @@ class JournalView {
             if (e.key === 'Enter') { e.preventDefault(); save(); }
             if (e.key === 'Escape') { editRow.remove(); }
         });
+    }
+
+    // ==========================================
+    // Session detail view (accordion)
+    // ==========================================
+
+    toggleDetail(session, tr) {
+        // If this row already has a detail open, close it
+        const existingDetail = tr.nextElementSibling;
+        if (existingDetail && existingDetail.classList.contains('journal-detail-row')) {
+            existingDetail.remove();
+            tr.classList.remove('journal-row-expanded');
+            return;
+        }
+
+        // Close any other open detail
+        const openDetails = this.tbody.querySelectorAll('.journal-detail-row');
+        openDetails.forEach(row => {
+            row.previousElementSibling?.classList.remove('journal-row-expanded');
+            row.remove();
+        });
+
+        // Create detail row
+        const detailRow = document.createElement('tr');
+        detailRow.className = 'journal-detail-row';
+        const detailTd = document.createElement('td');
+        detailTd.colSpan = tr.children.length;
+        detailTd.innerHTML = this.buildDetailContent(session);
+        detailRow.appendChild(detailTd);
+
+        tr.classList.add('journal-row-expanded');
+        tr.after(detailRow);
+    }
+
+    buildDetailContent(session) {
+        const date = session.date ? new Date(session.date) : null;
+        const fullDate = date ? date.toLocaleDateString('fr-FR', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+        }) : '—';
+        const time = date ? date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+
+        // Feeling display
+        const feelingStars = session.feeling
+            ? '★'.repeat(session.feeling) + '☆'.repeat(5 - session.feeling)
+            : '—';
+
+        // Stress display
+        let stressHtml = '—';
+        if (session.stressBefore != null || session.stressAfter != null) {
+            const before = session.stressBefore ?? '?';
+            const after = session.stressAfter ?? '?';
+            const diff = (session.stressBefore != null && session.stressAfter != null)
+                ? session.stressAfter - session.stressBefore : null;
+            const diffLabel = diff !== null
+                ? ` <span class="journal-detail-stress-diff ${diff < 0 ? 'positive' : diff > 0 ? 'negative' : ''}">(${diff > 0 ? '+' : ''}${diff})</span>`
+                : '';
+            stressHtml = `${before} → ${after}${diffLabel}`;
+        }
+
+        // Notes
+        const notes = session.notes
+            ? `<div class="journal-detail-notes">${this.escapeHtml(session.notes)}</div>`
+            : '';
+
+        // Detailed exercise data
+        const detailed = this.findDetailedData(session);
+        let detailedHtml = '';
+
+        if (detailed) {
+            if (detailed.type === 'comfort-zone' || detailed.type === 'comfort-zone-frc') {
+                detailedHtml = this.buildComfortZoneDetail(detailed.data, detailed.type);
+            } else if (detailed.type === 'contraction') {
+                detailedHtml = this.buildContractionDetail(detailed.data);
+            }
+        }
+
+        return `
+            <div class="journal-detail">
+                <div class="journal-detail-grid">
+                    <div class="journal-detail-section">
+                        <div class="journal-detail-label">Exercice</div>
+                        <div class="journal-detail-value">${this.escapeHtml(session.exerciseName || '—')}</div>
+                    </div>
+                    <div class="journal-detail-section">
+                        <div class="journal-detail-label">Date</div>
+                        <div class="journal-detail-value">${fullDate} ${time}</div>
+                    </div>
+                    <div class="journal-detail-section">
+                        <div class="journal-detail-label">Duree</div>
+                        <div class="journal-detail-value">${this.formatDuration(session.duration)}</div>
+                    </div>
+                    <div class="journal-detail-section">
+                        <div class="journal-detail-label">Categorie</div>
+                        <div class="journal-detail-value">${this.formatCategory(session.category)}</div>
+                    </div>
+                    <div class="journal-detail-section">
+                        <div class="journal-detail-label">Ressenti</div>
+                        <div class="journal-detail-value journal-detail-stars">${feelingStars}</div>
+                    </div>
+                    <div class="journal-detail-section">
+                        <div class="journal-detail-label">Stress</div>
+                        <div class="journal-detail-value">${stressHtml}</div>
+                    </div>
+                </div>
+                ${notes}
+                ${detailedHtml}
+            </div>`;
+    }
+
+    buildComfortZoneDetail(data, type) {
+        if (!data.holds || data.holds.length === 0) return '';
+
+        const typeLabel = type === 'comfort-zone-frc' ? 'FRC ' : '';
+        const maxDuration = Math.max(...data.holds.map(h => h.duration));
+
+        let roundsHtml = '';
+        data.holds.forEach((hold, i) => {
+            const pct = maxDuration > 0 ? Math.round((hold.duration / maxDuration) * 100) : 0;
+            const isBest = hold.duration === data.best;
+            roundsHtml += `
+                <div class="journal-detail-hold-row${isBest ? ' best' : ''}">
+                    <span class="journal-detail-hold-label">Round ${i + 1}</span>
+                    <div class="journal-detail-hold-bar-track">
+                        <div class="journal-detail-hold-bar" style="width:${pct}%"></div>
+                    </div>
+                    <span class="journal-detail-hold-value">${this.formatTime(hold.duration)}</span>
+                    ${isBest ? '<span class="journal-detail-hold-badge">Record</span>' : ''}
+                </div>`;
+        });
+
+        return `
+            <div class="journal-detail-exercise-data">
+                <div class="journal-detail-exercise-title">${typeLabel}Rounds d'apnee</div>
+                ${roundsHtml}
+                <div class="journal-detail-hold-summary">
+                    <span>Meilleur : <strong>${this.formatTime(data.best)}</strong></span>
+                    <span>Moyenne : <strong>${this.formatTime(data.average)}</strong></span>
+                </div>
+            </div>`;
+    }
+
+    buildContractionDetail(data) {
+        if (!data.cycles || data.cycles.length === 0) return '';
+
+        let cyclesHtml = '';
+        data.cycles.forEach((cycle, i) => {
+            cyclesHtml += `
+                <div class="journal-detail-contraction-row">
+                    <span class="journal-detail-hold-label">Cycle ${cycle.cycle || (i + 1)}</span>
+                    <span class="journal-detail-hold-value">${this.formatTime(cycle.holdDuration)}</span>
+                    <span class="journal-detail-contraction-count">${cycle.contractionCount} contraction${cycle.contractionCount !== 1 ? 's' : ''}</span>
+                    ${cycle.contractionOnset ? `<span class="journal-detail-contraction-onset">1ere a ${this.formatTime(cycle.contractionOnset)}</span>` : ''}
+                </div>`;
+        });
+
+        return `
+            <div class="journal-detail-exercise-data">
+                <div class="journal-detail-exercise-title">Tolerance aux contractions${data.weekLevel ? ` — Semaine ${data.weekLevel}` : ''}</div>
+                ${cyclesHtml}
+            </div>`;
+    }
+
+    findDetailedData(session) {
+        const sessionDate = new Date(session.date).getTime();
+        if (isNaN(sessionDate)) return null;
+
+        // Comfort zone
+        try {
+            const czHistory = JSON.parse(localStorage.getItem('deepbreath_comfort_zone_history') || '[]');
+            const czMatch = czHistory.find(h => Math.abs(new Date(h.date).getTime() - sessionDate) < 60000);
+            if (czMatch) return { type: 'comfort-zone', data: czMatch };
+        } catch (e) {}
+
+        // FRC
+        try {
+            const frcHistory = JSON.parse(localStorage.getItem('deepbreath_frc_comfort_history') || '[]');
+            const frcMatch = frcHistory.find(h => Math.abs(new Date(h.date).getTime() - sessionDate) < 60000);
+            if (frcMatch) return { type: 'comfort-zone-frc', data: frcMatch };
+        } catch (e) {}
+
+        // Contraction
+        try {
+            const ctHistory = JSON.parse(localStorage.getItem('deepbreath_contraction_history') || '[]');
+            const ctMatch = ctHistory.find(h => Math.abs(new Date(h.date).getTime() - sessionDate) < 60000);
+            if (ctMatch) return { type: 'contraction', data: ctMatch };
+        } catch (e) {}
+
+        return null;
+    }
+
+    formatTime(seconds) {
+        if (!seconds && seconds !== 0) return '—';
+        seconds = Math.round(seconds);
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        if (m > 0) return `${m}:${s.toString().padStart(2, '0')}`;
+        return `${s}s`;
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     // ==========================================
