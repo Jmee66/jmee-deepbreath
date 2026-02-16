@@ -482,9 +482,6 @@ class JournalView {
         try { ctHistory = JSON.parse(localStorage.getItem('deepbreath_contraction_history') || '[]'); } catch(e) { ctHistory = []; }
 
         sessions.forEach(session => {
-            // Only repair sessions with missing or very short durations (< 10s)
-            if (session.duration && session.duration >= 10) return;
-
             const sessionDate = new Date(session.date).getTime();
             if (isNaN(sessionDate)) return;
 
@@ -492,11 +489,14 @@ class JournalView {
             const czMatch = czHistory.find(h => Math.abs(new Date(h.date).getTime() - sessionDate) < 60000);
             if (czMatch && czMatch.holds && czMatch.holds.length > 0) {
                 const totalHoldTime = czMatch.holds.reduce((sum, h) => sum + (h.duration || 0), 0);
-                // Estimate: holds + rest between rounds (restDuration defaults to 120s)
-                const restTime = (czMatch.holds.length - 1) * (czMatch.restDuration || 120);
-                const breatheUpTime = czMatch.holds.length * (czMatch.breatheUpDuration || 60);
-                session.duration = Math.round(totalHoldTime + restTime + breatheUpTime);
-                repaired = true;
+                const rest = czMatch.restDuration || 90;
+                const breatheUp = czMatch.breatheUpDuration || 45;
+                const estimated = Math.round(totalHoldTime + (czMatch.holds.length - 1) * rest + czMatch.holds.length * breatheUp);
+                // Repair if: no duration, too short, or over-estimated (>1.5x estimate)
+                if (!session.duration || session.duration < 10 || session.duration > estimated * 1.5) {
+                    session.duration = estimated;
+                    repaired = true;
+                }
                 return;
             }
 
@@ -504,10 +504,13 @@ class JournalView {
             const frcMatch = frcHistory.find(h => Math.abs(new Date(h.date).getTime() - sessionDate) < 60000);
             if (frcMatch && frcMatch.holds && frcMatch.holds.length > 0) {
                 const totalHoldTime = frcMatch.holds.reduce((sum, h) => sum + (h.duration || 0), 0);
-                const restTime = (frcMatch.holds.length - 1) * (frcMatch.restDuration || 120);
-                const breatheUpTime = frcMatch.holds.length * (frcMatch.breatheUpDuration || 60);
-                session.duration = Math.round(totalHoldTime + restTime + breatheUpTime);
-                repaired = true;
+                const rest = frcMatch.restDuration || 90;
+                const breatheUp = frcMatch.breatheUpDuration || 45;
+                const estimated = Math.round(totalHoldTime + (frcMatch.holds.length - 1) * rest + frcMatch.holds.length * breatheUp);
+                if (!session.duration || session.duration < 10 || session.duration > estimated * 1.5) {
+                    session.duration = estimated;
+                    repaired = true;
+                }
                 return;
             }
 
@@ -515,9 +518,11 @@ class JournalView {
             const ctMatch = ctHistory.find(h => Math.abs(new Date(h.date).getTime() - sessionDate) < 60000);
             if (ctMatch && ctMatch.cycles && ctMatch.cycles.length > 0) {
                 const totalHoldTime = ctMatch.cycles.reduce((sum, c) => sum + (c.holdDuration || 0), 0);
-                const restTime = (ctMatch.cycles.length - 1) * 120;
-                session.duration = Math.round(totalHoldTime + restTime);
-                repaired = true;
+                const estimated = Math.round(totalHoldTime + (ctMatch.cycles.length - 1) * 90);
+                if (!session.duration || session.duration < 10 || session.duration > estimated * 1.5) {
+                    session.duration = estimated;
+                    repaired = true;
+                }
                 return;
             }
         });

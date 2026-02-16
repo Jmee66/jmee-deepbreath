@@ -2340,7 +2340,9 @@ class JmeeDeepBreathApp {
                 date: new Date().toISOString(),
                 holds: this.comfortHolds,
                 best,
-                average
+                average,
+                restDuration: this.currentExercise.restDuration,
+                breatheUpDuration: this.currentExercise.breatheUpDuration
             });
             // Keep last 50 sessions
             if (existing.length > 50) existing.splice(0, existing.length - 50);
