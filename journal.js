@@ -188,12 +188,22 @@ class JournalView {
         const tdActions = document.createElement('td');
         tdActions.className = 'journal-actions';
         tdActions.innerHTML = `
+            <button class="journal-btn-edit" title="Notes">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+            </button>
             <button class="journal-btn-delete" title="Supprimer">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                     <polyline points="3,6 5,6 21,6"/>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                 </svg>
             </button>`;
+        tdActions.querySelector('.journal-btn-edit').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.editNotes(session.id, tr);
+        });
         tdActions.querySelector('.journal-btn-delete').addEventListener('click', (e) => {
             e.stopPropagation();
             this.deleteSession(session.id);
@@ -380,6 +390,49 @@ class JournalView {
             this.editingCell = null;
             this.render();
         }
+    }
+
+    // ==========================================
+    // Edit notes (mobile-friendly)
+    // ==========================================
+
+    editNotes(sessionId, tr) {
+        const sessions = this.getSessions();
+        const session = sessions.find(s => s.id === sessionId);
+        if (!session) return;
+
+        // Close any existing edit
+        const existing = document.querySelector('.journal-notes-edit');
+        if (existing) existing.remove();
+
+        // Create inline edit row below the current row
+        const editRow = document.createElement('tr');
+        editRow.className = 'journal-notes-edit';
+        const editTd = document.createElement('td');
+        editTd.colSpan = tr.children.length;
+        editTd.innerHTML = `
+            <div class="journal-notes-edit-container">
+                <input type="text" class="journal-notes-input"
+                    value="${(session.notes || '').replace(/"/g, '&quot;')}"
+                    placeholder="Notes, sensations, observations...">
+                <button class="journal-notes-save">OK</button>
+            </div>`;
+        editRow.appendChild(editTd);
+        tr.after(editRow);
+
+        const input = editTd.querySelector('.journal-notes-input');
+        input.focus();
+
+        const save = () => {
+            this.saveEdit(sessionId, 'notes', input.value);
+            editRow.remove();
+        };
+
+        editTd.querySelector('.journal-notes-save').addEventListener('click', save);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); save(); }
+            if (e.key === 'Escape') { editRow.remove(); }
+        });
     }
 
     // ==========================================

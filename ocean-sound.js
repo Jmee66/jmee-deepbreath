@@ -74,43 +74,62 @@ class OceanSound {
         // Store for cleanup
         this.nodes.push({ noise, filter, gain });
 
-        // Create wave modulation
-        this.modulateWave(gain, minGain, maxGain, waveSpeed, phase);
+        // Create wave modulation with filter for frequency sweep
+        this.modulateWave(gain, filter, frequency, minGain, maxGain, waveSpeed, phase);
 
         return { noise, filter, gain };
     }
 
     /**
-     * Modulate gain to create wave-like volume changes
+     * Modulate gain + filter frequency to create realistic wave rhythm
+     * Ressac (wave in) = fast rise + high frequencies (foam)
+     * Sac (wave out) = slow decay + lower frequencies (retreat)
+     * Silence between waves = natural pause
      */
-    modulateWave(gainNode, minGain, maxGain, speed, phase) {
+    modulateWave(gainNode, filterNode, baseFreq, minGain, maxGain, speed, phase) {
         const modulate = () => {
             if (!this.isPlaying) return;
 
             const now = this.audioContext.currentTime;
-            const duration = speed + (Math.random() * speed * 0.3); // Add randomness
+            const duration = speed + (Math.random() * speed * 0.3);
+            const peak = maxGain * (0.8 + Math.random() * 0.2);
+            const safeMin = Math.max(minGain, 0.001); // exponentialRamp needs > 0
 
-            // Wave coming in (ressac)
+            // --- Gain modulation ---
             gainNode.gain.cancelScheduledValues(now);
             gainNode.gain.setValueAtTime(gainNode.gain.value, now);
 
-            // Smooth rise
-            gainNode.gain.linearRampToValueAtTime(
-                maxGain * (0.8 + Math.random() * 0.2),
-                now + duration * 0.4
+            // Ressac (wave arriving) — fast rise 20%
+            gainNode.gain.linearRampToValueAtTime(peak, now + duration * 0.20);
+
+            // Peak hold — crash/foam 8%
+            gainNode.gain.setValueAtTime(peak, now + duration * 0.28);
+
+            // Sac (wave retreating) — slow exponential decay 47%
+            gainNode.gain.exponentialRampToValueAtTime(safeMin, now + duration * 0.75);
+
+            // Silence between waves — quiet pause 25%
+            gainNode.gain.linearRampToValueAtTime(minGain, now + duration * 0.78);
+            gainNode.gain.setValueAtTime(minGain, now + duration);
+
+            // --- Filter frequency modulation (foam effect) ---
+            filterNode.frequency.cancelScheduledValues(now);
+            filterNode.frequency.setValueAtTime(filterNode.frequency.value, now);
+
+            // Ressac: frequency rises (more high freq = foam/spray)
+            filterNode.frequency.linearRampToValueAtTime(
+                baseFreq * 1.4,
+                now + duration * 0.20
             );
 
-            // Peak hold briefly
-            gainNode.gain.setValueAtTime(
-                maxGain * (0.8 + Math.random() * 0.2),
-                now + duration * 0.45
+            // Sac: frequency drops back (deeper, muffled retreat)
+            filterNode.frequency.linearRampToValueAtTime(
+                baseFreq * 0.7,
+                now + duration * 0.75
             );
 
-            // Wave going out (sac) - slower decay
-            gainNode.gain.linearRampToValueAtTime(
-                minGain,
-                now + duration
-            );
+            // Reset to base
+            filterNode.frequency.linearRampToValueAtTime(baseFreq, now + duration);
 
             // Schedule next wave
             setTimeout(() => modulate(), duration * 1000);

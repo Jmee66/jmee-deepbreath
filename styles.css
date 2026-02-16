@@ -4857,6 +4857,60 @@ body.manual-mode .settings-manual-panel {
     border-color: rgba(239, 68, 68, 0.3);
 }
 
+.journal-btn-edit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.journal-btn-edit:hover {
+    color: var(--accent-primary);
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.journal-notes-edit-container {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px;
+    align-items: center;
+}
+
+.journal-notes-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.journal-notes-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.journal-notes-save {
+    padding: 8px 16px;
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 /* Empty state */
 .journal-empty {
     text-align: center;

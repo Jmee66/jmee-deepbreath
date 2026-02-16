@@ -135,6 +135,16 @@ class JmeeDeepBreathApp {
                 },
                 'breathe-up-structure': {
                     mode: 'standard'
+                },
+                'comfort-zone': {
+                    cycles: 5,
+                    restDuration: 120,
+                    breatheUpDuration: 60
+                },
+                'comfort-zone-frc': {
+                    cycles: 5,
+                    restDuration: 120,
+                    breatheUpDuration: 60
                 }
             }
         };
@@ -968,7 +978,10 @@ class JmeeDeepBreathApp {
         const apneaMinutes = document.getElementById('apneaMinutes');
         const apneaSeconds = document.getElementById('apneaSeconds');
         if (apneaMinutes && apneaSeconds) {
-            this.settings.apneaMax = parseInt(apneaMinutes.value) * 60 + parseInt(apneaSeconds.value);
+            const computed = (parseInt(apneaMinutes.value) || 0) * 60 + (parseInt(apneaSeconds.value) || 0);
+            if (computed > 0) {
+                this.settings.apneaMax = computed;
+            }
         }
 
         // Percentages
@@ -1043,6 +1056,14 @@ class JmeeDeepBreathApp {
         // Apply user settings based on exercise type
         if (exercise.isApneaTable) {
             return this.getApneaTableParams(exerciseId, exercise, userSettings);
+        }
+
+        // Comfort zone (and FRC)
+        if (exercise.isComfortZone) {
+            exercise.cycles = userSettings.cycles || exercise.cycles;
+            exercise.restDuration = userSettings.restDuration || exercise.restDuration;
+            exercise.breatheUpDuration = userSettings.breatheUpDuration || exercise.breatheUpDuration;
+            return exercise;
         }
 
         // Contraction tolerance
@@ -1376,6 +1397,9 @@ class JmeeDeepBreathApp {
         this.currentPhaseIndex = 0;
         this.currentCycle = 1;
         this.elapsedTime = 0;
+        this.exerciseStartTime = Date.now();
+        this.exercisePausedTotal = 0;
+        this._exercisePauseStart = null;
 
         // Prevent screen from sleeping during exercise
         this.requestWakeLock();
@@ -2118,22 +2142,10 @@ class JmeeDeepBreathApp {
     // ==========================================
 
     startComfortZone() {
-        const exercise = this.currentExercise;
+        const exercise = this.currentExercise; // Already has user settings from getExerciseParams()
         this.comfortCycle = 1;
         this.comfortHolds = [];
         this.comfortIsFrc = exercise.isFrc || false;
-
-        // Read settings from HTML if available
-        const settingsKey = this.comfortIsFrc ? 'comfort-zone-frc' : 'comfort-zone';
-        const settingsPanel = document.querySelector(`.exercise-settings[data-exercise="${settingsKey}"]`);
-        if (settingsPanel) {
-            const cyclesInput = settingsPanel.querySelector('[data-param="cycles"]');
-            const restInput = settingsPanel.querySelector('[data-param="restDuration"]');
-            const breatheInput = settingsPanel.querySelector('[data-param="breatheUpDuration"]');
-            if (cyclesInput) exercise.cycles = parseInt(cyclesInput.value) || exercise.cycles;
-            if (restInput) exercise.restDuration = parseInt(restInput.value) || exercise.restDuration;
-            if (breatheInput) exercise.breatheUpDuration = parseInt(breatheInput.value) || exercise.breatheUpDuration;
-        }
 
         document.getElementById('cycleCounter').textContent =
             `Round ${this.comfortCycle} / ${exercise.cycles}`;
@@ -3008,9 +3020,14 @@ class JmeeDeepBreathApp {
 
         // Show feedback modal or auto-close
         if (window.coach) {
+            // Calculate total exercise duration (excluding pauses)
+            const pauseNow = this._exercisePauseStart ? (Date.now() - this._exercisePauseStart) : 0;
+            const totalDuration = this.exerciseStartTime
+                ? (Date.now() - this.exerciseStartTime - this.exercisePausedTotal - pauseNow) / 1000
+                : this.elapsedTime;
             setTimeout(() => {
                 if (!this.isRunning) {
-                    window.coach.showFeedbackModal(this.currentExercise, this.elapsedTime);
+                    window.coach.showFeedbackModal(this.currentExercise, totalDuration);
                 }
             }, 2000);
         } else {
@@ -3058,6 +3075,14 @@ class JmeeDeepBreathApp {
 
     togglePause() {
         this.isPaused = !this.isPaused;
+
+        // Track pause time for total exercise duration
+        if (this.isPaused) {
+            this._exercisePauseStart = Date.now();
+        } else if (this._exercisePauseStart) {
+            this.exercisePausedTotal += Date.now() - this._exercisePauseStart;
+            this._exercisePauseStart = null;
+        }
 
         const pauseBtn = document.getElementById('btnPause');
         if (this.isPaused) {
