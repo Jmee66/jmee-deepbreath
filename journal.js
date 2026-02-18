@@ -157,19 +157,17 @@ class JournalView {
         tr.dataset.id = session.id;
         tr.classList.add('journal-row-clickable');
 
-        // Row click → toggle detail (but not if editing)
+        // Row click → open edit modal
         tr.addEventListener('click', (e) => {
-            // Don't toggle if clicking on a button, input, select, or editing cell
             const target = e.target;
             if (target.closest('.journal-actions') ||
-                target.closest('.journal-notes-edit') ||
                 target.tagName === 'INPUT' ||
                 target.tagName === 'SELECT' ||
                 target.tagName === 'BUTTON' ||
                 target.closest('.journal-cell.editing')) {
                 return;
             }
-            this.toggleDetail(session, tr);
+            this.editNotes(session.id);
         });
 
         // Date
