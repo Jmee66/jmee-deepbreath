@@ -1050,6 +1050,79 @@ const EXERCISES = {
         warning: 'Ne jamais pratiquer l\'apnée dans l\'eau seul. Toujours avec un buddy.'
     },
 
+    'flow-release': {
+        name: 'Flow & Release',
+        category: 'autohypnose',
+        description: 'Programme 10 min pour rééduquer le système nerveux et contourner l\'hyper-vigilance',
+        science: 'Triple Awareness (Molchanovs/AIDA) — La déconcentration sensorielle sature le cerveau droit pour faire taire le cerveau analytique. Études AIDA : réduit la perception des spasmes de 40% et améliore la tolérance CO2 sans pression de performance.',
+        duration: 10,
+        isGuided: true,
+        segments: [
+            // Phase 1 : Activation (0-2 min) — Cyclic Sighing
+            { phase: 'Activation — Cyclic Sighing', duration: 15, instruction: 'Phase 1 : Activation (2 min). On commence par le Cyclic Sighing pour baisser le cortisol. Installez-vous confortablement, dos soutenu ou allongé.' },
+            { phase: 'Cyclic Sighing 1', duration: 12, instruction: 'Inspirez profondément par le nez... puis une petite inspiration supplémentaire pour remplir complètement...' },
+            { phase: 'Expirez longuement 1', duration: 10, instruction: 'Expirez très lentement par la bouche. Laissez sortir toute la tension. Sentez vos épaules descendre.' },
+            { phase: 'Cyclic Sighing 2', duration: 12, instruction: 'Inspir profonde par le nez... petite inspir complémentaire...' },
+            { phase: 'Expirez longuement 2', duration: 10, instruction: 'Longue expiration. Votre système nerveux commence à décélérer.' },
+            { phase: 'Cyclic Sighing 3', duration: 12, instruction: 'Inspir... complétez... remplissez jusqu\'au bout...' },
+            { phase: 'Expirez longuement 3', duration: 10, instruction: 'Expirez tout. Vous pouvez déjà sentir la différence.' },
+            { phase: 'Cyclic Sighing 4', duration: 12, instruction: 'Inspir... petite inspir complémentaire...' },
+            { phase: 'Expirez longuement 4', duration: 10, instruction: 'Longue expiration. Le cortisol baisse. Votre cœur ralentit.' },
+            { phase: 'Cyclic Sighing 5', duration: 12, instruction: 'Dernière inspiration... complétez...' },
+            { phase: 'Expirez longuement 5', duration: 10, instruction: 'Expiration finale. Laissez aller. Vous êtes prêt pour la phase suivante.' },
+            { phase: 'Transition', duration: 15, instruction: 'Respirez naturellement quelques secondes. Notez le calme qui s\'installe.' },
+
+            // Phase 2 : Ouverture (2-4 min) — Mobilisation diaphragme
+            { phase: 'Ouverture — Diaphragme', duration: 15, instruction: 'Phase 2 : Ouverture (2 min). Mobilisation douce du diaphragme. Restez assis ou allongé.' },
+            { phase: 'Respiration abdominale', duration: 20, instruction: 'Posez les mains sur vos côtes basses. À l\'inspiration, sentez vos mains s\'écarter latéralement. À l\'expiration, les mains reviennent. Respirez en 4 temps.' },
+            { phase: 'Massage des côtes', duration: 20, instruction: 'Gardez les mains sur les côtes. Faites de légères pressions circulaires vers l\'extérieur. Libérez la cage thoracique.' },
+            { phase: 'Respiration costale', duration: 20, instruction: 'Maintenant inspirez en gonflant d\'abord le ventre, puis les côtes latéralement, puis la poitrine. Expiration douce et complète.' },
+            { phase: 'Mouvements doux', duration: 20, instruction: 'Si assis : inclinez très lentement le torse à gauche en inspirant, revenez en expirant. Puis à droite. Libération mécanique du diaphragme.' },
+            { phase: 'Extension avant', duration: 20, instruction: 'Inclinez légèrement le menton vers la poitrine en expirant, revenez en inspirant. Sentez l\'allongement de la gorge. Votre glotte se détend.' },
+            { phase: 'Respiration libre', duration: 25, instruction: 'Laissez maintenant votre respiration libre. Observez-la sans la contrôler. Le diaphragme est détendu et mobile.' },
+
+            // Phase 3 : Le Cœur — Triple Awareness (4-9 min, 3 à 4 cycles)
+            { phase: 'Triple Awareness — Introduction', duration: 20, instruction: 'Phase 3 : Le Cœur (5 min). Les apnées de Déconcentration — méthode Triple Awareness (Molchanovs). L\'objectif : saturer votre cerveau sensoriel pour faire taire le mental analytique.' },
+            { phase: 'Breathe-up cycle 1', duration: 30, instruction: 'Respirez calmement. Préparez-vous. Dans quelques secondes vous allez tenir une apnée de 40 à 50 secondes. Pas plus. L\'objectif est 100% confort émotionnel, pas la performance.' },
+
+            // Cycle 1
+            { phase: 'Apnée — Niveau 1 : Sécurité', duration: 5, instruction: 'Inspirez normalement... et retenez.' },
+            { phase: 'Triple Awareness 1 — Écoute', duration: 15, instruction: 'Identifiez 3 sons. Le plus lointain d\'abord. Un son extérieur... un autre... et un troisième.' },
+            { phase: 'Triple Awareness 1 — Toucher', duration: 15, instruction: 'Maintenant 3 sensations tactiles : le poids de vos mains... le tissu sur vos épaules... l\'air frais sur votre visage.' },
+            { phase: 'Triple Awareness 1 — Visuel', duration: 15, instruction: 'Yeux fermés : imaginez un point bleu, doux, qui s\'étend lentement à chaque seconde. Il grandit... et grandit...' },
+            { phase: 'Fin apnée 1', duration: 5, instruction: 'Respirez. Bien. Arrêtez avant toute envie forte de respirer. C\'est le Niveau 1 : zone de sécurité totale.' },
+            { phase: 'Récupération 1', duration: 35, instruction: 'Respirez naturellement. Ne forcez pas. Observez votre cœur revenir au calme. Comment vous sentez-vous ?' },
+
+            // Cycle 2
+            { phase: 'Breathe-up cycle 2', duration: 25, instruction: 'Deuxième cycle. Identique au premier. Prenez le temps. La qualité prime sur la durée.' },
+            { phase: 'Apnée — Niveau 1 : Sécurité', duration: 5, instruction: 'Inspirez doucement... et retenez.' },
+            { phase: 'Triple Awareness 2 — Écoute', duration: 15, instruction: '3 sons lointains. Laissez-les venir à vous sans chercher. Un son de la rue... du bâtiment... de la nature...' },
+            { phase: 'Triple Awareness 2 — Toucher', duration: 15, instruction: '3 contacts : le sol ou le matelas sous vous... la température de l\'air qui touche vos narines... la texture de votre vêtement.' },
+            { phase: 'Triple Awareness 2 — Visuel', duration: 15, instruction: 'Le point bleu. Il revient. Cette fois il pulse doucement, comme une méduse en eau profonde.' },
+            { phase: 'Fin apnée 2', duration: 5, instruction: 'Respirez. Vous pouvez attendre le premier spasme et rester 5 secondes de plus — Niveau 2 optionnel. Puis respirez.' },
+            { phase: 'Récupération 2', duration: 35, instruction: 'Récupération. Respirez librement. Notez mentalement la fluidité du moment, pas la durée.' },
+
+            // Cycle 3
+            { phase: 'Breathe-up cycle 3', duration: 25, instruction: 'Troisième cycle. Si vous avez envie de rester plus longtemps dans l\'apnée, c\'est bon signe. Mais ne forcez pas.' },
+            { phase: 'Apnée — Niveau 1 : Sécurité', duration: 5, instruction: 'Expirez normalement... et retenez en FRC — poumons à moitié vides. Niveau 3 optionnel (Blunery/Néry).' },
+            { phase: 'Triple Awareness 3 — Écoute', duration: 15, instruction: 'Sons lointains. 3 sons. Allez au-delà des murs. Que percevez-vous au loin ?' },
+            { phase: 'Triple Awareness 3 — Toucher', duration: 15, instruction: '3 sensations : la chaleur dans vos paumes... le poids de vos paupières... votre langue au repos dans la bouche.' },
+            { phase: 'Triple Awareness 3 — Visuel', duration: 15, instruction: 'Le point bleu s\'étend maintenant jusqu\'à remplir tout le champ de votre conscience. Calme total.' },
+            { phase: 'Fin apnée 3', duration: 5, instruction: 'Respirez. Lentement. Vous venez de pratiquer la déconcentration sensorielle.' },
+            { phase: 'Récupération 3', duration: 30, instruction: 'Récupération finale. Votre cerveau analytique a été mis en veille. C\'est exactement ce qu\'on cherchait.' },
+
+            // Phase 4 : Intégration (9-10 min)
+            { phase: 'Intégration — Silence', duration: 30, instruction: 'Phase 4 : Intégration (1 min). Posez vos mains sur vos genoux ou sur votre ventre. Fermez les yeux si ce n\'est pas déjà fait.' },
+            { phase: 'Observation', duration: 30, instruction: 'Observez simplement votre souffle revenir à son rythme naturel. Ne guidez rien. Soyez témoin.' },
+            { phase: 'Ancrage positif', duration: 30, instruction: 'Notez votre score de stress maintenant, de 1 à 5. S\'il est descendu, c\'est la preuve que ça fonctionne. Vos 4 minutes reviendront.' },
+            { phase: 'Mot-clé final', duration: 15, instruction: 'Sur l\'expiration : "lâche". Votre déclencheur. Disponible avant chaque plongée.' },
+            { phase: 'Clôture', duration: 15, instruction: 'Fin du Flow & Release. Bougez doucement les doigts, les orteils. Ouvrez les yeux quand vous êtes prêt.' }
+        ],
+        instructions: {
+            start: 'Flow & Release — Programme 10 min. Rééduquez votre système nerveux et contournez l\'hyper-vigilance par la Triple Awareness.'
+        }
+    },
+
     'hook-breathing': {
         name: 'Hook Breathing',
         category: 'apnee',
