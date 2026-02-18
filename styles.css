@@ -3474,6 +3474,58 @@ body.manual-mode .settings-manual-panel {
     font-weight: 600;
 }
 
+/* Guide detail blocks — mode d'emploi détaillé */
+.guide-detail-block {
+    margin-top: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-sm);
+    border-left: 2px solid rgba(74, 158, 255, 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.guide-detail-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    margin: 0 0 2px 0;
+    letter-spacing: 0.02em;
+}
+
+.guide-detail-subtitle {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 6px 0 2px 0;
+}
+
+.guide-detail-text {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0;
+}
+
+.guide-detail-list {
+    margin: 4px 0 0 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.guide-detail-list li {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.guide-detail-list li strong {
+    color: var(--text-primary);
+}
+
 /* Guide detail toggle chevron */
 .guide-detail-toggle {
     margin-left: auto;
