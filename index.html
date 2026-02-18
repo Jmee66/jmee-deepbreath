@@ -326,6 +326,14 @@
                     <span id="journalCount">0 sessions</span>
                 </div>
                 <input type="search" id="journalSearch" class="journal-search" placeholder="Rechercher...">
+                <button class="btn-secondary journal-export-btn" id="journalExportBtn" title="Exporter en Excel">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7,10 12,15 17,10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Excel
+                </button>
                 <button class="btn-primary journal-add-btn" id="journalAddBtn">+ Ajouter</button>
             </div>
 
@@ -2295,7 +2303,7 @@
                                 <span class="attached-file-name" id="attachedFileName"></span>
                                 <button class="attached-file-remove" id="attachedFileRemove">&times;</button>
                             </div>
-                            <textarea id="coachInput" rows="2"
+                            <textarea id="coachInput" rows="4"
                                 placeholder="Demande une seance, un programme, un bilan..."
                                 maxlength="2000"></textarea>
                         </div>
@@ -3216,6 +3224,12 @@
                             <textarea id="coachGoals" rows="3"
                                 placeholder="Ex: Atteindre 3 min d'apnee statique, reduire mon stress quotidien..."
                                 style="margin-top: var(--space-sm); width: 100%;"></textarea>
+                        </div>
+                        <div class="settings-row" style="flex-direction: column; align-items: stretch;">
+                            <label>Instructions personnalisées <span style="font-size:0.75rem; opacity:0.6;">(ajoutées au prompt du coach)</span></label>
+                            <textarea id="coachCustomPrompt" rows="4"
+                                placeholder="Ex: Réponds toujours en moins de 3 phrases. Concentre-toi uniquement sur l'apnée statique. Ne mentionne jamais Wim Hof..."
+                                style="margin-top: var(--space-sm); width: 100%; font-size: 0.85rem;"></textarea>
                         </div>
                     </div>
                 </div>

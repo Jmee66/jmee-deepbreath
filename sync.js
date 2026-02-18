@@ -23,6 +23,7 @@ class DataSync {
             'deepbreath_chat_history',
             'deepbreath_settings',
             'deepbreath_coach_settings',
+            'deepbreath_coach_custom_prompt',
             'deepbreath_sequences',
             'deepbreath_contraction_history',
             'deepbreath_comfort_zone_history',

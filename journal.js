@@ -33,6 +33,15 @@ class JournalView {
         // Add session
         this.addBtn?.addEventListener('click', () => this.addSession());
 
+        // Export Excel
+        document.getElementById('journalExportBtn')?.addEventListener('click', () => {
+            if (window.coach && typeof window.coach.exportExcel === 'function') {
+                window.coach.exportExcel();
+            } else {
+                alert('Export non disponible. Assurez-vous que la bibliothèque XLSX est chargée.');
+            }
+        });
+
         // Repair sessions with missing/zero durations from detailed data
         this.repairDurations();
 
@@ -221,7 +230,7 @@ class JournalView {
             </button>`;
         tdActions.querySelector('.journal-btn-edit').addEventListener('click', (e) => {
             e.stopPropagation();
-            this.editNotes(session.id, tr);
+            this.editNotes(session.id);
         });
         tdActions.querySelector('.journal-btn-delete').addEventListener('click', (e) => {
             e.stopPropagation();
@@ -419,50 +428,127 @@ class JournalView {
     // Edit notes (mobile-friendly)
     // ==========================================
 
-    editNotes(sessionId, tr) {
+    editNotes(sessionId) {
         const sessions = this.getSessions();
         const session = sessions.find(s => s.id === sessionId);
         if (!session) return;
 
-        // Close any existing edit
-        const existing = document.querySelector('.journal-notes-edit');
-        if (existing) existing.remove();
+        // Build modal
+        const overlay = document.createElement('div');
+        overlay.className = 'journal-edit-overlay';
 
-        // Close any open detail row
-        const openDetails = this.tbody.querySelectorAll('.journal-detail-row');
-        openDetails.forEach(row => {
-            row.previousElementSibling?.classList.remove('journal-row-expanded');
-            row.remove();
-        });
+        const stressOptions = (val) => [1,2,3,4,5].map(n =>
+            `<option value="${n}"${val == n ? ' selected' : ''}>${n}/5</option>`
+        ).join('');
 
-        // Create inline edit row below the current row
-        const editRow = document.createElement('tr');
-        editRow.className = 'journal-notes-edit';
-        const editTd = document.createElement('td');
-        editTd.colSpan = tr.children.length;
-        editTd.innerHTML = `
-            <div class="journal-notes-edit-container">
-                <input type="text" class="journal-notes-input"
-                    value="${(session.notes || '').replace(/"/g, '&quot;')}"
-                    placeholder="Notes, sensations, observations...">
-                <button class="journal-notes-save">OK</button>
+        const categoryOptions = [
+            { value: 'respiration', label: 'Respiration' },
+            { value: 'apnea', label: 'Apnée' },
+            { value: 'visualisation', label: 'Visualisation' },
+            { value: 'autre', label: 'Autre' }
+        ].map(c => `<option value="${c.value}"${session.category === c.value ? ' selected' : ''}>${c.label}</option>`).join('');
+
+        const dateVal = session.date ? new Date(session.date).toISOString().split('T')[0] : '';
+        const durationMin = session.duration ? Math.floor(session.duration / 60) : 0;
+        const durationSec = session.duration ? session.duration % 60 : 0;
+
+        overlay.innerHTML = `
+            <div class="journal-edit-modal">
+                <div class="journal-edit-header">
+                    <h3>Modifier la session</h3>
+                    <button class="journal-edit-close">&times;</button>
+                </div>
+                <div class="journal-edit-body">
+                    <div class="journal-edit-row">
+                        <label>Date</label>
+                        <input type="date" id="jeDate" value="${dateVal}">
+                    </div>
+                    <div class="journal-edit-row">
+                        <label>Exercice</label>
+                        <input type="text" id="jeName" value="${(session.exerciseName || '').replace(/"/g, '&quot;')}" placeholder="Nom de l'exercice">
+                    </div>
+                    <div class="journal-edit-row">
+                        <label>Catégorie</label>
+                        <select id="jeCategory">${categoryOptions}</select>
+                    </div>
+                    <div class="journal-edit-row">
+                        <label>Durée</label>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <input type="number" id="jeDurationMin" min="0" value="${durationMin}" style="width:70px;"> min
+                            <input type="number" id="jeDurationSec" min="0" max="59" value="${durationSec}" style="width:70px;"> sec
+                        </div>
+                    </div>
+                    <div class="journal-edit-row">
+                        <label>Ressenti</label>
+                        <select id="jeFeeling">
+                            <option value="">—</option>
+                            ${stressOptions(session.feeling)}
+                        </select>
+                    </div>
+                    <div class="journal-edit-row">
+                        <label>Stress avant</label>
+                        <select id="jeStressBefore">
+                            <option value="">—</option>
+                            ${stressOptions(session.stressBefore)}
+                        </select>
+                    </div>
+                    <div class="journal-edit-row">
+                        <label>Stress après</label>
+                        <select id="jeStressAfter">
+                            <option value="">—</option>
+                            ${stressOptions(session.stressAfter)}
+                        </select>
+                    </div>
+                    <div class="journal-edit-row" style="flex-direction:column;align-items:stretch;">
+                        <label>Notes / sensations</label>
+                        <textarea id="jeNotes" rows="4" style="margin-top:8px;width:100%;resize:vertical;">${(session.notes || '').replace(/</g, '&lt;')}</textarea>
+                    </div>
+                </div>
+                <div class="journal-edit-footer">
+                    <button class="btn-secondary" id="jeBtnCancel">Annuler</button>
+                    <button class="btn-primary" id="jeBtnSave">Enregistrer</button>
+                </div>
             </div>`;
-        editRow.appendChild(editTd);
-        tr.after(editRow);
 
-        const input = editTd.querySelector('.journal-notes-input');
-        input.focus();
+        document.body.appendChild(overlay);
 
-        const save = () => {
-            this.saveEdit(sessionId, 'notes', input.value);
-            editRow.remove();
-        };
+        const close = () => overlay.remove();
 
-        editTd.querySelector('.journal-notes-save').addEventListener('click', save);
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); save(); }
-            if (e.key === 'Escape') { editRow.remove(); }
+        overlay.querySelector('.journal-edit-close').addEventListener('click', close);
+        overlay.querySelector('#jeBtnCancel').addEventListener('click', close);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+        overlay.querySelector('#jeBtnSave').addEventListener('click', () => {
+            const dateInput = overlay.querySelector('#jeDate').value;
+            if (dateInput) session.date = new Date(dateInput).toISOString();
+
+            session.exerciseName = overlay.querySelector('#jeName').value.trim();
+            session.category = overlay.querySelector('#jeCategory').value;
+
+            const mins = parseInt(overlay.querySelector('#jeDurationMin').value) || 0;
+            const secs = parseInt(overlay.querySelector('#jeDurationSec').value) || 0;
+            session.duration = mins * 60 + secs;
+
+            const feeling = overlay.querySelector('#jeFeeling').value;
+            session.feeling = feeling ? parseInt(feeling) : null;
+            const sb = overlay.querySelector('#jeStressBefore').value;
+            session.stressBefore = sb ? parseInt(sb) : null;
+            const sa = overlay.querySelector('#jeStressAfter').value;
+            session.stressAfter = sa ? parseInt(sa) : null;
+
+            session.notes = overlay.querySelector('#jeNotes').value;
+
+            if (window.coach) {
+                window.coach.saveSessions();
+                window.coach.renderRecentSessions();
+                window.coach.updateStatsDisplay();
+            }
+            this.render();
+            close();
         });
+
+        // Focus first field
+        setTimeout(() => overlay.querySelector('#jeName').focus(), 50);
     }
 
     // ==========================================

@@ -79,6 +79,36 @@ class JmeeDeepBreathApp {
                     hold: 7,
                     exhale: 8
                 },
+                'pranayama-142': {
+                    duration: 10,
+                    inhale: 4,
+                    hold: 16,
+                    exhale: 8
+                },
+                'nadi-shodhana': {
+                    duration: 10,
+                    phaseTime: 4
+                },
+                'kapalabhati': {
+                    cycles: 3,
+                    speed: 1
+                },
+                'ujjayi': {
+                    duration: 10,
+                    inhale: 5,
+                    exhale: 5
+                },
+                'bhramari': {
+                    duration: 5,
+                    inhale: 4,
+                    exhale: 8
+                },
+                'surya-bhedana': {
+                    duration: 5,
+                    inhale: 4,
+                    hold: 8,
+                    exhale: 6
+                },
                 'body-scan': {
                     zoneDuration: 60
                 },
@@ -384,6 +414,12 @@ class JmeeDeepBreathApp {
 
         if (window.coach) {
             window.coach.sessions = window.coach.loadSessions();
+            window.coach.goals = localStorage.getItem('deepbreath_goals') || '';
+            window.coach.customPrompt = localStorage.getItem('deepbreath_coach_custom_prompt') || '';
+            const customPromptInput = document.getElementById('coachCustomPrompt');
+            if (customPromptInput) customPromptInput.value = window.coach.customPrompt;
+            const goalsInput = document.getElementById('coachGoals');
+            if (goalsInput) goalsInput.value = window.coach.goals;
             if (window.coach.updateStatsDisplay) window.coach.updateStatsDisplay();
             if (window.coach.renderRecentSessions) window.coach.renderRecentSessions();
         }
@@ -904,19 +940,23 @@ class JmeeDeepBreathApp {
                     input.value = this.settings.exercises[exerciseId][param];
                 }
 
-                // Update on change
-                input.addEventListener('change', () => {
+                // Update on change or input (debounced) pour capturer toutes les modifications
+                let saveTimeout;
+                const applyAndSave = () => {
                     if (!this.settings.exercises[exerciseId]) {
                         this.settings.exercises[exerciseId] = {};
                     }
-                    // For select elements, keep string value; for inputs, parse as number
                     if (input.tagName === 'SELECT') {
                         this.settings.exercises[exerciseId][param] = input.value;
                     } else {
-                        this.settings.exercises[exerciseId][param] = parseFloat(input.value);
+                        const v = parseFloat(input.value);
+                        if (!isNaN(v)) this.settings.exercises[exerciseId][param] = v;
                     }
-                    this.saveSettings(true);
-                });
+                    clearTimeout(saveTimeout);
+                    saveTimeout = setTimeout(() => this.saveSettings(true), 300);
+                };
+                input.addEventListener('change', applyAndSave);
+                input.addEventListener('input', applyAndSave);
             });
         });
     }

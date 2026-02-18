@@ -7,6 +7,7 @@ class CoachAI {
     constructor() {
         this.sessions = this.loadSessions();
         this.goals = localStorage.getItem('deepbreath_goals') || '';
+        this.customPrompt = localStorage.getItem('deepbreath_coach_custom_prompt') || '';
         this.profile = this.loadProfile();
         this.coachSettings = this.loadCoachSettings();
         this.chatHistory = this.loadChatHistory();
@@ -108,6 +109,15 @@ class CoachAI {
             goalsInput.addEventListener('change', () => {
                 this.goals = goalsInput.value.trim();
                 localStorage.setItem('deepbreath_goals', this.goals);
+            });
+        }
+
+        const customPromptInput = document.getElementById('coachCustomPrompt');
+        if (customPromptInput) {
+            customPromptInput.value = this.customPrompt;
+            customPromptInput.addEventListener('input', () => {
+                this.customPrompt = customPromptInput.value;
+                localStorage.setItem('deepbreath_coach_custom_prompt', this.customPrompt);
             });
         }
     }
@@ -541,7 +551,7 @@ class CoachAI {
         // Auto-resize textarea
         input?.addEventListener('input', () => {
             input.style.height = 'auto';
-            input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+            input.style.height = Math.min(input.scrollHeight, 300) + 'px';
         });
 
         // Quick action buttons
@@ -954,7 +964,7 @@ ${this.goals || 'Non definis — demande-lui ses objectifs.'}
 - Si l'eleve mentionne du stress ou de l'anxiete, oriente vers les exercices urgence/relaxation avant l'apnee
 - Ne repete jamais l'historique ou le profil sauf si on te le demande
 - Si tu proposes un programme sur plusieurs jours, structure-le clairement (Jour 1, Jour 2, etc.)
-- Si le profil est vide, demande les infos essentielles : niveau apnee, statique max, etat d'entrainement`;
+- Si le profil est vide, demande les infos essentielles : niveau apnee, statique max, etat d'entrainement${this.customPrompt ? `\n\n## Instructions personnalisées (priorité haute)\n${this.customPrompt}` : ''}`;
     }
 
     // ==========================================
