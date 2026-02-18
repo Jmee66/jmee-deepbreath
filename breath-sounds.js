@@ -430,6 +430,51 @@ class BreathSounds {
     }
 
     /**
+     * Play a short, higher-pitched bowl tap for the 2nd inhale (Cyclic Sighing top-off)
+     * Distinct from the main inhale — quick, light, like a gentle reminder
+     */
+    playSecondInhale() {
+        if (!this.enabled || this.volume === 0) return;
+        if (!this.audioContext) return;
+        if (this.audioContext.state === 'suspended') {
+            this.audioContext.resume().then(() => this._doPlaySecondInhale());
+            return;
+        }
+        this._doPlaySecondInhale();
+    }
+
+    _doPlaySecondInhale() {
+        const now = this.audioContext.currentTime;
+        // Higher freq (E4 = 330 Hz), very short decay — a quick "top-off" tap
+        [1, 2, 3].forEach((mult, i) => {
+            const osc = this.audioContext.createOscillator();
+            const gain = this.audioContext.createGain();
+            const filter = this.audioContext.createBiquadFilter();
+
+            osc.type = 'sine';
+            osc.frequency.value = 330 * mult;
+
+            filter.type = 'lowpass';
+            filter.frequency.value = 330 * mult * 3;
+            filter.Q.value = 0.3;
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.audioContext.destination);
+
+            const vols = [0.18, 0.07, 0.02];
+            const vol = this.volume * vols[i];
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(vol, now + 0.01);
+            gain.gain.exponentialRampToValueAtTime(vol * 0.3, now + 0.25);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
+
+            osc.start(now);
+            osc.stop(now + 0.8);
+        });
+    }
+
+    /**
      * Toggle sounds on/off
      */
     toggle() {

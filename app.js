@@ -1545,12 +1545,17 @@ class JmeeDeepBreathApp {
 
         // Play breath sound for this phase (only for non-guided exercises)
         if (window.breathSounds && !exercise.isGuided) {
-            // For hold phases, determine if it's holdEmpty based on previous action
-            let soundPhase = phase.action;
-            if (phase.action === 'hold' && previousAction === 'exhale') {
-                soundPhase = 'holdEmpty';
+            // 2nd inhale of Cyclic Sighing — short distinct tap
+            if (phase.name === 'Inspirez +') {
+                window.breathSounds.playSecondInhale();
+            } else {
+                // For hold phases, determine if it's holdEmpty based on previous action
+                let soundPhase = phase.action;
+                if (phase.action === 'hold' && previousAction === 'exhale') {
+                    soundPhase = 'holdEmpty';
+                }
+                window.breathSounds.playPhase(soundPhase, phase.duration);
             }
-            window.breathSounds.playPhase(soundPhase, phase.duration);
         }
 
         // Start phase timer
