@@ -1866,6 +1866,15 @@ class JmeeDeepBreathApp {
         document.getElementById('cycleCounter').textContent =
             `${this.guidedSegmentIndex + 1} / ${exercise.segments.length}`;
 
+        // Play breath sound cues for guided exercises (ex: Flow & Release cyclic sighing phases)
+        if (window.breathSounds) {
+            if (phaseName === 'Inspirez +') {
+                window.breathSounds.playSecondInhale();
+            } else if (phaseName === 'Inspirez') {
+                window.breathSounds.playTransition();
+            }
+        }
+
         const isAdaptive = this.settings.guidedTimingMode === 'adaptive';
         const pauseAfterVoice = this.settings.guidedPauseAfterVoice || 8;
 
