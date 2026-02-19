@@ -360,8 +360,8 @@ class JmeeDeepBreathApp {
             btnSetup.addEventListener('click', async () => {
                 const token = tokenInput?.value?.trim();
                 const existingGistId = gistIdInput?.value?.trim();
-                if (!token || token === '••••••••') {
-                    this.showToast('Entrez votre token GitHub');
+                if (!token || token === '••••••••' || !token.startsWith('ghp_')) {
+                    this.showToast('Token invalide — doit commencer par ghp_', 'warning');
                     return;
                 }
                 btnSetup.disabled = true;
@@ -392,10 +392,14 @@ class JmeeDeepBreathApp {
             btnSyncNow.addEventListener('click', async () => {
                 btnSyncNow.textContent = 'Sync...';
                 btnSyncNow.disabled = true;
-                const diag = await sync.fullSync();
-                this._refreshUIAfterSync();
-                const gid = (sync.gistId || '?').substring(0, 8);
-                this.showToast(`[${gid}] L${diag.localBefore}+G${diag.gistSessions}→${diag.mergedCount} push=${diag.pushed?'✓':'✗'} v=${diag.verified}`);
+                try {
+                    const diag = await sync.fullSync();
+                    this._refreshUIAfterSync();
+                    const gid = (sync.gistId || '?').substring(0, 8);
+                    this.showToast(`[${gid}] L${diag.localBefore}+G${diag.gistSessions}→${diag.mergedCount} push=${diag.pushed?'✓':'✗'} v=${diag.verified}`);
+                } catch (e) {
+                    this.showToast(`Erreur sync : ${e.message}`, 'error');
+                }
                 btnSyncNow.textContent = 'Sync maintenant';
                 btnSyncNow.disabled = false;
             });
