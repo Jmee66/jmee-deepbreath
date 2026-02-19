@@ -933,9 +933,22 @@ class JmeeDeepBreathApp {
     }
 
     setupExerciseSettingsInputs() {
+        // Ratios fixes par exercice : { param_référence: { param_lié: multiplicateur, ... }, ... }
+        // La valeur de référence est le premier param listé
+        const RATIO_LOCKS = {
+            'coherent':       { ref: 'inhale', locked: { exhale: 1 } },
+            'ujjayi':         { ref: 'inhale', locked: { exhale: 1 } },
+            'bhramari':       { ref: 'inhale', locked: { exhale: 2 } },
+            'co2-tolerance':  { ref: 'inhale', locked: { exhale: 2 } },
+            'pranayama-142':  { ref: 'inhale', locked: { hold: 4, exhale: 2 } },
+            'relaxation':     { ref: 'inhale', locked: { hold: 1.75, exhale: 2 } },
+            'surya-bhedana':  { ref: 'inhale', locked: { hold: 2, exhale: 1.5 } },
+        };
+
         document.querySelectorAll('.exercise-settings').forEach(section => {
             const exerciseId = section.dataset.exercise;
             const inputs = section.querySelectorAll('input[data-param], select[data-param]');
+            const ratio = RATIO_LOCKS[exerciseId];
 
             inputs.forEach(input => {
                 const param = input.dataset.param;
@@ -943,6 +956,14 @@ class JmeeDeepBreathApp {
                 // Set initial value
                 if (this.settings.exercises[exerciseId] && this.settings.exercises[exerciseId][param] !== undefined) {
                     input.value = this.settings.exercises[exerciseId][param];
+                }
+
+                // Marquer visuellement les champs verrouillés
+                if (ratio && param !== ratio.ref && ratio.locked[param] !== undefined) {
+                    input.readOnly = true;
+                    input.style.opacity = '0.6';
+                    input.style.cursor = 'not-allowed';
+                    input.title = 'Calculé automatiquement selon le ratio';
                 }
 
                 // Update on change or input (debounced) pour capturer toutes les modifications
@@ -955,7 +976,21 @@ class JmeeDeepBreathApp {
                         this.settings.exercises[exerciseId][param] = input.value;
                     } else {
                         const v = parseFloat(input.value);
-                        if (!isNaN(v)) this.settings.exercises[exerciseId][param] = v;
+                        if (!isNaN(v)) {
+                            this.settings.exercises[exerciseId][param] = v;
+
+                            // Propagation des ratios si ce champ est la référence
+                            if (ratio && param === ratio.ref) {
+                                for (const [lockedParam, mult] of Object.entries(ratio.locked)) {
+                                    const computed = Math.round(v * mult * 10) / 10;
+                                    // Mettre à jour le settings
+                                    this.settings.exercises[exerciseId][lockedParam] = computed;
+                                    // Mettre à jour l'input correspondant dans le DOM
+                                    const lockedInput = section.querySelector(`input[data-param="${lockedParam}"]`);
+                                    if (lockedInput) lockedInput.value = computed;
+                                }
+                            }
+                        }
                     }
                     clearTimeout(saveTimeout);
                     saveTimeout = setTimeout(() => this.saveSettings(true), 300);
@@ -998,15 +1033,40 @@ class JmeeDeepBreathApp {
             }
         });
 
-        // Exercise settings
+        // Exercise settings (avec recalcul des ratios verrouillés au chargement)
+        const RATIO_LOCKS = {
+            'coherent':       { ref: 'inhale', locked: { exhale: 1 } },
+            'ujjayi':         { ref: 'inhale', locked: { exhale: 1 } },
+            'bhramari':       { ref: 'inhale', locked: { exhale: 2 } },
+            'co2-tolerance':  { ref: 'inhale', locked: { exhale: 2 } },
+            'pranayama-142':  { ref: 'inhale', locked: { hold: 4, exhale: 2 } },
+            'relaxation':     { ref: 'inhale', locked: { hold: 1.75, exhale: 2 } },
+            'surya-bhedana':  { ref: 'inhale', locked: { hold: 2, exhale: 1.5 } },
+        };
         document.querySelectorAll('.exercise-settings').forEach(section => {
             const exerciseId = section.dataset.exercise;
             const inputs = section.querySelectorAll('input[data-param], select[data-param]');
+            const ratio = RATIO_LOCKS[exerciseId];
 
             inputs.forEach(input => {
                 const param = input.dataset.param;
                 if (this.settings.exercises[exerciseId]?.[param] !== undefined) {
                     input.value = this.settings.exercises[exerciseId][param];
+                }
+                // Recalculer et afficher les champs verrouillés depuis la valeur de référence
+                if (ratio && param === ratio.ref) {
+                    const refVal = parseFloat(input.value);
+                    if (!isNaN(refVal)) {
+                        for (const [lockedParam, mult] of Object.entries(ratio.locked)) {
+                            const computed = Math.round(refVal * mult * 10) / 10;
+                            const lockedInput = section.querySelector(`input[data-param="${lockedParam}"]`);
+                            if (lockedInput) {
+                                lockedInput.value = computed;
+                                if (!this.settings.exercises[exerciseId]) this.settings.exercises[exerciseId] = {};
+                                this.settings.exercises[exerciseId][lockedParam] = computed;
+                            }
+                        }
+                    }
                 }
             });
         });

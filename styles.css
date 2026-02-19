@@ -1650,6 +1650,22 @@ body::before {
     font-weight: 500;
     color: var(--text-primary);
     margin-bottom: var(--space-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.ratio-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    background: rgba(74, 158, 255, 0.12);
+    border: 1px solid rgba(74, 158, 255, 0.3);
+    border-radius: 12px;
+    padding: 2px 8px;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
 }
 
 .settings-row {
@@ -1685,6 +1701,19 @@ body::before {
 .input-with-unit input:focus {
     outline: none;
     border-color: var(--accent-primary);
+}
+
+/* Champs verrouillés par ratio */
+.input-with-unit input[readonly] {
+    background: var(--bg-tertiary);
+    border-color: transparent;
+    color: var(--text-muted);
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+.input-with-unit input[readonly]:focus {
+    border-color: transparent;
+    outline: none;
 }
 
 .input-with-unit span {
