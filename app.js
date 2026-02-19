@@ -350,8 +350,9 @@ class JmeeDeepBreathApp {
                 const gistIdInput = document.getElementById('syncGistId');
                 const token = tokenInput?.value?.trim();
                 const existingGistId = gistIdInput?.value?.trim();
-                if (!token || token === '••••••••' || !token.startsWith('ghp_')) {
-                    this.showToast('Token invalide — doit commencer par ghp_', 'warning');
+                alert('DEBUG: token=' + (token ? token.substring(0,8)+'...' : 'VIDE') + ' gistId=' + (existingGistId || 'vide'));
+                if (!token || token === '••••••••') {
+                    this.showToast('Entrez votre token GitHub', 'warning');
                     return;
                 }
                 target.disabled = true;
