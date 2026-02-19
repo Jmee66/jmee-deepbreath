@@ -600,15 +600,22 @@ class DataSync {
             }
         }
 
-        // Coach settings — merge but preserve local API key
-        if (remoteData.deepbreath_coach_settings) {
+        // Coach settings — merge but ALWAYS preserve local API key
+        // (apiKey is stripped before push for security, so remote never has it)
+        {
             const localCoach = this._getLocal('deepbreath_coach_settings', {});
-            const localKey = localCoach.apiKey; // preserve
-            remoteData.deepbreath_coach_settings = {
-                ...remoteData.deepbreath_coach_settings,
-                apiKey: localKey // re-inject local API key
-            };
-            changed = true;
+            if (remoteData.deepbreath_coach_settings) {
+                // Remote has coach settings: merge, re-inject local API key
+                remoteData.deepbreath_coach_settings = {
+                    ...remoteData.deepbreath_coach_settings,
+                    apiKey: localCoach.apiKey || ''
+                };
+                changed = true;
+            } else if (localCoach && Object.keys(localCoach).length > 0) {
+                // Remote has no coach settings: preserve local entirely (including apiKey)
+                remoteData.deepbreath_coach_settings = localCoach;
+                changed = true;
+            }
         }
 
         // Last-write-wins for profile and goals
@@ -774,6 +781,8 @@ class DataSync {
             window.coach.profile = window.coach.loadProfile();
             window.coach.goals = localStorage.getItem('deepbreath_goals') || '';
             window.coach.chatHistory = window.coach.loadChatHistory();
+            // Reload coach settings in memory (apiKey may have been restored by sync)
+            window.coach.coachSettings = window.coach.loadCoachSettings();
             if (window.coach.updateStatsDisplay) window.coach.updateStatsDisplay();
             if (window.coach.renderRecentSessions) window.coach.renderRecentSessions();
         }

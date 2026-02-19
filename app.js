@@ -424,6 +424,8 @@ class JmeeDeepBreathApp {
             window.coach.sessions = window.coach.loadSessions();
             window.coach.goals = localStorage.getItem('deepbreath_goals') || '';
             window.coach.customPrompt = localStorage.getItem('deepbreath_coach_custom_prompt') || '';
+            // Reload coach settings in memory (apiKey may have been restored by sync)
+            window.coach.coachSettings = window.coach.loadCoachSettings();
             const customPromptInput = document.getElementById('coachCustomPrompt');
             if (customPromptInput) customPromptInput.value = window.coach.customPrompt;
             const goalsInput = document.getElementById('coachGoals');
