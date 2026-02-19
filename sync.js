@@ -611,8 +611,8 @@ class DataSync {
             changed = true;
         }
 
-        // Last-write-wins for simple keys
-        const lwwKeys = ['deepbreath_profile', 'deepbreath_goals', 'deepbreath_settings'];
+        // Last-write-wins for profile and goals
+        const lwwKeys = ['deepbreath_profile', 'deepbreath_goals'];
         for (const key of lwwKeys) {
             if (remoteData[key] !== undefined) {
                 const localVal = localStorage.getItem(key);
@@ -625,8 +625,43 @@ class DataSync {
             }
         }
 
+        // Deep merge for deepbreath_settings — local wins on conflicts, remote fills missing keys
+        if (remoteData.deepbreath_settings) {
+            const localSettings = this._getLocal('deepbreath_settings', {});
+            const remoteSettings = remoteData.deepbreath_settings;
+
+            // Deep merge: remote is base, local overrides
+            const merged = this._deepMergeSettings(remoteSettings, localSettings);
+
+            const localStr = JSON.stringify(localSettings);
+            const mergedStr = JSON.stringify(merged);
+            if (localStr !== mergedStr) {
+                changed = true;
+            }
+            remoteData.deepbreath_settings = merged;
+        }
+
         console.log('[Sync] Merge result: changed =', changed);
         return changed ? remoteData : null;
+    }
+
+    // Deep merge two settings objects — base provides missing keys, override wins on conflicts
+    _deepMergeSettings(base, override) {
+        const result = { ...base };
+        for (const key in override) {
+            if (
+                override[key] !== null &&
+                typeof override[key] === 'object' &&
+                !Array.isArray(override[key]) &&
+                typeof base[key] === 'object' &&
+                base[key] !== null
+            ) {
+                result[key] = this._deepMergeSettings(base[key], override[key]);
+            } else {
+                result[key] = override[key];
+            }
+        }
+        return result;
     }
 
     _mergeSessions(local, remote) {

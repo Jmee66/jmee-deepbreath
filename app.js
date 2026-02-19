@@ -746,14 +746,19 @@ class JmeeDeepBreathApp {
             apneaMinutes.value = Math.floor(this.settings.apneaMax / 60);
             apneaSeconds.value = this.settings.apneaMax % 60;
 
+            let apneaSaveTimeout;
             const updateApneaMax = () => {
                 this.settings.apneaMax = parseInt(apneaMinutes.value || 0) * 60 + parseInt(apneaSeconds.value || 0);
                 this.updateComputedValues();
                 this.updatePersonalBestDisplay();
+                clearTimeout(apneaSaveTimeout);
+                apneaSaveTimeout = setTimeout(() => this.saveSettings(true), 300);
             };
 
             apneaMinutes.addEventListener('input', updateApneaMax);
             apneaSeconds.addEventListener('input', updateApneaMax);
+            apneaMinutes.addEventListener('change', updateApneaMax);
+            apneaSeconds.addEventListener('change', updateApneaMax);
         }
 
         // Quick test button
