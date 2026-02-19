@@ -365,7 +365,6 @@ class JmeeDeepBreathApp {
             const gistIdInput = document.getElementById('syncGistId');
             const token = tokenInput?.value?.trim();
             const existingGistId = gistIdInput?.value?.trim();
-            alert('CLICK token=' + (token||'vide').substring(0,10) + ' gist=' + (existingGistId||'vide').substring(0,10));
             if (!token || token === '••••••••') {
                 this.showToast('Entrez votre token GitHub', 'warning');
                 return;
@@ -384,7 +383,6 @@ class JmeeDeepBreathApp {
                 if (tokenInput) tokenInput.value = '••••••••';
                 this._syncRestoreUI();
             } catch (err) {
-                alert('ERREUR: ' + (err && err.message ? err.message : String(err)));
                 this.showToast('Erreur : ' + (err && err.message ? err.message : String(err)));
             }
             btnSetup.disabled = false;
@@ -440,9 +438,6 @@ class JmeeDeepBreathApp {
             if (btnSetup) btnSetup.style.display = 'none';
             if (btnSyncNow) btnSyncNow.style.display = '';
             if (btnDisconnect) btnDisconnect.style.display = '';
-            // Auto pull on open
-            sync.etag = null;
-            sync.pull().then(() => this._refreshUIAfterSync()).catch(() => {});
         } else {
             if (btnSetup) btnSetup.style.display = '';
             if (btnSyncNow) btnSyncNow.style.display = 'none';
