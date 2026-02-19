@@ -335,87 +335,95 @@ class JmeeDeepBreathApp {
         const sync = window.dataSync;
         if (!sync) return;
 
-        const tokenInput = document.getElementById('syncToken');
-        const gistIdInput = document.getElementById('syncGistId');
-        const btnSetup = document.getElementById('btnSyncSetup');
-        const btnSyncNow = document.getElementById('btnSyncNow');
-        const btnDisconnect = document.getElementById('btnSyncDisconnect');
+        // Restore UI state immediately (elements may be hidden but exist in DOM)
+        this._syncRestoreUI();
 
-        // Restore UI state
-        if (sync.enabled) {
-            if (tokenInput) tokenInput.value = '••••••••';
-            if (gistIdInput) gistIdInput.value = sync.gistId;
-            if (btnSetup) btnSetup.style.display = 'none';
-            if (btnSyncNow) btnSyncNow.style.display = '';
-            if (btnDisconnect) btnDisconnect.style.display = '';
-            // Auto pull on open (get remote data, DON'T push — avoid overwriting)
-            sync.etag = null; // force fresh fetch
-            sync.pull().then(() => {
-                this._refreshUIAfterSync();
-            });
-        }
+        // Use event delegation on document — works even when section is display:none at init time
+        // (iOS Safari WebKit may not index elements inside hidden sections for getElementById)
+        document.addEventListener('click', async (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
 
-        // Setup button
-        if (btnSetup) {
-            btnSetup.addEventListener('click', async () => {
+            // --- Configurer ---
+            if (target.id === 'btnSyncSetup') {
+                const tokenInput = document.getElementById('syncToken');
+                const gistIdInput = document.getElementById('syncGistId');
                 const token = tokenInput?.value?.trim();
                 const existingGistId = gistIdInput?.value?.trim();
                 if (!token || token === '••••••••' || !token.startsWith('ghp_')) {
                     this.showToast('Token invalide — doit commencer par ghp_', 'warning');
                     return;
                 }
-                btnSetup.disabled = true;
-                btnSetup.textContent = 'Configuration...';
+                target.disabled = true;
+                target.textContent = 'Configuration...';
                 try {
                     if (existingGistId && existingGistId.length > 10) {
                         await sync.connect(token, existingGistId);
-                        this.showToast('Connecté au Gist existant');
+                        this.showToast('✓ Connecté au Gist existant');
                     } else {
                         const gistId = await sync.setup(token);
                         if (gistIdInput) gistIdInput.value = gistId;
-                        this.showToast('Sync configurée ! Gist créé.');
+                        this.showToast('✓ Sync configurée ! Gist créé.');
                     }
                     if (tokenInput) tokenInput.value = '••••••••';
-                    btnSetup.style.display = 'none';
-                    if (btnSyncNow) btnSyncNow.style.display = '';
-                    if (btnDisconnect) btnDisconnect.style.display = '';
-                } catch (e) {
-                    this.showToast(`Erreur : ${e.message}`);
+                    this._syncRestoreUI();
+                } catch (err) {
+                    this.showToast(`Erreur : ${err.message}`, 'error');
                 }
-                btnSetup.disabled = false;
-                btnSetup.textContent = 'Configurer';
-            });
-        }
+                target.disabled = false;
+                target.textContent = 'Configurer';
+            }
 
-        // Manual sync — pull first (get remote + merge), then push (send merged result)
-        if (btnSyncNow) {
-            btnSyncNow.addEventListener('click', async () => {
-                btnSyncNow.textContent = 'Sync...';
-                btnSyncNow.disabled = true;
+            // --- Sync maintenant ---
+            if (target.id === 'btnSyncNow') {
+                target.textContent = 'Sync...';
+                target.disabled = true;
                 try {
                     const diag = await sync.fullSync();
                     this._refreshUIAfterSync();
                     const gid = (sync.gistId || '?').substring(0, 8);
                     this.showToast(`[${gid}] L${diag.localBefore}+G${diag.gistSessions}→${diag.mergedCount} push=${diag.pushed?'✓':'✗'} v=${diag.verified}`);
-                } catch (e) {
-                    this.showToast(`Erreur sync : ${e.message}`, 'error');
+                } catch (err) {
+                    this.showToast(`Erreur sync : ${err.message}`, 'error');
                 }
-                btnSyncNow.textContent = 'Sync maintenant';
-                btnSyncNow.disabled = false;
-            });
-        }
+                target.textContent = 'Sync maintenant';
+                target.disabled = false;
+            }
 
-        // Disconnect
-        if (btnDisconnect) {
-            btnDisconnect.addEventListener('click', () => {
+            // --- Déconnecter ---
+            if (target.id === 'btnSyncDisconnect') {
                 sync.disconnect();
+                const tokenInput = document.getElementById('syncToken');
+                const gistIdInput = document.getElementById('syncGistId');
                 if (tokenInput) tokenInput.value = '';
                 if (gistIdInput) gistIdInput.value = '';
-                if (btnSetup) btnSetup.style.display = '';
-                if (btnSyncNow) btnSyncNow.style.display = 'none';
-                btnDisconnect.style.display = 'none';
+                this._syncRestoreUI();
                 this.showToast('Sync déconnectée');
-            });
+            }
+        });
+    }
+
+    _syncRestoreUI() {
+        const sync = window.dataSync;
+        if (!sync) return;
+        const tokenInput = document.getElementById('syncToken');
+        const gistIdInput = document.getElementById('syncGistId');
+        const btnSetup = document.getElementById('btnSyncSetup');
+        const btnSyncNow = document.getElementById('btnSyncNow');
+        const btnDisconnect = document.getElementById('btnSyncDisconnect');
+        if (sync.enabled) {
+            if (tokenInput) tokenInput.value = '••••••••';
+            if (gistIdInput) gistIdInput.value = sync.gistId;
+            if (btnSetup) btnSetup.style.display = 'none';
+            if (btnSyncNow) btnSyncNow.style.display = '';
+            if (btnDisconnect) btnDisconnect.style.display = '';
+            // Auto pull on open
+            sync.etag = null;
+            sync.pull().then(() => this._refreshUIAfterSync()).catch(() => {});
+        } else {
+            if (btnSetup) btnSetup.style.display = '';
+            if (btnSyncNow) btnSyncNow.style.display = 'none';
+            if (btnDisconnect) btnDisconnect.style.display = 'none';
         }
     }
 
