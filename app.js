@@ -373,9 +373,11 @@ class JmeeDeepBreathApp {
             btnSetup.textContent = 'Configuration...';
             try {
                 if (existingGistId && existingGistId.length > 10) {
+                    alert('connect: token=' + token.substring(0,8) + ' gist=' + existingGistId.substring(0,8));
                     await sync.connect(token, existingGistId);
                     this.showToast('✓ Connecté au Gist existant');
                 } else {
+                    alert('setup: token=' + token.substring(0,8));
                     const gistId = await sync.setup(token);
                     if (gistIdInput) gistIdInput.value = gistId;
                     this.showToast('✓ Sync configurée ! Gist créé.');
@@ -383,6 +385,7 @@ class JmeeDeepBreathApp {
                 if (tokenInput) tokenInput.value = '••••••••';
                 this._syncRestoreUI();
             } catch (err) {
+                alert('ERR: ' + String(err) + ' | msg=' + (err && err.message));
                 this.showToast('Erreur : ' + (err && err.message ? err.message : String(err)));
             }
             btnSetup.disabled = false;
