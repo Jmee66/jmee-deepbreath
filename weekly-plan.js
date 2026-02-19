@@ -164,9 +164,8 @@ class WeeklyPlan {
 
         const coachSettings = this.loadCoachSettings();
         if (!coachSettings.apiKey || coachSettings.apiKey.trim() === '') {
-            window.app?.showToast('Configure ta clé API dans Réglages > Coach IA', 'warning');
-            // Navigate to settings
-            document.querySelector('[data-section="settings"]')?.click();
+            // Afficher l'état "no API key" sans rediriger — rester sur la section Plan
+            this._showNoApiKeyState();
             return;
         }
         if (!navigator.onLine) {
@@ -498,6 +497,41 @@ Règles : exerciseId = exactement les IDs de la liste ci-dessus. exercises=[] po
         const day = plan.days.find(d => d.date === sessionDate);
         if (day && day.notes && day.notes.trim()) {
             this.pushNoteToJournal(sessionDate, day.notes);
+        }
+    }
+
+    _showNoApiKeyState() {
+        const emptyEl = document.getElementById('planEmpty');
+        const loading = document.getElementById('planLoading');
+        const grid = document.getElementById('weekGrid');
+        const rationale = document.getElementById('planRationale');
+
+        if (loading) loading.style.display = 'none';
+        if (grid) grid.style.display = 'none';
+        if (rationale) rationale.style.display = 'none';
+        if (emptyEl) {
+            emptyEl.style.display = 'flex';
+            emptyEl.innerHTML = `
+                <div class="plan-empty-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="56" height="56">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
+                <h3>Clé API manquante</h3>
+                <p>Pour générer un plan personnalisé, configure ta clé API dans la section <strong>Coach IA</strong>.</p>
+                <p class="plan-empty-hint">
+                    1. Va dans l'onglet <strong>Coach</strong> dans la navigation<br>
+                    2. Clique sur <strong>⚙ Réglages du Coach</strong><br>
+                    3. Entre ta clé API Claude ou OpenAI<br>
+                    4. Reviens ici et clique <strong>Générer un plan</strong>
+                </p>
+                <button class="btn-generate-plan" style="margin-top:var(--space-md)" onclick="document.querySelector('[data-section=coach]')?.click()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    Aller dans le Coach IA
+                </button>`;
         }
     }
 
