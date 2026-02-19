@@ -334,51 +334,65 @@ class JmeeDeepBreathApp {
     setupSync() {
         const sync = window.dataSync;
         if (!sync) return;
+        // Listeners are attached lazily in _attachSyncListeners()
+        // called from setupNavigation() when settings section is opened
+        this._syncListenersAttached = false;
+    }
 
-        // Restore UI state immediately (elements may be hidden but exist in DOM)
-        this._syncRestoreUI();
+    _attachSyncListeners() {
+        // Called the first time the settings section becomes visible
+        // At that point all elements are guaranteed to be in the DOM and accessible
+        if (this._syncListenersAttached) {
+            // Already attached — just restore UI state
+            this._syncRestoreUI();
+            return;
+        }
+        const sync = window.dataSync;
+        if (!sync) return;
 
-        // Use event delegation on document — works even when section is display:none at init time
-        // (iOS Safari WebKit may not index elements inside hidden sections for getElementById)
-        document.addEventListener('click', async (e) => {
-            const target = e.target.closest('button');
-            if (!target) return;
+        const btnSetup = document.getElementById('btnSyncSetup');
+        const btnSyncNow = document.getElementById('btnSyncNow');
+        const btnDisconnect = document.getElementById('btnSyncDisconnect');
 
-            // --- Configurer ---
-            if (target.id === 'btnSyncSetup') {
-                const tokenInput = document.getElementById('syncToken');
-                const gistIdInput = document.getElementById('syncGistId');
-                const token = tokenInput?.value?.trim();
-                const existingGistId = gistIdInput?.value?.trim();
-                alert('DEBUG: token=' + (token ? token.substring(0,8)+'...' : 'VIDE') + ' gistId=' + (existingGistId || 'vide'));
-                if (!token || token === '••••••••') {
-                    this.showToast('Entrez votre token GitHub', 'warning');
-                    return;
-                }
-                target.disabled = true;
-                target.textContent = 'Configuration...';
-                try {
-                    if (existingGistId && existingGistId.length > 10) {
-                        await sync.connect(token, existingGistId);
-                        this.showToast('✓ Connecté au Gist existant');
-                    } else {
-                        const gistId = await sync.setup(token);
-                        if (gistIdInput) gistIdInput.value = gistId;
-                        this.showToast('✓ Sync configurée ! Gist créé.');
-                    }
-                    if (tokenInput) tokenInput.value = '••••••••';
-                    this._syncRestoreUI();
-                } catch (err) {
-                    this.showToast(`Erreur : ${err.message}`, 'error');
-                }
-                target.disabled = false;
-                target.textContent = 'Configurer';
+        if (!btnSetup) return; // section not ready yet
+
+        this._syncListenersAttached = true;
+
+        // --- Configurer ---
+        btnSetup.addEventListener('click', async () => {
+            const tokenInput = document.getElementById('syncToken');
+            const gistIdInput = document.getElementById('syncGistId');
+            const token = tokenInput?.value?.trim();
+            const existingGistId = gistIdInput?.value?.trim();
+            if (!token || token === '••••••••') {
+                this.showToast('Entrez votre token GitHub', 'warning');
+                return;
             }
+            btnSetup.disabled = true;
+            btnSetup.textContent = 'Configuration...';
+            try {
+                if (existingGistId && existingGistId.length > 10) {
+                    await sync.connect(token, existingGistId);
+                    this.showToast('✓ Connecté au Gist existant');
+                } else {
+                    const gistId = await sync.setup(token);
+                    if (gistIdInput) gistIdInput.value = gistId;
+                    this.showToast('✓ Sync configurée ! Gist créé.');
+                }
+                if (tokenInput) tokenInput.value = '••••••••';
+                this._syncRestoreUI();
+            } catch (err) {
+                this.showToast(`Erreur : ${err.message}`, 'error');
+            }
+            btnSetup.disabled = false;
+            btnSetup.textContent = 'Configurer';
+        });
 
-            // --- Sync maintenant ---
-            if (target.id === 'btnSyncNow') {
-                target.textContent = 'Sync...';
-                target.disabled = true;
+        // --- Sync maintenant ---
+        if (btnSyncNow) {
+            btnSyncNow.addEventListener('click', async () => {
+                btnSyncNow.textContent = 'Sync...';
+                btnSyncNow.disabled = true;
                 try {
                     const diag = await sync.fullSync();
                     this._refreshUIAfterSync();
@@ -387,12 +401,14 @@ class JmeeDeepBreathApp {
                 } catch (err) {
                     this.showToast(`Erreur sync : ${err.message}`, 'error');
                 }
-                target.textContent = 'Sync maintenant';
-                target.disabled = false;
-            }
+                btnSyncNow.textContent = 'Sync maintenant';
+                btnSyncNow.disabled = false;
+            });
+        }
 
-            // --- Déconnecter ---
-            if (target.id === 'btnSyncDisconnect') {
+        // --- Déconnecter ---
+        if (btnDisconnect) {
+            btnDisconnect.addEventListener('click', () => {
                 sync.disconnect();
                 const tokenInput = document.getElementById('syncToken');
                 const gistIdInput = document.getElementById('syncGistId');
@@ -400,8 +416,11 @@ class JmeeDeepBreathApp {
                 if (gistIdInput) gistIdInput.value = '';
                 this._syncRestoreUI();
                 this.showToast('Sync déconnectée');
-            }
-        });
+            });
+        }
+
+        // Restore UI state now that listeners are attached
+        this._syncRestoreUI();
     }
 
     _syncRestoreUI() {
@@ -604,6 +623,11 @@ class JmeeDeepBreathApp {
                 if (targetSection === 'coach') {
                     const coachMessages = document.getElementById('coachMessages');
                     if (coachMessages) coachMessages.scrollTop = coachMessages.scrollHeight;
+                }
+
+                // Attach sync button listeners the first time settings section opens
+                if (targetSection === 'settings') {
+                    this._attachSyncListeners();
                 }
             });
         });
