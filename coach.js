@@ -411,6 +411,10 @@ class CoachAI {
         this.updateStatsDisplay();
         this.renderRecentSessions();
         if (window.journal) window.journal.render();
+        if (window.weeklyPlan) {
+            window.weeklyPlan.refreshExerciseStatuses();
+            window.weeklyPlan.onSessionSaved(session);
+        }
 
         if (window.app) window.app.showToast('Session enregistree');
     }
@@ -432,6 +436,10 @@ class CoachAI {
             this.updateStatsDisplay();
             this.renderRecentSessions();
             if (window.journal) window.journal.render();
+            if (window.weeklyPlan) {
+                window.weeklyPlan.refreshExerciseStatuses();
+                window.weeklyPlan.onSessionSaved(session);
+            }
         }
 
         this.closeFeedbackModal();

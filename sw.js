@@ -3,7 +3,7 @@
  * Enables offline functionality
  */
 
-const CACHE_NAME = 'jmee-deepbreath-v61';
+const CACHE_NAME = 'jmee-deepbreath-v62';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -17,6 +17,7 @@ const ASSETS_TO_CACHE = [
     '/coach.js',
     '/journal.js',
     '/multi-timer.js',
+    '/weekly-plan.js',
     '/manifest.json',
     'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js',
     'https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js',

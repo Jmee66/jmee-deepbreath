@@ -127,7 +127,7 @@
             </svg>
             <div class="nav-brand-text">
                 <span>Jmee DeepBreath</span>
-                <span class="beta-badge">BETA v0.61 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
+                <span class="beta-badge">BETA v0.62 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
             </div>
         </div>
         <div class="nav-links">
@@ -147,6 +147,15 @@
                     <line x1="15" y1="3" x2="15" y2="21"/>
                 </svg>
                 Journal
+            </button>
+            <button class="nav-link nav-plan" data-section="weekly-plan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Plan
             </button>
             <button class="nav-link" data-section="respiration">Respiration</button>
             <button class="nav-link" data-section="visualisation">Visualisation</button>
@@ -356,6 +365,76 @@
                     <tbody id="journalBody"></tbody>
                 </table>
             </div>
+        </section>
+
+        <!-- Plan de Semaine Section -->
+        <section class="section" id="weekly-plan">
+            <div class="section-header">
+                <h2>Plan de la Semaine</h2>
+                <p>Programme personnalisé par ton coach IA</p>
+            </div>
+
+            <!-- Barre de contrôle : navigation semaine + bouton générer -->
+            <div class="plan-controls-bar">
+                <div class="plan-week-nav">
+                    <button class="plan-nav-btn" id="planPrevWeek" title="Semaine précédente" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                            <polyline points="15,18 9,12 15,6"/>
+                        </svg>
+                    </button>
+                    <span class="plan-week-label" id="planWeekLabel">—</span>
+                    <button class="plan-nav-btn" id="planNextWeek" title="Semaine suivante" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                            <polyline points="9,18 15,12 9,6"/>
+                        </svg>
+                    </button>
+                </div>
+                <button class="btn-generate-plan" id="btnGeneratePlan">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
+                    </svg>
+                    Générer un plan
+                </button>
+            </div>
+
+            <!-- Titre + Rationale du coach (masqué si pas de plan) -->
+            <div class="plan-rationale" id="planRationale" style="display:none">
+                <div class="plan-rationale-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18" style="flex-shrink:0;color:var(--accent-primary)">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 8v4M12 16h.01"/>
+                    </svg>
+                    <strong id="planTitle">Plan Semaine</strong>
+                </div>
+                <p id="planRationaleText"></p>
+            </div>
+
+            <!-- État : chargement -->
+            <div class="plan-loading" id="planLoading" style="display:none">
+                <div class="plan-loading-spinner"></div>
+                <p>Génération du plan en cours…</p>
+                <small>Claude analyse ton historique et construit ton programme</small>
+            </div>
+
+            <!-- État : vide (aucun plan) -->
+            <div class="plan-empty" id="planEmpty">
+                <div class="plan-empty-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="56" height="56">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/>
+                    </svg>
+                </div>
+                <h3>Aucun plan pour cette semaine</h3>
+                <p>Clique sur <strong>Générer un plan</strong> pour créer ton programme personnalisé.<br>
+                Le coach IA analyse ton historique et ton niveau pour construire la semaine idéale.</p>
+                <p class="plan-empty-hint">💡 Configure ta clé API dans <strong>Réglages &gt; Coach IA</strong> si ce n'est pas encore fait.</p>
+            </div>
+
+            <!-- Grille 7 jours (remplie par weekly-plan.js) -->
+            <div class="week-grid" id="weekGrid" style="display:none"></div>
         </section>
 
         <!-- Respiration Section -->
@@ -4391,5 +4470,6 @@
     <script src="coach.js" defer></script>
     <script src="journal.js" defer></script>
     <script src="multi-timer.js" defer></script>
+    <script src="weekly-plan.js" defer></script>
 </body>
 </html>

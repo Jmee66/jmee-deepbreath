@@ -238,6 +238,7 @@ class JmeeDeepBreathApp {
         this.setupGuide();
         this.setupWakeLock();
         this.initJournal();
+        this.initWeeklyPlan();
         this.setupSync();
         this.updateComfortZoneProgress();
         this.updateFrcComfortProgress();
@@ -247,6 +248,13 @@ class JmeeDeepBreathApp {
         if (typeof JournalView !== 'undefined') {
             window.journal = new JournalView();
             window.journal.init();
+        }
+    }
+
+    initWeeklyPlan() {
+        if (typeof WeeklyPlan !== 'undefined') {
+            window.weeklyPlan = new WeeklyPlan();
+            window.weeklyPlan.init();
         }
     }
 
@@ -424,6 +432,7 @@ class JmeeDeepBreathApp {
             if (window.coach.renderRecentSessions) window.coach.renderRecentSessions();
         }
         if (window.journal) window.journal.render();
+        if (window.weeklyPlan) window.weeklyPlan.render();
     }
 
     setupOfflineMode() {
