@@ -1108,7 +1108,7 @@ class JmeeDeepBreathApp {
     }
 
     // Rafraîchit tous les inputs des sections exercice selon le mode actuel
-    // Appelé par populateSettingsUI() et lors du changement d'apneaMax en mode optimal
+    // Appelé par populateSettingsUI(), changement de mode, changement d'apneaMax, saveApneaResult
     refreshExerciseSettingsUI() {
         const isOptimal = this.settings.mode === 'optimal';
         const RATIO_LOCKS = {
@@ -1135,14 +1135,32 @@ class JmeeDeepBreathApp {
                         if (optParams[param] !== undefined) {
                             input.value = optParams[param];
                         }
+                        // Retirer le readonly inline (CSS gère le verrouillage visuel en mode optimal)
+                        input.readOnly = false;
+                        input.style.opacity = '';
+                        input.style.cursor = '';
                     });
                     return; // section traitée
                 }
             }
 
-            // Mode manuel / auto : afficher les valeurs sauvegardées
+            // Mode manuel / auto : afficher les valeurs sauvegardées et gérer les ratios
             inputs.forEach(input => {
                 const param = input.dataset.param;
+
+                // Restaurer l'état readonly des champs verrouillés par ratio (manuel/auto)
+                const isRatioLocked = ratio && param !== ratio.ref && ratio.locked[param] !== undefined;
+                if (isRatioLocked) {
+                    input.readOnly = true;
+                    input.style.opacity = '0.6';
+                    input.style.cursor = 'not-allowed';
+                } else {
+                    // S'assurer que les champs libres sont bien éditables
+                    input.readOnly = false;
+                    input.style.opacity = '';
+                    input.style.cursor = '';
+                }
+
                 if (this.settings.exercises[exerciseId]?.[param] !== undefined) {
                     input.value = this.settings.exercises[exerciseId][param];
                 }
@@ -3121,6 +3139,12 @@ class JmeeDeepBreathApp {
             if (apneaSeconds) apneaSeconds.value = this.settings.apneaMax % 60;
 
             this.updatePersonalBestDisplay();
+
+            // Recalculer les exercices si en mode optimal
+            if (this.settings.mode === 'optimal') {
+                this.refreshExerciseSettingsUI();
+            }
+
             this.saveSettings();
 
             document.getElementById('apneaTestModal').classList.remove('active');

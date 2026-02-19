@@ -1765,13 +1765,16 @@ body.manual-mode .settings-manual-panel {
 body.optimal-mode .exercise-settings input[data-param]:not([type="select"]) {
     background: var(--bg-tertiary);
     color: var(--text-muted);
-    opacity: 0.65;
+    opacity: 0.7;
     cursor: not-allowed;
-    border-color: transparent;
+    border-color: rgba(245, 158, 11, 0.2);
+    border-style: dashed;
 }
+/* Focus en mode optimal : retour tactile doré (indique que c'est verrouillé, pas cassé) */
 body.optimal-mode .exercise-settings input[data-param]:focus {
     outline: none;
-    border-color: transparent;
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.1);
 }
 
 /* En mode optimal : le panneau auto (tables d'apnée) reste visible */
@@ -1783,6 +1786,17 @@ body.optimal-mode .settings-auto-panel {
 body.optimal-mode #apneaHint {
     color: #f59e0b;
     font-weight: 500;
+}
+
+/* Sur mobile : inputs readonly un peu plus lisibles */
+@media (max-width: 480px) {
+    .input-with-unit input[readonly] {
+        opacity: 0.75;
+    }
+    body.optimal-mode .exercise-settings input[data-param]:not([type="select"]) {
+        opacity: 0.8;
+        font-size: 0.85rem;
+    }
 }
 
 /* Settings Actions */
@@ -1868,6 +1882,44 @@ body.optimal-mode #apneaHint {
     .settings-actions button {
         width: 100%;
         justify-content: center;
+    }
+}
+
+/* Responsive Settings — petits téléphones */
+@media (max-width: 480px) {
+    .settings-mode-toggle {
+        grid-template-columns: 1fr;
+        gap: var(--space-sm);
+    }
+    .settings-mode-toggle .mode-btn:last-child {
+        grid-column: auto;
+    }
+    .mode-btn {
+        flex-direction: row;
+        padding: var(--space-sm) var(--space-md);
+        gap: var(--space-sm);
+        text-align: left;
+    }
+    .mode-btn svg {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+    }
+    .mode-btn span {
+        font-size: 0.85rem;
+    }
+    .mode-btn small {
+        font-size: 0.65rem;
+    }
+    .ratio-badge {
+        font-size: 0.6rem;
+        padding: 1px 5px;
+    }
+    .setting-hint {
+        font-size: 0.72rem;
+        line-height: 1.4;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 }
 
