@@ -334,9 +334,10 @@ class JmeeDeepBreathApp {
     setupSync() {
         const sync = window.dataSync;
         if (!sync) return;
-        // Listeners are attached lazily in _attachSyncListeners()
-        // called from setupNavigation() when settings section is opened
         this._syncListenersAttached = false;
+        // Try immediately (works on desktop where elements are accessible at init)
+        // Also called from setupNavigation() on first open of settings (mobile fallback)
+        this._attachSyncListeners();
     }
 
     _attachSyncListeners() {
