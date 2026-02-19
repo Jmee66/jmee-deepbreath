@@ -732,6 +732,8 @@ class JmeeDeepBreathApp {
                 btn.classList.add('active');
                 this.settings.mode = btn.dataset.mode;
                 this.applySettingsMode();
+                // Recalculer les inputs exercices si on bascule en/hors mode optimal
+                this.refreshExerciseSettingsUI();
                 this.updateComputedValues();
                 this.saveSettings(true);
             });
@@ -934,7 +936,6 @@ class JmeeDeepBreathApp {
 
     setupExerciseSettingsInputs() {
         // Ratios fixes par exercice : { param_référence: { param_lié: multiplicateur, ... }, ... }
-        // La valeur de référence est le premier param listé
         const RATIO_LOCKS = {
             'coherent':       { ref: 'inhale', locked: { exhale: 1 } },
             'ujjayi':         { ref: 'inhale', locked: { exhale: 1 } },
@@ -958,7 +959,7 @@ class JmeeDeepBreathApp {
                     input.value = this.settings.exercises[exerciseId][param];
                 }
 
-                // Marquer visuellement les champs verrouillés
+                // Marquer visuellement les champs verrouillés par ratio (mode manuel)
                 if (ratio && param !== ratio.ref && ratio.locked[param] !== undefined) {
                     input.readOnly = true;
                     input.style.opacity = '0.6';
@@ -966,9 +967,12 @@ class JmeeDeepBreathApp {
                     input.title = 'Calculé automatiquement selon le ratio';
                 }
 
-                // Update on change or input (debounced) pour capturer toutes les modifications
+                // Update on change or input (debounced) — ignoré en mode optimal (readonly)
                 let saveTimeout;
                 const applyAndSave = () => {
+                    // En mode optimal, les inputs sont en lecture seule — ne rien faire
+                    if (this.settings.mode === 'optimal') return;
+
                     if (!this.settings.exercises[exerciseId]) {
                         this.settings.exercises[exerciseId] = {};
                     }
@@ -983,9 +987,7 @@ class JmeeDeepBreathApp {
                             if (ratio && param === ratio.ref) {
                                 for (const [lockedParam, mult] of Object.entries(ratio.locked)) {
                                     const computed = Math.round(v * mult * 10) / 10;
-                                    // Mettre à jour le settings
                                     this.settings.exercises[exerciseId][lockedParam] = computed;
-                                    // Mettre à jour l'input correspondant dans le DOM
                                     const lockedInput = section.querySelector(`input[data-param="${lockedParam}"]`);
                                     if (lockedInput) lockedInput.value = computed;
                                 }
@@ -999,6 +1001,17 @@ class JmeeDeepBreathApp {
                 input.addEventListener('input', applyAndSave);
             });
         });
+
+        // En mode optimal : quand apneaMax change, recalculer tous les inputs exercices en temps réel
+        const apneaMinutes = document.getElementById('apneaMinutes');
+        const apneaSeconds = document.getElementById('apneaSeconds');
+        const refreshOptimalInputs = () => {
+            if (this.settings.mode === 'optimal') {
+                this.refreshExerciseSettingsUI();
+            }
+        };
+        if (apneaMinutes) apneaMinutes.addEventListener('input', refreshOptimalInputs);
+        if (apneaSeconds) apneaSeconds.addEventListener('input', refreshOptimalInputs);
     }
 
     populateSettingsUI() {
@@ -1033,43 +1046,8 @@ class JmeeDeepBreathApp {
             }
         });
 
-        // Exercise settings (avec recalcul des ratios verrouillés au chargement)
-        const RATIO_LOCKS = {
-            'coherent':       { ref: 'inhale', locked: { exhale: 1 } },
-            'ujjayi':         { ref: 'inhale', locked: { exhale: 1 } },
-            'bhramari':       { ref: 'inhale', locked: { exhale: 2 } },
-            'co2-tolerance':  { ref: 'inhale', locked: { exhale: 2 } },
-            'pranayama-142':  { ref: 'inhale', locked: { hold: 4, exhale: 2 } },
-            'relaxation':     { ref: 'inhale', locked: { hold: 1.75, exhale: 2 } },
-            'surya-bhedana':  { ref: 'inhale', locked: { hold: 2, exhale: 1.5 } },
-        };
-        document.querySelectorAll('.exercise-settings').forEach(section => {
-            const exerciseId = section.dataset.exercise;
-            const inputs = section.querySelectorAll('input[data-param], select[data-param]');
-            const ratio = RATIO_LOCKS[exerciseId];
-
-            inputs.forEach(input => {
-                const param = input.dataset.param;
-                if (this.settings.exercises[exerciseId]?.[param] !== undefined) {
-                    input.value = this.settings.exercises[exerciseId][param];
-                }
-                // Recalculer et afficher les champs verrouillés depuis la valeur de référence
-                if (ratio && param === ratio.ref) {
-                    const refVal = parseFloat(input.value);
-                    if (!isNaN(refVal)) {
-                        for (const [lockedParam, mult] of Object.entries(ratio.locked)) {
-                            const computed = Math.round(refVal * mult * 10) / 10;
-                            const lockedInput = section.querySelector(`input[data-param="${lockedParam}"]`);
-                            if (lockedInput) {
-                                lockedInput.value = computed;
-                                if (!this.settings.exercises[exerciseId]) this.settings.exercises[exerciseId] = {};
-                                this.settings.exercises[exerciseId][lockedParam] = computed;
-                            }
-                        }
-                    }
-                }
-            });
-        });
+        // Exercise settings
+        this.refreshExerciseSettingsUI();
 
         this.applySettingsMode();
     }
@@ -1129,11 +1107,70 @@ class JmeeDeepBreathApp {
         });
     }
 
-    applySettingsMode() {
-        const isManual = this.settings.mode === 'manual';
+    // Rafraîchit tous les inputs des sections exercice selon le mode actuel
+    // Appelé par populateSettingsUI() et lors du changement d'apneaMax en mode optimal
+    refreshExerciseSettingsUI() {
+        const isOptimal = this.settings.mode === 'optimal';
+        const RATIO_LOCKS = {
+            'coherent':       { ref: 'inhale', locked: { exhale: 1 } },
+            'ujjayi':         { ref: 'inhale', locked: { exhale: 1 } },
+            'bhramari':       { ref: 'inhale', locked: { exhale: 2 } },
+            'co2-tolerance':  { ref: 'inhale', locked: { exhale: 2 } },
+            'pranayama-142':  { ref: 'inhale', locked: { hold: 4, exhale: 2 } },
+            'relaxation':     { ref: 'inhale', locked: { hold: 1.75, exhale: 2 } },
+            'surya-bhedana':  { ref: 'inhale', locked: { hold: 2, exhale: 1.5 } },
+        };
 
-        document.body.classList.toggle('manual-mode', isManual);
-        document.body.classList.toggle('auto-mode', !isManual);
+        document.querySelectorAll('.exercise-settings').forEach(section => {
+            const exerciseId = section.dataset.exercise;
+            const inputs = section.querySelectorAll('input[data-param], select[data-param]');
+            const ratio = RATIO_LOCKS[exerciseId];
+
+            // En mode optimal : calculer toutes les valeurs depuis apneaMax
+            if (isOptimal) {
+                const optParams = this.getOptimalParams(exerciseId);
+                if (optParams) {
+                    inputs.forEach(input => {
+                        const param = input.dataset.param;
+                        if (optParams[param] !== undefined) {
+                            input.value = optParams[param];
+                        }
+                    });
+                    return; // section traitée
+                }
+            }
+
+            // Mode manuel / auto : afficher les valeurs sauvegardées
+            inputs.forEach(input => {
+                const param = input.dataset.param;
+                if (this.settings.exercises[exerciseId]?.[param] !== undefined) {
+                    input.value = this.settings.exercises[exerciseId][param];
+                }
+                // Recalculer les champs verrouillés depuis la valeur de référence
+                if (ratio && param === ratio.ref) {
+                    const refVal = parseFloat(input.value);
+                    if (!isNaN(refVal)) {
+                        for (const [lockedParam, mult] of Object.entries(ratio.locked)) {
+                            const computed = Math.round(refVal * mult * 10) / 10;
+                            const lockedInput = section.querySelector(`input[data-param="${lockedParam}"]`);
+                            if (lockedInput) {
+                                lockedInput.value = computed;
+                                if (!this.settings.exercises[exerciseId]) this.settings.exercises[exerciseId] = {};
+                                this.settings.exercises[exerciseId][lockedParam] = computed;
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    applySettingsMode() {
+        const mode = this.settings.mode; // 'auto' | 'manual' | 'optimal'
+
+        document.body.classList.toggle('manual-mode',  mode === 'manual');
+        document.body.classList.toggle('auto-mode',    mode === 'auto');
+        document.body.classList.toggle('optimal-mode', mode === 'optimal');
 
         // CSS handles the visibility now via body classes
     }
@@ -1158,6 +1195,68 @@ class JmeeDeepBreathApp {
     // ==========================================
     // Get Exercise Parameters
     // ==========================================
+
+    // Config des paramètres optimaux : valeur de base = apneaMax / diviseur, clampée entre min et max
+    // Les ratios hold/exhale sont ensuite appliqués automatiquement par le système RATIO_LOCKS
+    static get OPTIMAL_CONFIG() {
+        return {
+            'cyclic-sighing': { param: 'inhale1', divisor: 40, min: 1.5, max: 4  },
+            'coherent':       { param: 'inhale',  divisor: 20, min: 4,   max: 8  },
+            'box':            { param: 'boxTime', divisor: 20, min: 3,   max: 8  },
+            'co2-tolerance':  { param: 'inhale',  divisor: 25, min: 3,   max: 7  },
+            'relaxation':     { param: 'inhale',  divisor: 30, min: 3,   max: 6  },
+            'pranayama-142':  { param: 'inhale',  divisor: 25, min: 3,   max: 8  },
+            'nadi-shodhana':  { param: 'phaseTime', divisor: 22, min: 3, max: 8  },
+            'ujjayi':         { param: 'inhale',  divisor: 20, min: 4,   max: 10 },
+            'bhramari':       { param: 'inhale',  divisor: 25, min: 3,   max: 8  },
+            'surya-bhedana':  { param: 'inhale',  divisor: 20, min: 3,   max: 8  },
+        };
+    }
+
+    // Retourne la valeur de base calculée pour un exercice (arrondie à 0.5s)
+    getOptimalBaseValue(exerciseId) {
+        const cfg = DeepBreathApp.OPTIMAL_CONFIG[exerciseId];
+        if (!cfg) return null;
+        const apneaMax = this.settings.apneaMax || 120;
+        const raw = apneaMax / cfg.divisor;
+        return Math.max(cfg.min, Math.min(cfg.max, Math.round(raw * 2) / 2));
+    }
+
+    // Retourne un objet { param: value, ...locked } complet pour un exercice en mode optimal
+    getOptimalParams(exerciseId) {
+        const cfg = DeepBreathApp.OPTIMAL_CONFIG[exerciseId];
+        if (!cfg) return null;
+        const baseVal = this.getOptimalBaseValue(exerciseId);
+        const result = { [cfg.param]: baseVal };
+
+        // Appliquer les ratios liés (identique à RATIO_LOCKS)
+        const RATIO_LOCKED = {
+            'coherent':       { exhale: 1 },
+            'ujjayi':         { exhale: 1 },
+            'bhramari':       { exhale: 2 },
+            'co2-tolerance':  { exhale: 2 },
+            'pranayama-142':  { hold: 4, exhale: 2 },
+            'relaxation':     { hold: 1.75, exhale: 2 },
+            'surya-bhedana':  { hold: 2, exhale: 1.5 },
+        };
+        const ratios = RATIO_LOCKED[exerciseId];
+        if (ratios) {
+            for (const [lockedParam, mult] of Object.entries(ratios)) {
+                result[lockedParam] = Math.round(baseVal * mult * 10) / 10;
+            }
+        }
+
+        // Cas cyclic-sighing : inhale2 reste 1s fixe, exhale = inhale1 × 3
+        if (exerciseId === 'cyclic-sighing') {
+            result['inhale2'] = 1;
+            result['exhale'] = Math.round(baseVal * 3 * 10) / 10;
+        }
+
+        // Cas box : les 4 phases = boxTime
+        // Cas nadi-shodhana : phaseTime seul, pas de ratio
+
+        return result;
+    }
 
     getExerciseParams(exerciseId) {
         const baseExercise = EXERCISES[exerciseId];
@@ -1197,6 +1296,16 @@ class JmeeDeepBreathApp {
             exercise.breatheUpDuration = userSettings.breatheUpDuration || exercise.breatheUpDuration;
             exercise.restDuration = userSettings.restDuration || exercise.restDuration;
             return exercise;
+        }
+
+        // Mode optimal : surcharger userSettings avec les valeurs calculées depuis apneaMax
+        if (this.settings.mode === 'optimal') {
+            const optParams = this.getOptimalParams(exerciseId);
+            if (optParams) {
+                // On fusionne : les params calculés priment sur userSettings
+                // Les params non-couverts (duration, cycles...) restent depuis userSettings
+                Object.assign(userSettings, optParams);
+            }
         }
 
         // Standard breathing exercises
@@ -1334,7 +1443,8 @@ class JmeeDeepBreathApp {
     }
 
     getApneaTableParams(exerciseId, exercise, userSettings) {
-        const isAutoMode = this.settings.mode === 'auto';
+        // En mode optimal, les tables d'apnée se comportent comme en mode auto (% de apneaMax)
+        const isAutoMode = this.settings.mode === 'auto' || this.settings.mode === 'optimal';
         const apneaMax = this.settings.apneaMax;
 
         exercise.cycles = userSettings.cycles || exercise.cycles;

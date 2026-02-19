@@ -127,7 +127,7 @@
             </svg>
             <div class="nav-brand-text">
                 <span>Jmee DeepBreath</span>
-                <span class="beta-badge">BETA v0.58 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
+                <span class="beta-badge">BETA v0.59 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
             </div>
         </div>
         <div class="nav-links">
@@ -2448,7 +2448,14 @@
                             <path d="M12 6v6l4 2"/>
                         </svg>
                         <span>Automatique</span>
-                        <small>Basé sur votre apnée max</small>
+                        <small>Tables d'apnée en % de votre max</small>
+                    </button>
+                    <button class="mode-btn mode-btn-optimal" data-mode="optimal">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+                        </svg>
+                        <span>Optimal</span>
+                        <small>Tous les exos calibrés sur votre apnée</small>
                     </button>
                     <button class="mode-btn" data-mode="manual">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2479,7 +2486,7 @@
                             Tester
                         </button>
                     </div>
-                    <p class="setting-hint" id="apneaHint">En mode auto, les exercices seront calculés en % de ce temps</p>
+                    <p class="setting-hint" id="apneaHint">En mode Optimal, tous les exercices sont calibrés automatiquement depuis ce temps</p>
                 </div>
 
                 <!-- Auto Mode: Percentages -->

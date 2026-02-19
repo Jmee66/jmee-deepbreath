@@ -1319,7 +1319,7 @@ body::before {
 /* Mode Toggle */
 .settings-mode-toggle {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: var(--space-md);
     padding: 0 var(--space-lg) var(--space-lg);
 }
@@ -1748,6 +1748,43 @@ body.manual-mode .settings-manual-panel {
     display: block;
 }
 
+/* ============================
+   Mode Optimal
+   ============================ */
+
+/* Bouton Optimal : couleur dorée */
+.mode-btn-optimal.active {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+.mode-btn-optimal.active svg {
+    color: #f59e0b;
+}
+
+/* En mode optimal : tous les inputs exercices sont en lecture seule */
+body.optimal-mode .exercise-settings input[data-param]:not([type="select"]) {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+    opacity: 0.65;
+    cursor: not-allowed;
+    border-color: transparent;
+}
+body.optimal-mode .exercise-settings input[data-param]:focus {
+    outline: none;
+    border-color: transparent;
+}
+
+/* En mode optimal : le panneau auto (tables d'apnée) reste visible */
+body.optimal-mode .settings-auto-panel {
+    display: block;
+}
+
+/* En mode optimal : badge "Optimal" dans le hint */
+body.optimal-mode #apneaHint {
+    color: #f59e0b;
+    font-weight: 500;
+}
+
 /* Settings Actions */
 .settings-actions {
     display: flex;
@@ -1798,7 +1835,10 @@ body.manual-mode .settings-manual-panel {
 /* Responsive Settings */
 @media (max-width: 768px) {
     .settings-mode-toggle {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
+    }
+    .settings-mode-toggle .mode-btn:last-child {
+        grid-column: 1 / -1;
     }
 
     .apnea-input-group {
