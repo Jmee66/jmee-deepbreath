@@ -5882,6 +5882,11 @@ body.optimal-mode #apneaHint {
 .plan-loading p { font-size: 0.95rem; }
 .plan-loading small { font-size: 0.8rem; color: var(--text-muted); }
 
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
 .plan-loading-spinner {
     width: 42px;
     height: 42px;
