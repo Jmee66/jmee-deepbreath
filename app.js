@@ -365,6 +365,7 @@ class JmeeDeepBreathApp {
             const gistIdInput = document.getElementById('syncGistId');
             const token = tokenInput?.value?.trim();
             const existingGistId = gistIdInput?.value?.trim();
+            alert('CLICK token=' + (token||'vide').substring(0,10) + ' gist=' + (existingGistId||'vide').substring(0,10));
             if (!token || token === '••••••••') {
                 this.showToast('Entrez votre token GitHub', 'warning');
                 return;
@@ -383,7 +384,8 @@ class JmeeDeepBreathApp {
                 if (tokenInput) tokenInput.value = '••••••••';
                 this._syncRestoreUI();
             } catch (err) {
-                this.showToast(`Erreur : ${err.message}`, 'error');
+                alert('ERREUR: ' + (err && err.message ? err.message : String(err)));
+                this.showToast('Erreur : ' + (err && err.message ? err.message : String(err)));
             }
             btnSetup.disabled = false;
             btnSetup.textContent = 'Configurer';
