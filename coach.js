@@ -346,13 +346,20 @@ class CoachAI {
     }
 
     showFeedbackModal(exercise, duration) {
+        // Capturer les timings réels des phases (ex: [8, 32, 16] pour Pranayama 8-32-16)
+        let phaseTimings = null;
+        if (exercise.phases && exercise.phases.length > 0) {
+            phaseTimings = exercise.phases.map(p => Math.round(p.duration));
+        }
+
         this.pendingSession = {
             exerciseId: exercise.id,
             exerciseName: exercise.name,
             category: exercise.category || this.getCategoryFromExercise(exercise.id),
             duration: Math.round(duration),
             date: new Date().toISOString(),
-            completed: true
+            completed: true,
+            phaseTimings,
         };
 
         const nameEl = document.getElementById('feedbackExerciseName');

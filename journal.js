@@ -186,6 +186,17 @@ class JournalView {
         const tdDuration = this.createCell(session, 'duration', this.formatDuration(session.duration));
         tr.appendChild(tdDuration);
 
+        // Timings des phases (ex: "8s / 32s / 16s") — lecture seule, masqué sur mobile
+        const tdTimings = document.createElement('td');
+        tdTimings.className = 'journal-col-hide';
+        tdTimings.style.color = 'var(--text-secondary)';
+        tdTimings.style.fontSize = '0.85rem';
+        tdTimings.style.whiteSpace = 'nowrap';
+        tdTimings.textContent = (session.phaseTimings && session.phaseTimings.length > 0)
+            ? session.phaseTimings.map(d => d + 's').join(' / ')
+            : '—';
+        tr.appendChild(tdTimings);
+
         // Feeling (hidden on mobile)
         const tdFeeling = this.createCell(session, 'feeling', session.feeling ? `${session.feeling}/5` : '—');
         tdFeeling.classList.add('journal-col-hide');
@@ -476,6 +487,11 @@ class JournalView {
                             <input type="number" id="jeDurationSec" min="0" max="59" value="${durationSec}" style="width:70px;"> sec
                         </div>
                     </div>
+                    ${session.phaseTimings && session.phaseTimings.length > 0 ? `
+                    <div class="journal-edit-row">
+                        <label>Timings</label>
+                        <span style="color:var(--text-secondary);font-size:0.9rem;">${session.phaseTimings.map(d => d + 's').join(' / ')}</span>
+                    </div>` : ''}
                     <div class="journal-edit-row">
                         <label>Ressenti</label>
                         <select id="jeFeeling">
