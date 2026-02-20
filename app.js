@@ -399,10 +399,15 @@ class JmeeDeepBreathApp {
                 btnSyncNow.disabled = true;
                 try {
                     const diag = await sync.fullSync();
-                    this._refreshUIAfterSync();
+                    try {
+                        this._refreshUIAfterSync();
+                    } catch (refreshErr) {
+                        alert('REFRESH ERR: ' + String(refreshErr) + '\n' + (refreshErr.stack || ''));
+                    }
                     const gid = (sync.gistId || '?').substring(0, 8);
                     this.showToast(`[${gid}] L${diag.localBefore}+G${diag.gistSessions}→${diag.mergedCount} push=${diag.pushed?'✓':'✗'} v=${diag.verified}`);
                 } catch (err) {
+                    alert('SYNC ERR: ' + String(err) + '\n' + (err.stack || ''));
                     this.showToast(`Erreur sync : ${err.message}`, 'error');
                 }
                 btnSyncNow.textContent = 'Sync maintenant';
