@@ -240,6 +240,7 @@ class JmeeDeepBreathApp {
         this.initJournal();
         this.initWeeklyPlan();
         this.setupSync();
+        this.setupBackup();
         this.updateComfortZoneProgress();
         this.updateFrcComfortProgress();
     }
@@ -470,6 +471,84 @@ class JmeeDeepBreathApp {
         }
         if (window.journal) window.journal.render();
         if (window.weeklyPlan) window.weeklyPlan.render();
+    }
+
+    // ==========================================
+    // Backup — Export & Import all localStorage data
+    // ==========================================
+
+    static get BACKUP_KEYS() {
+        return [
+            'deepbreath_sessions',
+            'deepbreath_settings',
+            'deepbreath_profile',
+            'deepbreath_goals',
+            'deepbreath_coach_settings',
+            'deepbreath_coach_custom_prompt',
+            'deepbreath_chat_history',
+            'deepbreath_sequences',
+            'deepbreath_weekly_plan',
+            'deepbreath_contraction_history',
+            'deepbreath_comfort_zone_history',
+            'deepbreath_frc_comfort_history',
+            'deepbreath_sync_gistId',
+            'deepbreath_sync_deviceId',
+        ];
+        // deepbreath_sync_token intentionnellement exclu
+    }
+
+    setupBackup() {
+        const btnExport = document.getElementById('btnExportData');
+        const btnImport = document.getElementById('btnImportData');
+        const fileInput = document.getElementById('importFileInput');
+        if (btnExport) btnExport.addEventListener('click', () => this.exportAllData());
+        if (btnImport && fileInput) {
+            btnImport.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) { this.importAllData(file); fileInput.value = ''; }
+            });
+        }
+    }
+
+    exportAllData() {
+        const data = {};
+        for (const key of JmeeDeepBreathApp.BACKUP_KEYS) {
+            const raw = localStorage.getItem(key);
+            if (raw !== null) {
+                try { data[key] = JSON.parse(raw); } catch { data[key] = raw; }
+            }
+        }
+        const payload = { exportDate: new Date().toISOString(), version: '0.76', appName: 'JmeeDeepBreath', data };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const filename = `deepbreath-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a); URL.revokeObjectURL(url);
+        this.showToast('Données exportées !');
+    }
+
+    importAllData(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const payload = JSON.parse(e.target.result);
+                if (!payload.data || typeof payload.data !== 'object') throw new Error('Format invalide');
+                for (const key of JmeeDeepBreathApp.BACKUP_KEYS) {
+                    if (key in payload.data) {
+                        const val = payload.data[key];
+                        localStorage.setItem(key, typeof val === 'string' ? val : JSON.stringify(val));
+                    }
+                }
+                this._refreshUIAfterSync();
+                this.showToast('Données importées !');
+            } catch (err) {
+                this.showToast('Fichier invalide : ' + err.message, 'warning');
+            }
+        };
+        reader.readAsText(file);
     }
 
     setupOfflineMode() {

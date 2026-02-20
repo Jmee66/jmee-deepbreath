@@ -127,7 +127,7 @@
             </svg>
             <div class="nav-brand-text">
                 <span>Jmee DeepBreath</span>
-                <span class="beta-badge">BETA v0.75 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
+                <span class="beta-badge">BETA v0.76 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
             </div>
         </div>
         <div class="nav-links">
@@ -4087,6 +4087,40 @@
                     <button class="btn-primary" id="btnSyncSetup">Configurer</button>
                     <button class="btn-secondary" id="btnSyncNow" style="display:none">Sync maintenant</button>
                     <button class="btn-danger-outline" id="btnSyncDisconnect" style="display:none">Déconnecter</button>
+                </div>
+            </div>
+
+            <!-- Backup Settings Card -->
+            <div class="settings-card">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7,10 12,15 17,10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Sauvegarde locale
+                </h3>
+                <p class="sync-help">
+                    Exportez toutes vos données dans un fichier JSON (sessions, paramètres, journal, plan…) pour les sauvegarder ou les transférer. L'import restaure sans effacer ce qui n'est pas dans le fichier.
+                </p>
+                <div class="sync-actions">
+                    <button class="btn-secondary" id="btnExportData">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="margin-right:6px;vertical-align:-2px">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7,10 12,15 17,10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Exporter les données
+                    </button>
+                    <button class="btn-secondary" id="btnImportData">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="margin-right:6px;vertical-align:-2px">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17,8 12,3 7,8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        Importer
+                    </button>
+                    <input type="file" id="importFileInput" accept=".json" style="display:none">
                 </div>
             </div>
         </section>
