@@ -454,25 +454,31 @@ class JmeeDeepBreathApp {
     }
 
     _refreshUIAfterSync() {
-        // Reload settings from localStorage (may have been updated by sync)
-        this.settings = this.loadSettings();
-        this.populateSettingsUI();
+        const errs = [];
+        const run = (label, fn) => { try { fn(); } catch(e) { errs.push(label + ': ' + String(e)); } };
 
+        run('1-loadSettings',       () => { this.settings = this.loadSettings(); });
+        run('2-populateSettingsUI', () => { this.populateSettingsUI(); });
         if (window.coach) {
-            window.coach.sessions = window.coach.loadSessions();
-            window.coach.goals = localStorage.getItem('deepbreath_goals') || '';
-            window.coach.customPrompt = localStorage.getItem('deepbreath_coach_custom_prompt') || '';
-            // Reload coach settings in memory (apiKey may have been restored by sync)
-            window.coach.coachSettings = window.coach.loadCoachSettings();
-            const customPromptInput = document.getElementById('coachCustomPrompt');
-            if (customPromptInput) customPromptInput.value = window.coach.customPrompt;
-            const goalsInput = document.getElementById('coachGoals');
-            if (goalsInput) goalsInput.value = window.coach.goals;
-            if (window.coach.updateStatsDisplay) window.coach.updateStatsDisplay();
-            if (window.coach.renderRecentSessions) window.coach.renderRecentSessions();
+            run('3-loadSessions',       () => { window.coach.sessions = window.coach.loadSessions(); });
+            run('4-goals',              () => { window.coach.goals = localStorage.getItem('deepbreath_goals') || ''; });
+            run('5-customPrompt',       () => { window.coach.customPrompt = localStorage.getItem('deepbreath_coach_custom_prompt') || ''; });
+            run('6-loadCoachSettings',  () => { window.coach.coachSettings = window.coach.loadCoachSettings(); });
+            run('7-coachInputs',        () => {
+                const cp = document.getElementById('coachCustomPrompt');
+                if (cp) cp.value = window.coach.customPrompt;
+                const gi = document.getElementById('coachGoals');
+                if (gi) gi.value = window.coach.goals;
+            });
+            run('8-updateStats',        () => { if (window.coach.updateStatsDisplay) window.coach.updateStatsDisplay(); });
+            run('9-renderSessions',     () => { if (window.coach.renderRecentSessions) window.coach.renderRecentSessions(); });
         }
-        if (window.journal) window.journal.render();
-        if (window.weeklyPlan) window.weeklyPlan.render();
+        run('10-journal',           () => { if (window.journal) window.journal.render(); });
+        run('11-weeklyPlan',        () => { if (window.weeklyPlan) window.weeklyPlan.render(); });
+
+        if (errs.length > 0) {
+            alert('REFRESH ERRORS:\n' + errs.join('\n'));
+        }
     }
 
     setupOfflineMode() {
