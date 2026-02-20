@@ -325,6 +325,15 @@ body::before {
 .nav-links {
     display: flex;
     gap: var(--space-xs);
+    flex: 1;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    justify-content: flex-end;
+}
+
+.nav-links::-webkit-scrollbar {
+    display: none;
 }
 
 .nav-link {
