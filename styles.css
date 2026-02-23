@@ -6434,18 +6434,106 @@ body.optimal-mode #apneaHint {
     }
 
     .day-card {
-        min-width: 82vw;
-        max-width: 82vw;
+        min-width: 85vw;
+        max-width: 85vw;
         scroll-snap-align: start;
         flex-shrink: 0;
+        padding: var(--space-lg);     /* plus d'air intérieur */
+        gap: var(--space-lg);
     }
 
     .day-card.today {
         scroll-snap-align: center;
     }
 
+    /* Lisibilité : noms & dates de jour */
+    .day-name {
+        font-size: 0.92rem;
+        letter-spacing: 0.04em;
+    }
+
+    .day-date {
+        font-size: 0.85rem;
+    }
+
+    .today-badge {
+        font-size: 0.68rem;
+        padding: 3px 9px;
+    }
+
+    /* Exercices : texte et boutons touch-friendly */
+    .plan-exercise-item {
+        padding: var(--space-md);
+    }
+
+    .plan-exercise-name {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .plan-exercise-duration {
+        font-size: 0.8rem;
+        margin-top: 2px;
+    }
+
+    .plan-exercise-actions {
+        gap: var(--space-sm);
+        margin-top: var(--space-xs);
+    }
+
+    /* Bouton Démarrer : taille tap-target ≥ 44px */
+    .btn-start-exercise {
+        font-size: 0.82rem;
+        padding: 10px var(--space-md);
+        border-radius: var(--radius-md);
+        min-height: 44px;
+    }
+
+    /* Notes journalières : textarea lisible */
+    .day-notes-input {
+        font-size: 0.88rem;
+        padding: var(--space-sm) var(--space-md);
+        min-height: 58px;
+    }
+
+    /* Repos */
+    .plan-rest-day {
+        font-size: 0.9rem;
+        padding: var(--space-xl) 0;
+    }
+
+    /* Rationale : un peu plus d'espace */
+    .plan-rationale {
+        font-size: 0.92rem;
+        padding: var(--space-md);
+        line-height: 1.7;
+    }
+
+    .plan-rationale-header strong {
+        font-size: 0.98rem;
+    }
+
+    /* Barre de navigation semaine */
     .plan-week-label {
         min-width: unset;
+        font-size: 0.88rem;
+        text-align: center;
+    }
+
+    .plan-nav-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Directive coach */
+    .plan-directive-label {
+        font-size: 0.82rem;
+        letter-spacing: 0.03em;
+    }
+
+    .plan-directive-input {
+        font-size: 0.92rem;
+        min-height: 64px;
     }
 }
 
@@ -6456,8 +6544,27 @@ body.optimal-mode #apneaHint {
     }
 
     .btn-generate-plan {
-        font-size: 0.82rem;
+        font-size: 0.88rem;
         padding: var(--space-sm) var(--space-md);
+        min-height: 46px;
+        justify-content: center;
+    }
+
+    /* Carte plus large pour bien utiliser l'écran */
+    .day-card {
+        min-width: 88vw;
+        max-width: 88vw;
+    }
+
+    /* Titre du plan dans le rationale */
+    #planTitle {
+        font-size: 1rem;
+    }
+
+    /* Bouton supprimer : discret mais lisible */
+    .btn-delete-plan {
+        font-size: 0.8rem;
+        padding: 6px 10px;
     }
 }
 
