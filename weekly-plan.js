@@ -569,13 +569,11 @@ Règles : exerciseId = exactement les IDs de la liste ci-dessus. exercises=[] po
         const empty = document.getElementById('planEmpty');
         const grid = document.getElementById('weekGrid');
         const rationale = document.getElementById('planRationale');
-        const deleteBtn = document.getElementById('btnDeletePlan');
 
         if (loading) loading.style.display = (state === 'loading') ? 'flex' : 'none';
         if (empty) empty.style.display = (state === 'empty') ? 'flex' : 'none';
         if (grid) grid.style.display = (state === 'grid') ? 'grid' : 'none';
         if (rationale) rationale.style.display = (state === 'grid') ? 'block' : 'none';
-        if (deleteBtn) deleteBtn.style.display = (state === 'grid') ? 'inline-flex' : 'none';
     }
 
     _showLoading(show) {

@@ -5873,6 +5873,12 @@ body.optimal-mode #apneaHint {
     align-items: center;
     gap: var(--space-sm);
     margin-bottom: var(--space-sm);
+    justify-content: space-between;
+}
+.plan-rationale-header .btn-delete-plan {
+    margin-left: auto;
+    font-size: 0.78rem;
+    padding: 5px 10px;
 }
 
 .plan-rationale-header strong {
@@ -6325,6 +6331,9 @@ body.optimal-mode #apneaHint {
     font-family: inherit;
     transition: border-color 0.2s, background 0.2s;
     box-sizing: border-box;
+    resize: vertical;
+    min-height: 72px;
+    line-height: 1.5;
 }
 .plan-directive-input::placeholder {
     color: rgba(255,255,255,0.25);

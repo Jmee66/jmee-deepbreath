@@ -1696,7 +1696,7 @@ class JmeeDeepBreathApp {
                         e.stopPropagation();
                         this.toggleFavorite(exerciseId);
                     });
-                    actions.appendChild(favBtn);
+                    actions.prepend(favBtn);
                 }
             }
         });
