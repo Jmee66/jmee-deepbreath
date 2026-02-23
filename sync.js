@@ -27,7 +27,9 @@ class DataSync {
             'deepbreath_sequences',
             'deepbreath_contraction_history',
             'deepbreath_comfort_zone_history',
-            'deepbreath_frc_comfort_history'
+            'deepbreath_frc_comfort_history',
+            'deepbreath_weekly_plan',
+            'deepbreath_favorites'
         ];
 
         // Intercept localStorage writes to mark dirty (NO auto-push)
@@ -648,8 +650,103 @@ class DataSync {
             remoteData.deepbreath_settings = merged;
         }
 
+        // Weekly plan — union by plan id, keep last 10 weeks, local notes win
+        if (remoteData.deepbreath_weekly_plan !== undefined) {
+            const localPlanData  = this._getLocal('deepbreath_weekly_plan', { plans: [], currentPlanId: null });
+            const remotePlanData = remoteData.deepbreath_weekly_plan || { plans: [], currentPlanId: null };
+            const merged = this._mergeWeeklyPlans(localPlanData, remotePlanData);
+            if (JSON.stringify(merged) !== JSON.stringify(localPlanData)) {
+                remoteData.deepbreath_weekly_plan = merged;
+                changed = true;
+            } else {
+                remoteData.deepbreath_weekly_plan = localPlanData;
+            }
+        } else {
+            // Remote doesn't have it yet — push local
+            const localPlanData = this._getLocal('deepbreath_weekly_plan', null);
+            if (localPlanData) {
+                remoteData.deepbreath_weekly_plan = localPlanData;
+                changed = true;
+            }
+        }
+
+        // Favorites — union of both arrays (local wins: if local removed a fav, keep it removed)
+        if (remoteData.deepbreath_favorites !== undefined) {
+            const localFavs  = this._getLocal('deepbreath_favorites', []);
+            const remoteFavs = remoteData.deepbreath_favorites || [];
+            const merged = this._mergeFavorites(localFavs, remoteFavs);
+            if (JSON.stringify(merged.sort()) !== JSON.stringify([...localFavs].sort())) {
+                remoteData.deepbreath_favorites = merged;
+                changed = true;
+            } else {
+                remoteData.deepbreath_favorites = localFavs;
+            }
+        } else {
+            // Remote doesn't have it yet — push local
+            const localFavs = this._getLocal('deepbreath_favorites', null);
+            if (localFavs && localFavs.length > 0) {
+                remoteData.deepbreath_favorites = localFavs;
+                changed = true;
+            }
+        }
+
         console.log('[Sync] Merge result: changed =', changed);
         return changed ? remoteData : null;
+    }
+
+    _mergeWeeklyPlans(local, remote) {
+        const localPlans  = local?.plans  || [];
+        const remotePlans = remote?.plans || [];
+
+        // Union by plan id — local wins on conflict (preserves user notes/edits)
+        const byId = new Map();
+        for (const p of remotePlans) { if (p?.id) byId.set(p.id, p); }
+        for (const p of localPlans)  {
+            if (p?.id) {
+                const existing = byId.get(p.id);
+                if (existing) {
+                    // Merge: take AI content from whichever is more complete, user notes from local
+                    const merged = { ...existing, ...p };
+                    // Preserve per-day notes from local (overwrite remote day notes)
+                    if (p.days && existing.days) {
+                        merged.days = p.days.map((localDay, i) => {
+                            const remoteDay = existing.days[i] || {};
+                            return {
+                                ...remoteDay,
+                                ...localDay,
+                                // local notes win (user may have typed notes on this device)
+                                notes: localDay.notes || remoteDay.notes || '',
+                                notesUpdatedAt: localDay.notesUpdatedAt || remoteDay.notesUpdatedAt || null
+                            };
+                        });
+                    }
+                    byId.set(p.id, merged);
+                } else {
+                    byId.set(p.id, p);
+                }
+            }
+        }
+
+        const mergedPlans = Array.from(byId.values())
+            .sort((a, b) => new Date(a.weekStart) - new Date(b.weekStart))
+            .slice(-10); // Keep last 10 weeks
+
+        // currentPlanId : prefer local, fallback to remote
+        const currentPlanId = local?.currentPlanId || remote?.currentPlanId || null;
+
+        return { plans: mergedPlans, currentPlanId };
+    }
+
+    _mergeFavorites(local, remote) {
+        // Union — an exercise is a favorite if it's in either list
+        // Exception: if local explicitly removed it (it was in remote but not in local),
+        // we respect the local removal (local wins = most recent intent)
+        // Strategy: simple union (add remote favs that local doesn't have)
+        const localSet = new Set(local || []);
+        for (const id of (remote || [])) {
+            localSet.add(id);
+        }
+        return Array.from(localSet);
     }
 
     // Deep merge two settings objects — base provides missing keys, override wins on conflicts
@@ -799,6 +896,37 @@ class DataSync {
         if (window.app) {
             window.app.settings = window.app.loadSettings();
             if (window.app.populateSettingsUI) window.app.populateSettingsUI();
+        }
+        // Weekly plan
+        if (window.weeklyPlan) {
+            window.weeklyPlan.data = window.weeklyPlan.load();
+            // Ensure viewingPlanId points to a valid plan
+            const currentWeekPlan = window.weeklyPlan.getPlanForWeek(
+                window.weeklyPlan.getMondayOfCurrentWeek()
+            );
+            if (currentWeekPlan) {
+                window.weeklyPlan.data.currentPlanId = currentWeekPlan.id;
+                window.weeklyPlan.viewingPlanId = currentWeekPlan.id;
+            } else if (window.weeklyPlan.data.plans.length > 0) {
+                const latest = window.weeklyPlan.data.plans[window.weeklyPlan.data.plans.length - 1];
+                window.weeklyPlan.viewingPlanId = latest.id;
+            }
+            window.weeklyPlan.render();
+        }
+        // Favorites — refresh star buttons and favoris section
+        if (window.app && typeof window.app.renderFavorisSection === 'function') {
+            // Refresh all favorite buttons across exercise cards
+            document.querySelectorAll('.exercise-card[data-exercise]').forEach(card => {
+                const exerciseId = card.dataset.exercise;
+                const favBtn = card.querySelector('.btn-favorite');
+                if (favBtn && exerciseId) {
+                    const isFav = window.app.isFavorite(exerciseId);
+                    favBtn.classList.toggle('is-favorite', isFav);
+                    favBtn.title = isFav ? 'Retirer des favoris' : 'Ajouter aux favoris';
+                    favBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+                }
+            });
+            window.app.renderFavorisSection();
         }
     }
 
