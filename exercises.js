@@ -94,21 +94,47 @@ const EXERCISES = {
     },
 
     'co2-tolerance': {
-        name: 'Tolérance CO2',
+        name: 'Cohérence Cardiaque',
         category: 'respiration',
-        description: 'Expirations prolongées ratio 1:2',
-        science: 'Améliore la capacité aérobie via l\'effet Bohr',
+        description: 'Régulation du système nerveux par respiration lente 1:2 — variabilité cardiaque et calme pré-plongée',
+        science: 'Effet HRV / vagal : la respiration lente (4-6 cycles/min) à ratio 1:2 synchronise la respiration et le rythme cardiaque, maximisant la variabilité cardiaque (HRV). L\'expiration prolongée active le frein vagal parasympathique via les barorécepteurs aortiques. Excellent pour la préparation mentale pré-plongée. Note : ce protocole ne crée pas d\'hypercapnie ni de désensibilisation des chémorécepteurs — pour entraîner la tolérance CO2, voir "Hypoventilation VHL" ou les tables CO2.',
         duration: 5,
         phases: [
             { name: 'Inspirez', duration: 4, action: 'inhale' },
             { name: 'Expirez lentement', duration: 8, action: 'exhale' }
         ],
         instructions: {
-            start: 'Expirations deux fois plus longues que les inspirations pour augmenter la tolérance au CO2.',
-            'Inspirez': 'Inspiration normale par le nez',
-            'Expirez lentement': 'Expiration très lente et contrôlée'
+            start: 'Respiration lente et régulière. Idéale avant une session d\'apnée pour calmer le système nerveux.',
+            'Inspirez': 'Inspiration douce et nasale',
+            'Expirez lentement': 'Expiration très lente, laissez l\'air sortir sans effort'
         },
         cyclesPerMinute: 5
+    },
+
+    'co2-vhl': {
+        name: 'Hypoventilation VHL CO2',
+        category: 'respiration',
+        description: 'Hypoventilation à bas volume pulmonaire (Woorons) — désensibilisation réelle des chémorécepteurs par accumulation progressive de CO2',
+        science: 'Protocole Woorons VHL (Voluntary Hypoventilation at Low Lung Volume, 2017-2025) & Kapus et al. (PMC3873666) : la pause end-expiratory (poumons bas, ~40% VC) crée une hypercapnie réelle sans hypoxie sévère. La PCO2 artérielle monte de ~40 à ~55 mmHg en quelques cycles. Répété 3x/sem pendant 6 semaines : −45% de sensibilité ventilatoire au CO2 (p=0.03, d=2.81). Mécanisme : recalibration des chémorécepteurs centraux du bulbe rachidien. Utilisé dans les programmes AIDA et Molchanovs comme protocole CO2 principal.',
+        isVHL: true,
+        duration: 10,
+        cycles: 5,
+        breathsPerCycle: 3,
+        holdDuration: 5,
+        restBreaths: 4,
+        phases: [
+            { name: 'Respirez', duration: 3, action: 'inhale' },
+            { name: 'Expirez', duration: 3, action: 'exhale' },
+            { name: 'Pause CO2', duration: 5, action: 'holdEmpty' }
+        ],
+        instructions: {
+            start: 'Hypoventilation VHL. Respirez normalement 3 cycles, puis expirez et faites une pause poumons bas. Répétez.',
+            breathe: 'Respirez normalement. Préparez la pause.',
+            hold: 'Expirez normalement — ne videz pas à fond. Pause. Poumons à mi-vide.',
+            rest: 'Respirez librement. Récupérez avant le prochain cycle.',
+            complete: 'Session VHL terminée. La tolérance CO2 se construit sur 4 à 6 semaines de pratique régulière.'
+        },
+        warning: 'Ne pas pratiquer en eau. Arrêtez si vertiges ou fourmillements intenses. Les premières sessions peuvent générer un inconfort marqué — c\'est normal et attendu.'
     },
 
     'breath-light-co2': {
@@ -1418,13 +1444,23 @@ window.GUIDE_DETAILS = {
         ]
     },
     'co2-tolerance': {
-        science: "Les expirations prolongées en ratio 1:2 augmentent progressivement la pression partielle de CO2 dans le sang (hypercapnie légère). Via l'effet Bohr, cette élévation du CO2 facilite la libération d'oxygène par l'hémoglobine vers les tissus. Au fil des semaines, les chémorécepteurs centraux recalibrent leur seuil de déclenchement, reculant l'envie de respirer et améliorant la capacité aérobie.",
+        science: "La respiration lente en ratio 1:2 (4s inhale / 8s exhale) agit principalement sur le système nerveux autonome via le nerf vague : elle maximise la variabilité cardiaque (HRV) et active le frein parasympathique. Contrairement à ce qui est souvent dit, ce protocole ne crée pas d'hypercapnie significative ni de désensibilisation des chémorécepteurs — l'expiration prolongée évacue le CO2 au lieu de l'accumuler. C'est un excellent outil de régulation nerveuse et de préparation mentale pré-plongée, mais pas un entraînement CO2 au sens physiologique. Pour la désensibilisation réelle des chémorécepteurs, voir l'Hypoventilation VHL (Woorons).",
         practice: [
-            "Position confortable, respiration nasale exclusivement",
-            "Inspirez par le nez pendant 4 secondes",
-            "Expirez par le nez très lentement pendant 8 secondes, comme à travers une paille",
-            "Gardez le rythme régulier pendant 5 minutes",
-            "Si le ratio 1:2 est difficile, commencez à 4:6 et augmentez progressivement"
+            "Position assise ou allongée, yeux fermés, corps détendu",
+            "Inspirez doucement par le nez (4 sec) — pas besoin de remplir à fond",
+            "Expirez très lentement par le nez (8 sec), laissez l'air sortir passivement",
+            "Maintenez ce rythme régulier 5 minutes — c'est une pratique de calme, pas d'effort",
+            "Idéal 10-15 min avant une session d'apnée pour calmer le système nerveux"
+        ]
+    },
+    'co2-vhl': {
+        science: "La VHL (Voluntary Hypoventilation at Low Lung Volume, Woorons 2017-2025) est le protocole CO2 le plus validé scientifiquement à ce jour. En faisant une pause end-expiratory — poumons à mi-vide (~40% de la capacité vitale) — on crée une hypercapnie réelle (PCO2 monte de 40 à ~55 mmHg) sans hypoxie dangereuse. Kapus et al. (PMC3873666, 6 semaines, 3x/sem) : −45% de sensibilité ventilatoire au CO2 (p=0.03, d=2.81 = effet très large). Les chémorécepteurs centraux du bulbe rachidien se recalibrent : les contractions diaphragmatiques arrivent plus tard et moins intensément. Protocole dominant dans les programmes AIDA et Molchanovs. Supérieur aux tables CO2 classiques car il crée un stimulus hypercapnique pur sans hypoxie associée.",
+        practice: [
+            "Asseyez-vous confortablement, dos droit. Commencez par 2 min de respiration normale",
+            "Respirez normalement 3 fois (inhale + exhale naturels)",
+            "À la 3e expiration : expirez normalement (pas à fond — poumons mi-vides), puis faites une PAUSE de 5 sec en gardant les poumons à ce niveau bas",
+            "Reprenez 3 respirations normales, puis répétez la pause. Cycle : 3 respirations → 1 pause × 5 cycles",
+            "Récupérez 4 respirations libres entre chaque série. Augmentez la pause de +1 sec/semaine (5s → 6s → 7s). L'inconfort CO2 durant la pause est le stimulus — observez-le sans y céder"
         ]
     },
     'wimhof': {

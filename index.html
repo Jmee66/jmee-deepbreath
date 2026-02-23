@@ -166,7 +166,7 @@
             </svg>
             <div class="nav-brand-text">
                 <span>Jmee DeepBreath</span>
-                <span class="beta-badge">BETA v0.85 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
+                <span class="beta-badge">BETA v0.86 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
             </div>
         </div>
         <div class="nav-links">
@@ -599,17 +599,40 @@
 
                 <!-- CO2 Tolerance -->
                 <div class="exercise-card" data-exercise="co2-tolerance">
-                    <div class="exercise-badge">Performance</div>
-                    <h3>Tolérance CO2</h3>
-                    <p>Expirations prolongées pour augmenter la tolérance au CO2. Réduit l'essoufflement et améliore l'endurance.</p>
+                    <div class="exercise-badge">HRV</div>
+                    <h3>Cohérence Cardiaque</h3>
+                    <p>Respiration lente 1:2 pour activer le nerf vague et maximiser la variabilité cardiaque. Idéale en préparation pré-plongée.</p>
                     <div class="exercise-meta">
-                        <span>5-10 min</span>
+                        <span>5 min</span>
                         <span>•</span>
-                        <span>Endurance</span>
+                        <span>Calme nerveux</span>
                     </div>
                     <div class="exercise-actions">
                         <button class="btn-start">Commencer</button>
                         <button class="btn-config" title="Configurer" data-exercise="co2-tolerance">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hypoventilation VHL CO2 -->
+                <div class="exercise-card" data-exercise="co2-vhl">
+                    <div class="exercise-badge">Woorons</div>
+                    <h3>Hypoventilation VHL CO2</h3>
+                    <p>Pause end-expiratory à bas volume pulmonaire. Désensibilisation réelle des chémorécepteurs CO2 : −45% de sensibilité en 6 semaines (Woorons / Kapus 2013).</p>
+                    <div class="exercise-meta">
+                        <span>10 min</span>
+                        <span>•</span>
+                        <span>CO2 réel</span>
+                        <span>•</span>
+                        <span>5 séries</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="co2-vhl">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="3"/>
                                 <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
@@ -1898,37 +1921,65 @@
                             <p class="guide-when"><strong>Quand :</strong> Avant une apnée qui t'intimide, après un faux départ, ou en situation de stress aigu. 5 cycles suffisent en urgence.</p>
                         </div>
 
-                        <div class="guide-exercise-item" data-objectives="static,dynamic" data-level="intermediate" data-exercise-id="co2-tolerance">
+                        <div class="guide-exercise-item" data-objectives="static,anxiety" data-level="beginner" data-exercise-id="co2-tolerance">
                             <div class="guide-exercise-header">
-                                <h4>Tolérance au CO2</h4>
-                                <span class="guide-badge guide-badge-intermediate">Intermédiaire</span>
+                                <h4>Cohérence Cardiaque</h4>
+                                <span class="guide-badge guide-badge-beginner">Débutant</span>
                             </div>
-                            <p class="guide-exercise-desc">Expirations prolongées (ratio 1:2) pour augmenter progressivement la tolérance au CO2.</p>
+                            <p class="guide-exercise-desc">Respiration lente 1:2 pour activer le nerf vague et maximiser la variabilité cardiaque (HRV). Excellent calme pré-plongée — n'est pas un entraînement CO2 au sens physiologique.</p>
                             <div class="guide-tags">
-                                <span class="guide-tag">CO2</span>
-                                <span class="guide-tag">Confort</span>
+                                <span class="guide-tag">HRV</span>
+                                <span class="guide-tag">Nerf vague</span>
+                                <span class="guide-tag">Pré-plongée</span>
                                 <span class="guide-tag">5 min</span>
                             </div>
                             <div class="guide-detail-block">
-                                <p class="guide-detail-title">🫁 Technique respiratoire</p>
-                                <p class="guide-detail-text">Inspiration nasale normale (4 sec), expiration nasale ou buccale lente et contrôlée (8 sec) — ratio fixe 1:2. L'expiration prolongée est l'élément clé : ne force pas l'air dehors, laisse-le sortir progressivement en contractant légèrement l'abdomen sur les 3 dernières secondes. Pas de pause entre les cycles.</p>
+                                <p class="guide-detail-title">🫁 Ce que fait réellement ce protocole</p>
+                                <p class="guide-detail-text">La respiration 4:8 à volume courant normal <strong>ne crée pas d'hypercapnie</strong> — l'expiration longue évacue le CO2 au lieu de l'accumuler. En revanche, elle synchronise parfaitement la respiration et le rythme cardiaque (arythmie sinusale respiratoire), maximisant la variabilité cardiaque (HRV) et activant le frein vagal parasympathique via les barorécepteurs aortiques.</p>
                             </div>
                             <div class="guide-detail-block">
-                                <p class="guide-detail-title">🧘 Position</p>
-                                <p class="guide-detail-text">Assis ou allongé. Position semi-allongée (dossier à 45°) recommandée car elle facilite l'expiration diaphragmatique. Une main sur le ventre permet de sentir le vidage progressif. Évite la position debout qui tend les muscles intercostaux.</p>
-                            </div>
-                            <div class="guide-detail-block">
-                                <p class="guide-detail-title">✨ Effets recherchés</p>
+                                <p class="guide-detail-title">✨ Effets réels</p>
                                 <ul class="guide-detail-list">
-                                    <li><strong>Physiologique :</strong> Recule le seuil de déclenchement des contractions diaphragmatiques. L'expiration prolongée augmente la pCO2 artérielle de manière douce et habitue les chémorécepteurs. Effet Bohr : améliore le transfert d'O2 vers les tissus.</li>
-                                    <li><strong>Pour l'apnée :</strong> Directement transférable — l'apnéiste qui tolère mieux le CO2 ressent les contractions plus tard et avec moins d'urgence.</li>
+                                    <li><strong>HRV :</strong> Maximisation de la variabilité cardiaque à ~6 cycles/min — fréquence de résonance du baroréflexe.</li>
+                                    <li><strong>Système nerveux :</strong> Réduction du cortisol, activation parasympathique, calme mental avant une session d'apnée.</li>
+                                    <li><strong>Pas de désensibilisation CO2 :</strong> Pour entraîner les chémorécepteurs, utiliser l'Hypoventilation VHL ou les tables CO2.</li>
                                 </ul>
                             </div>
                             <div class="guide-detail-block">
-                                <p class="guide-detail-title">🧠 État d'esprit</p>
-                                <p class="guide-detail-text">À mesure que l'exercice avance et que le CO2 monte légèrement, tu peux ressentir une légère envie de respirer. C'est l'objectif — l'observer sans y répondre. Traite cette sensation comme de l'information, pas comme une urgence. La tolérance s'entraîne exactement comme un muscle.</p>
+                                <p class="guide-detail-title">🧠 Quand l'utiliser</p>
+                                <p class="guide-detail-text">10-15 minutes avant une session d'apnée pour descendre le système nerveux en mode parasympathique. Aussi efficace pour la récupération post-effort ou la gestion du stress quotidien.</p>
                             </div>
-                            <p class="guide-when"><strong>Quand :</strong> Quotidien en complément aux tables CO2. Excellent en récupération active les jours sans apnée.</p>
+                            <p class="guide-when"><strong>Quand :</strong> Pré-plongée, récupération, stress. Pas comme entraînement CO2 principal.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic" data-level="intermediate" data-exercise-id="co2-vhl">
+                            <div class="guide-exercise-header">
+                                <h4>Hypoventilation VHL CO2</h4>
+                                <span class="guide-badge guide-badge-intermediate">Intermédiaire</span>
+                            </div>
+                            <p class="guide-exercise-desc">Le protocole CO2 le plus validé scientifiquement (Woorons 2017-2025). Pause end-expiratory à bas volume pulmonaire — hypercapnie réelle, désensibilisation des chémorécepteurs : −45% en 6 semaines (Kapus, PMC3873666, d=2.81).</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">CO2 réel</span>
+                                <span class="guide-tag">Chémorécepteurs</span>
+                                <span class="guide-tag">Woorons</span>
+                                <span class="guide-tag">10 min</span>
+                            </div>
+                            <div class="guide-detail-block">
+                                <p class="guide-detail-title">🫁 Technique exacte (protocole Kapus/Woorons)</p>
+                                <p class="guide-detail-text"><strong>Structure d'une série :</strong> 3 respirations normales (inhale 3s + exhale 3s) → à la 3e expiration, stopper aux poumons mi-vides (~40% de la capacité vitale = position end-expiratory naturelle) → maintenir la pause 5 sec → reprendre. <strong>Session :</strong> 5 séries × repos 4 souffles libres. Clé : la pause est à bas volume, PAS à poumons vides forcés — on s'arrête à l'expiration naturelle, sans vider à fond. <strong>Progression :</strong> +1 sec de pause par semaine (5s → 6s → 7s...). Après 4 semaines, augmenter aussi le nombre de séries.</p>
+                            </div>
+                            <div class="guide-detail-block">
+                                <p class="guide-detail-title">🔬 Pourquoi ça fonctionne</p>
+                                <p class="guide-detail-text">À bas volume pulmonaire, le CO2 s'accumule rapidement dans les alvéoles (faible tampon gazeux) tandis que la PO2 reste acceptable. La PCO2 artérielle monte de ~40 à ~55 mmHg en quelques cycles. Répété 3x/semaine, ce stress hypercapnique recalibre les chémorécepteurs centraux du bulbe rachidien — ils "apprennent" que ce niveau de CO2 n'est pas dangereux. Résultat : les contractions diaphragmatiques arrivent beaucoup plus tard en apnée.</p>
+                            </div>
+                            <div class="guide-detail-block">
+                                <p class="guide-detail-title">⚠️ Sensations normales vs alarme</p>
+                                <ul class="guide-detail-list">
+                                    <li><strong>Normal :</strong> Envie modérée de respirer pendant la pause (c'est le stimulus), légère chaleur, légère accélération du cœur.</li>
+                                    <li><strong>Stop :</strong> Vertiges, fourmillements intenses des mains/visage, vision trouble. Ce sont des signes que la pause est trop longue — réduisez de 1 sec.</li>
+                                </ul>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> 3x/semaine, à sec. Ne jamais pratiquer en eau. Idéal combiné avec les tables CO2 classiques. Résultats visibles à partir de 3-4 semaines.</p>
                         </div>
 
                         <div class="guide-exercise-item" data-objectives="static,dynamic" data-level="intermediate" data-exercise-id="breath-light-co2">
@@ -3579,9 +3630,9 @@
                         </div>
                     </div>
 
-                    <!-- CO2 Tolerance -->
+                    <!-- CO2 Tolerance (Cohérence Cardiaque) -->
                     <div class="exercise-settings" data-exercise="co2-tolerance">
-                        <h4>Tolérance CO2 <span class="ratio-badge">ratio 1:2</span></h4>
+                        <h4>Cohérence Cardiaque <span class="ratio-badge">ratio 1:2</span></h4>
                         <div class="settings-row">
                             <label>Durée totale</label>
                             <div class="input-with-unit">
@@ -3603,6 +3654,40 @@
                                 <span>sec</span>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Hypoventilation VHL CO2 -->
+                    <div class="exercise-settings" data-exercise="co2-vhl">
+                        <h4>Hypoventilation VHL CO2 <span class="ratio-badge">Woorons</span></h4>
+                        <div class="settings-row">
+                            <label>Nombre de séries</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="3" max="10" value="5" data-param="cycles">
+                                <span>séries</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Respirations avant pause</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="6" value="3" data-param="breathsPerCycle">
+                                <span>souffles</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Durée pause CO2</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="3" max="15" value="5" data-param="holdDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Respirations de repos</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="8" value="4" data-param="restBreaths">
+                                <span>souffles</span>
+                            </div>
+                        </div>
+                        <p class="settings-note">Augmentez la durée de pause de +1 sec par semaine (5s → 6s → 7s). L'inconfort CO2 pendant la pause est le stimulus — c'est normal.</p>
                     </div>
 
                     <!-- Breath Light CO2 -->

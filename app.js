@@ -1511,6 +1511,16 @@ class JmeeDeepBreathApp {
             return exercise;
         }
 
+        // VHL (Hypoventilation à bas volume)
+        if (exercise.isVHL) {
+            exercise.cycles       = userSettings.cycles       || exercise.cycles;
+            exercise.breathsPerCycle = userSettings.breathsPerCycle || exercise.breathsPerCycle;
+            exercise.holdDuration = userSettings.holdDuration || exercise.holdDuration;
+            exercise.restBreaths  = userSettings.restBreaths  || exercise.restBreaths;
+            exercise.duration     = userSettings.duration     || exercise.duration;
+            return exercise;
+        }
+
         // Mode optimal : surcharger userSettings avec les valeurs calculées depuis apneaMax
         if (this.settings.mode === 'optimal') {
             const optParams = this.getOptimalParams(exerciseId);
@@ -2036,6 +2046,8 @@ class JmeeDeepBreathApp {
             this.startBreathLightExercise();
         } else if (exercise.isPassiveBreathHanger) {
             this.startPassiveBreathHanger();
+        } else if (exercise.isVHL) {
+            this.startVHLExercise();
         } else {
             this.startBreathingExercise();
         }
@@ -2661,6 +2673,194 @@ class JmeeDeepBreathApp {
         }
 
         setTimeout(() => this.completeExercise(), 2000);
+    }
+
+    // ==========================================
+    // VHL — Hypoventilation à bas volume (Woorons)
+    // Protocole : N respirations normales → pause end-expiratory → répéter X cycles → repos
+    // ==========================================
+
+    startVHLExercise() {
+        const exercise = this.currentExercise;
+        this._vhlCycle = 1;          // cycle de pause en cours (1..cycles)
+        this._vhlSerie = 1;          // série (une série = breathsPerCycle respirations + 1 pause)
+        this._vhlBreathInCycle = 1;  // respiration courante dans le cycle
+        this._vhlSeriesTotal = exercise.cycles || 5;
+        this._vhlBreathsPerCycle = exercise.breathsPerCycle || 3;
+        this._vhlHoldDuration = exercise.holdDuration || 5;
+        this._vhlRestBreaths = exercise.restBreaths || 4;
+        this._vhlRestBreathCount = 0;
+        this._vhlPhase = 'breathe'; // 'breathe' | 'hold' | 'rest'
+
+        document.getElementById('cycleCounter').textContent =
+            `Série 1 / ${this._vhlSeriesTotal}`;
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.start;
+
+        if (window.voiceGuide?.enabled) {
+            window.voiceGuide.speak(exercise.instructions.start);
+        }
+
+        setTimeout(() => this._vhlRunBreathePhase(), 3000);
+    }
+
+    _vhlRunBreathePhase() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+
+        // Si on a fait tous les cycles → fin
+        if (this._vhlSerie > this._vhlSeriesTotal) {
+            this.completeExercise();
+            return;
+        }
+
+        this._vhlPhase = 'breathe';
+        this._vhlBreathInCycle = 1;
+
+        document.getElementById('breathPhase').textContent = 'Respirez';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.breathe;
+        document.getElementById('cycleCounter').textContent =
+            `Série ${this._vhlSerie} / ${this._vhlSeriesTotal} — Respirez ${this._vhlBreathsPerCycle}×`;
+
+        this._vhlRunOneBreath();
+    }
+
+    _vhlRunOneBreath() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+
+        if (this._vhlBreathInCycle > this._vhlBreathsPerCycle) {
+            // Toutes les respirations faites → pause VHL
+            this._vhlRunHoldPhase();
+            return;
+        }
+
+        // Inspiration
+        document.getElementById('breathPhase').textContent = 'Inspirez';
+        document.getElementById('cycleCounter').textContent =
+            `Série ${this._vhlSerie}/${this._vhlSeriesTotal} — Resp. ${this._vhlBreathInCycle}/${this._vhlBreathsPerCycle}`;
+        this.updateBreathPhase({ name: 'Inspirez', action: 'inhale', duration: 3 },
+            this._vhlBreathInCycle === 1 ? 'holdEmpty' : 'exhale');
+
+        if (window.breathSounds) window.breathSounds.playPhase('inhale', 3);
+        if (this._vhlBreathInCycle === 1 && window.voiceGuide?.enabled) {
+            window.voiceGuide.speak(exercise.instructions.breathe);
+        }
+
+        this.startPhaseTimer(3, () => {
+            if (!this.isRunning) return;
+            // Expiration
+            document.getElementById('breathPhase').textContent = 'Expirez';
+            this.updateBreathPhase({ name: 'Expirez', action: 'exhale', duration: 3 }, 'inhale');
+
+            if (window.breathSounds) window.breathSounds.playPhase('exhale', 3);
+
+            this.startPhaseTimer(3, () => {
+                if (!this.isRunning) return;
+                this._vhlBreathInCycle++;
+                // Petite pause entre les respirations (0.5s)
+                setTimeout(() => this._vhlRunOneBreath(), 500);
+            });
+        });
+    }
+
+    _vhlRunHoldPhase() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+        const holdDur = this._vhlHoldDuration;
+
+        this._vhlPhase = 'hold';
+        document.getElementById('breathPhase').textContent = 'Pause CO₂';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.hold;
+        document.getElementById('cycleCounter').textContent =
+            `Série ${this._vhlSerie}/${this._vhlSeriesTotal} — Pause ${holdDur}s (poumons bas)`;
+
+        // Cercle holdEmpty = poumons vides/bas
+        const circle = document.getElementById('breathCircle');
+        circle.classList.remove('inhale', 'exhale', 'hold', 'active');
+        circle.classList.add('holdEmpty', 'active');
+        circle.style.setProperty('--phase-duration', '1s');
+
+        if (window.breathSounds) window.breathSounds.playPhase('holdEmpty', holdDur);
+        if (window.voiceGuide?.enabled) window.voiceGuide.speak(exercise.instructions.hold);
+
+        // Timer décompte de la pause
+        const timerDisplay = document.getElementById('breathTimer');
+        const progressBar = document.getElementById('progressBar');
+        const circumference = 2 * Math.PI * 90;
+        const holdStart = Date.now();
+        let pausedMs = 0, pauseStart = null;
+
+        if (this.phaseTimer) clearInterval(this.phaseTimer);
+
+        this.phaseTimer = setInterval(() => {
+            if (!this.isRunning) { clearInterval(this.phaseTimer); return; }
+            if (this.isPaused) {
+                if (!pauseStart) pauseStart = Date.now();
+                return;
+            }
+            if (pauseStart) { pausedMs += Date.now() - pauseStart; pauseStart = null; }
+
+            const elapsed = (Date.now() - holdStart - pausedMs) / 1000;
+            const remaining = Math.max(0, holdDur - elapsed);
+            timerDisplay.textContent = this.formatTime(remaining);
+            progressBar.style.strokeDashoffset = circumference * (1 - elapsed / holdDur);
+
+            if (elapsed >= holdDur) {
+                clearInterval(this.phaseTimer);
+                this.phaseTimer = null;
+                if (window.breathSounds) window.breathSounds.stop();
+                this._vhlSerie++;
+                if (this._vhlSerie > this._vhlSeriesTotal) {
+                    this.completeExercise();
+                } else {
+                    this._vhlRunRestPhase();
+                }
+            }
+        }, 100);
+    }
+
+    _vhlRunRestPhase() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+        const restCount = this._vhlRestBreaths;
+
+        this._vhlPhase = 'rest';
+        this._vhlRestBreathCount = 0;
+
+        document.getElementById('breathPhase').textContent = 'Récupérez';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.rest;
+        document.getElementById('cycleCounter').textContent =
+            `Repos — Série ${this._vhlSerie}/${this._vhlSeriesTotal} dans ${restCount} respirations`;
+
+        const circle = document.getElementById('breathCircle');
+        circle.classList.remove('holdEmpty', 'hold', 'active');
+        circle.classList.add('inhale');
+        circle.style.setProperty('--phase-duration', '4s');
+
+        if (window.breathSounds) window.breathSounds.playPhase('inhale', restCount * 6);
+        if (window.voiceGuide?.enabled) window.voiceGuide.speak(exercise.instructions.rest);
+
+        this._vhlRunRestBreath(restCount);
+    }
+
+    _vhlRunRestBreath(remaining) {
+        if (!this.isRunning) return;
+        if (remaining <= 0) {
+            if (window.breathSounds) window.breathSounds.stop();
+            this._vhlRunBreathePhase();
+            return;
+        }
+
+        document.getElementById('breathTimer').textContent = `${remaining}`;
+        document.getElementById('cycleCounter').textContent =
+            `Repos libre — encore ${remaining} souffle${remaining > 1 ? 's' : ''}`;
+
+        // inhale 3s + exhale 3s
+        this.startPhaseTimer(3, () => {
+            this.startPhaseTimer(3, () => {
+                this._vhlRunRestBreath(remaining - 1);
+            });
+        });
     }
 
     // ==========================================
