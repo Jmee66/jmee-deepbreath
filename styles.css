@@ -6219,3 +6219,75 @@ body.optimal-mode #apneaHint {
 
 /* nav-plan accent color */
 .nav-link.nav-plan { /* no special color needed, inherits */ }
+
+/* ==========================================
+   Favoris
+   ========================================== */
+
+.nav-link.nav-favoris {
+    color: #f5c518;
+}
+.nav-link.nav-favoris:hover,
+.nav-link.nav-favoris.active {
+    color: #f5c518;
+    background: rgba(245, 197, 24, 0.12);
+}
+
+/* Bouton favori sur les cartes */
+.btn-favorite {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.4);
+    transition: color 0.2s, background 0.2s, border-color 0.2s, transform 0.15s;
+    flex-shrink: 0;
+}
+.btn-favorite:hover {
+    color: #f5c518;
+    background: rgba(245, 197, 24, 0.12);
+    border-color: rgba(245, 197, 24, 0.3);
+    transform: scale(1.1);
+}
+.btn-favorite.is-favorite {
+    color: #f5c518;
+    background: rgba(245, 197, 24, 0.15);
+    border-color: rgba(245, 197, 24, 0.4);
+}
+.btn-favorite.is-favorite svg {
+    fill: #f5c518;
+}
+.btn-favorite svg {
+    width: 16px;
+    height: 16px;
+    transition: fill 0.2s;
+}
+
+/* Section vide favoris */
+.favoris-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-2xl) var(--space-lg);
+    gap: var(--space-md);
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+}
+.favoris-empty svg {
+    opacity: 0.3;
+}
+.favoris-empty p {
+    margin: 0;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.4);
+}
+.favoris-empty .favoris-empty-hint {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.25);
+}

@@ -164,6 +164,12 @@
             <button class="nav-link nav-urgence" data-section="urgence">Urgence</button>
             <button class="nav-link" data-section="preperformance">Pré-Perf</button>
             <button class="nav-link nav-hypnose" data-section="autohypnose">Hypnose</button>
+            <button class="nav-link nav-favoris" data-section="favoris">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                Favoris
+            </button>
             <button class="nav-link nav-guide" data-section="guide">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
                     <circle cx="12" cy="12" r="10"/>
@@ -1598,6 +1604,24 @@
                     <li><strong>Mantra Glisse-Relâche :</strong> Utilisez ce rythme mental pendant vos dynamiques pour entrer en mode automatique.</li>
                     <li><strong>Switch rapide :</strong> Dès qu'un spasme arrive, déplacez votre attention sur le lobe d'oreille ou le petit orteil.</li>
                 </ul>
+            </div>
+        </section>
+
+        <!-- Favoris Section -->
+        <section class="section" id="favoris">
+            <div class="section-header">
+                <h2>Mes Favoris</h2>
+                <p>Vos exercices préférés, accessibles rapidement</p>
+            </div>
+            <div id="favoris-grid" class="exercise-grid">
+                <!-- populated by JS -->
+            </div>
+            <div id="favoris-empty" class="favoris-empty" style="display:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                <p>Aucun favori pour le moment.</p>
+                <p class="favoris-empty-hint">Appuyez sur l'étoile ★ d'un exercice pour l'ajouter ici.</p>
             </div>
         </section>
 

@@ -243,6 +243,7 @@ class JmeeDeepBreathApp {
         this.setupBackup();
         this.updateComfortZoneProgress();
         this.updateFrcComfortProgress();
+        this.setupFavoris();
     }
 
     initJournal() {
@@ -1651,6 +1652,8 @@ class JmeeDeepBreathApp {
 
     setupExerciseCards() {
         document.querySelectorAll('.exercise-card').forEach(card => {
+            const exerciseId = card.dataset.exercise;
+
             const startBtn = card.querySelector('.btn-start');
             if (startBtn) {
                 startBtn.addEventListener('click', async () => {
@@ -1666,7 +1669,6 @@ class JmeeDeepBreathApp {
                         // Make sure sounds are enabled
                         window.breathSounds.enabled = true;
                     }
-                    const exerciseId = card.dataset.exercise;
                     this.startExercise(exerciseId);
                 });
             }
@@ -1675,9 +1677,27 @@ class JmeeDeepBreathApp {
             if (configBtn) {
                 configBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const exerciseId = configBtn.dataset.exercise;
-                    this.navigateToExerciseSettings(exerciseId);
+                    const exId = configBtn.dataset.exercise;
+                    this.navigateToExerciseSettings(exId);
                 });
+            }
+
+            // Add favorite button
+            if (exerciseId) {
+                const actions = card.querySelector('.exercise-actions');
+                if (actions) {
+                    const isFav = this.isFavorite(exerciseId);
+                    const favBtn = document.createElement('button');
+                    favBtn.className = 'btn-favorite' + (isFav ? ' is-favorite' : '');
+                    favBtn.title = isFav ? 'Retirer des favoris' : 'Ajouter aux favoris';
+                    favBtn.setAttribute('aria-label', 'Favori');
+                    favBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+                    favBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.toggleFavorite(exerciseId);
+                    });
+                    actions.appendChild(favBtn);
+                }
             }
         });
     }
@@ -1711,6 +1731,118 @@ class JmeeDeepBreathApp {
                 setTimeout(() => exerciseSettings.classList.remove('highlight'), 2000);
             }, 100);
         }
+    }
+
+    // ==========================================
+    // Favoris
+    // ==========================================
+
+    getFavorites() {
+        try {
+            return JSON.parse(localStorage.getItem('deepbreath_favorites') || '[]');
+        } catch {
+            return [];
+        }
+    }
+
+    saveFavorites(favs) {
+        localStorage.setItem('deepbreath_favorites', JSON.stringify(favs));
+    }
+
+    isFavorite(exerciseId) {
+        return this.getFavorites().includes(exerciseId);
+    }
+
+    toggleFavorite(exerciseId) {
+        let favs = this.getFavorites();
+        const idx = favs.indexOf(exerciseId);
+        if (idx === -1) {
+            favs.push(exerciseId);
+        } else {
+            favs.splice(idx, 1);
+        }
+        this.saveFavorites(favs);
+
+        // Update all buttons for this exercise (in main sections + favoris section)
+        document.querySelectorAll(`.exercise-card[data-exercise="${exerciseId}"] .btn-favorite`).forEach(btn => {
+            const isFav = favs.includes(exerciseId);
+            btn.classList.toggle('is-favorite', isFav);
+            btn.title = isFav ? 'Retirer des favoris' : 'Ajouter aux favoris';
+            btn.innerHTML = `<svg viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+        });
+
+        this.renderFavorisSection();
+    }
+
+    renderFavorisSection() {
+        const grid = document.getElementById('favoris-grid');
+        const empty = document.getElementById('favoris-empty');
+        if (!grid) return;
+
+        const favs = this.getFavorites();
+        grid.innerHTML = '';
+
+        if (favs.length === 0) {
+            grid.style.display = 'none';
+            if (empty) empty.style.display = 'flex';
+            return;
+        }
+
+        grid.style.display = '';
+        if (empty) empty.style.display = 'none';
+
+        favs.forEach(exerciseId => {
+            // Clone the original card from its source section
+            const original = document.querySelector(`section:not(#favoris) .exercise-card[data-exercise="${exerciseId}"]`);
+            if (!original) return;
+
+            const clone = original.cloneNode(true);
+            clone.setAttribute('data-exercise', exerciseId);
+
+            // Re-wire the start button
+            const startBtn = clone.querySelector('.btn-start');
+            if (startBtn) {
+                startBtn.addEventListener('click', async () => {
+                    if (window.breathSounds) {
+                        if (!window.breathSounds.audioContext) {
+                            window.breathSounds.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        }
+                        if (window.breathSounds.audioContext.state === 'suspended') {
+                            await window.breathSounds.audioContext.resume();
+                        }
+                        window.breathSounds.enabled = true;
+                    }
+                    this.startExercise(exerciseId);
+                });
+            }
+
+            // Re-wire config button
+            const configBtn = clone.querySelector('.btn-config');
+            if (configBtn) {
+                configBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.navigateToExerciseSettings(exerciseId);
+                });
+            }
+
+            // Re-wire favorite button (already cloned as is-favorite)
+            const favBtn = clone.querySelector('.btn-favorite');
+            if (favBtn) {
+                favBtn.classList.add('is-favorite');
+                favBtn.title = 'Retirer des favoris';
+                favBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+                favBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.toggleFavorite(exerciseId);
+                });
+            }
+
+            grid.appendChild(clone);
+        });
+    }
+
+    setupFavoris() {
+        this.renderFavorisSection();
     }
 
     // ==========================================
