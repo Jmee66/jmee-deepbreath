@@ -1322,6 +1322,27 @@ const EXERCISES = {
         }
     },
 
+    'passive-breath-hanger': {
+        name: 'Passive Breath Hanger',
+        category: 'apnee',
+        description: 'Apnée statique à 80% — suspension sur volume intermédiaire avec relâchement glottique profond (Molchanovs / Néry)',
+        science: 'Molchanovs T1/T2 Relaxation Phase + Blunery Academy (Néry) : suspension à 80% du volume pulmonaire, plus de flexibilité thoracique que la pleine inspiration, focus glottique pour inhiber l\'envie de respirer. Préparation cyclic sighing (Huberman/Stanford 2023) + souplesse Pelizzari.',
+        isPassiveBreathHanger: true,
+        cycles: 4,
+        prepDuration: 180,
+        restDuration: 90,
+        maxHoldDuration: 300,
+        instructions: {
+            start: 'Passive Breath Hanger. Inspirez à environ 80% de votre capacité — pas à fond. Relâchez la gorge complètement.',
+            prep: 'Préparation. Double soupir : inspirez profondément, sniff court, expirez lentement. Détendez tout.',
+            inhale: 'Inspirez doucement à 80%. Sentez vos poumons aux trois quarts remplis. Pas d\'hyperextension.',
+            hold: 'Suspension. Glotte ouverte. Laissez venir les contractions sans résister. Timer en cours.',
+            exhale: 'Expirez très lentement par les lèvres pincées. Prolongez au maximum.',
+            rest: 'Récupérez. Respirez naturellement. Préparez le prochain cycle.',
+            complete: 'Excellent travail. Notez vos sensations ci-dessous pour suivre votre progression.'
+        }
+    },
+
     'body-scan-apnea': {
         name: 'Body Scan Apnée',
         category: 'apnee',
@@ -1681,6 +1702,16 @@ window.GUIDE_DETAILS = {
             "Sentez la vibration dans le palais, les sinus frontaux, et l'ensemble du crâne",
             "Variante : essayez différentes fréquences (grave à aigu) et observez où la vibration résonne le plus",
             "Pratiquez 5-10 minutes avant le sommeil ou en cas de stress — effet calmant immédiat dès le 3e cycle"
+        ]
+    },
+    'passive-breath-hanger': {
+        science: "Le Passive Breath Hanger (Molchanovs T1/T2) est une apnée statique à 80% du volume pulmonaire. Contrairement à l'apnée à pleine inspiration, le volume intermédiaire évite la sur-activation des mécanorécepteurs pulmonaires (réflexe de Hering-Breuer) et offre plus de flexibilité thoracique pour absorber les contractions diaphragmatiques. Le relâchement glottique (Blunery/Néry) crée une légère résistance passive qui inhibe la signalisation CO2 sans effort musculaire. La préparation par cyclic sighing (Huberman/Stanford 2023) optimise les échanges gazeux et active le nerf vague. Le logging subjectif (Gorge Score, Mental State, Trachea Comfort) permet une progression structurée semaine après semaine.",
+        practice: [
+            "Phase préparatoire (3 min) : double soupir répété — inspire profond, sniff court, expire très lentement. Objectif : calmer le système nerveux avant la suspension",
+            "Inspirez doucement jusqu'à environ 80% de votre capacité. Pas une inspiration forcée — arrêtez avant le maximum",
+            "En suspension : relâchez activement la gorge (glotte ouverte), les épaules, les mains. Observez les contractions diaphragmatiques sans les combattre",
+            "Exhale très lente par les lèvres pincées à la fin — maximum 10 secondes pour cette phase",
+            "Répétez 3 à 5 cycles. Notez votre Gorge Score (1-5) et Mental State après chaque session"
         ]
     },
     'surya-bhedana': {

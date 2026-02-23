@@ -338,6 +338,22 @@ class CoachAI {
             });
         });
 
+        // Setup hanger mental state buttons
+        document.querySelectorAll('.hanger-mental-state .mental-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.hanger-mental-state .mental-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // Setup hanger trachea buttons
+        document.querySelectorAll('.hanger-trachea .trachea-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.hanger-trachea .trachea-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
         // Close on backdrop click
         const modal = document.getElementById('feedbackModal');
         modal?.addEventListener('click', (e) => {
@@ -362,16 +378,22 @@ class CoachAI {
             phaseTimings,
         };
 
+        // Passive Breath Hanger — attach hold data from app engine
+        const isHanger = exercise.isPassiveBreathHanger;
+        if (isHanger && window.app && window.app._pbhSessionData) {
+            this.pendingSession.hangerData = window.app._pbhSessionData;
+        }
+
         const nameEl = document.getElementById('feedbackExerciseName');
         if (nameEl) nameEl.textContent = exercise.name;
 
-        // Reset form
-        this.resetFeedbackForm();
+        // Reset form (show/hide hanger section)
+        this.resetFeedbackForm(isHanger);
 
         document.getElementById('feedbackModal')?.classList.add('active');
     }
 
-    resetFeedbackForm() {
+    resetFeedbackForm(isHanger) {
         // Reset ratings to defaults
         document.querySelectorAll('.feedback-rating').forEach(group => {
             group.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('active'));
@@ -384,6 +406,30 @@ class CoachAI {
 
         const notes = document.getElementById('feedbackNotes');
         if (notes) notes.value = '';
+
+        // Hanger section: show or hide
+        const hangerSection = document.getElementById('hangerFeedbackSection');
+        if (hangerSection) hangerSection.style.display = isHanger ? '' : 'none';
+
+        if (isHanger) {
+            // Reset hanger buttons
+            document.querySelectorAll('.hanger-mental-state .mental-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.hanger-trachea .trachea-btn').forEach(b => b.classList.remove('active'));
+            // Default: Neutre, Confortable
+            const neutreBtn = document.querySelector('.mental-btn[data-value="Neutre"]');
+            if (neutreBtn) neutreBtn.classList.add('active');
+            const confBtn = document.querySelector('.trachea-btn[data-value="true"]');
+            if (confBtn) confBtn.classList.add('active');
+            // Show holds summary
+            const holdsEl = document.getElementById('hangerHoldsSummary');
+            if (holdsEl && window.app && window.app._pbhHoldTimes) {
+                holdsEl.innerHTML = window.app._pbhHoldTimes.map((h, i) => {
+                    const urge = h.timeToUrge != null
+                        ? ` <span class="hanger-urge-tag">⚡ ${window.app.formatTime(h.timeToUrge)}</span>` : '';
+                    return `<span class="hanger-hold-chip">C${i+1}: ${window.app.formatTime(h.duration)}${urge}</span>`;
+                }).join('');
+            }
+        }
     }
 
     setDefaultRating(groupId, value) {
@@ -400,8 +446,37 @@ class CoachAI {
         return active ? parseInt(active.dataset.value) : null;
     }
 
+    _getHangerFeedback() {
+        const gorgeScore = this.getSelectedRating('feedbackGorgeScore');
+        const mentalActive = document.querySelector('.mental-btn.active');
+        const mentalState = mentalActive ? mentalActive.dataset.value : null;
+        const tracheaActive = document.querySelector('.trachea-btn.active');
+        const tracheaComfort = tracheaActive ? (tracheaActive.dataset.value === 'true') : null;
+        return { gorgeScore, mentalState, tracheaComfort };
+    }
+
+    _checkHangerProgression(session) {
+        // Algorithme : si gorge_score >= 4 ET mental_state == 'Flow' sur 3 sessions consécutives → suggérer +5s
+        if (!session.gorgeScore || session.gorgeScore < 4 || session.mentalState !== 'Flow') return;
+        const hangerSessions = this.sessions
+            .filter(s => s.exerciseId === 'passive-breath-hanger' && s.gorgeScore && s.mentalState)
+            .slice(-2); // les 2 précédentes + celle-ci = 3 total
+        if (hangerSessions.length < 2) return;
+        const allQualify = hangerSessions.every(s => s.gorgeScore >= 4 && s.mentalState === 'Flow');
+        if (allQualify) {
+            setTimeout(() => {
+                if (window.app) {
+                    window.app.showToast('🎯 Progression Hanger : 3 sessions Flow avec gorge ouverte — essayez +5s après la 1ère envie !', 'success');
+                }
+            }, 1500);
+        }
+    }
+
     saveFeedback() {
         if (!this.pendingSession) return;
+
+        const isHanger = this.pendingSession.exerciseId === 'passive-breath-hanger';
+        const hangerFeedback = isHanger ? this._getHangerFeedback() : {};
 
         const session = {
             ...this.pendingSession,
@@ -409,7 +484,8 @@ class CoachAI {
             feeling: this.getSelectedRating('feedbackFeeling'),
             stressBefore: this.getSelectedRating('feedbackStressBefore'),
             stressAfter: this.getSelectedRating('feedbackStressAfter'),
-            notes: (document.getElementById('feedbackNotes')?.value || '').trim()
+            notes: (document.getElementById('feedbackNotes')?.value || '').trim(),
+            ...hangerFeedback
         };
 
         this.sessions.push(session);
@@ -423,6 +499,7 @@ class CoachAI {
             window.weeklyPlan.onSessionSaved(session);
         }
 
+        if (isHanger) this._checkHangerProgression(session);
         if (window.app) window.app.showToast('Session enregistree');
     }
 

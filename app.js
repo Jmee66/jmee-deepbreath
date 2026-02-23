@@ -1456,6 +1456,15 @@ class JmeeDeepBreathApp {
             return exercise;
         }
 
+        // Passive Breath Hanger
+        if (exercise.isPassiveBreathHanger) {
+            exercise.cycles = userSettings.cycles || exercise.cycles;
+            exercise.prepDuration = userSettings.prepDuration || exercise.prepDuration;
+            exercise.restDuration = userSettings.restDuration || exercise.restDuration;
+            exercise.maxHoldDuration = userSettings.maxHoldDuration || exercise.maxHoldDuration;
+            return exercise;
+        }
+
         // Mode optimal : surcharger userSettings avec les valeurs calculées depuis apneaMax
         if (this.settings.mode === 'optimal') {
             const optParams = this.getOptimalParams(exerciseId);
@@ -1979,6 +1988,8 @@ class JmeeDeepBreathApp {
             this.startWimHofExercise();
         } else if (exercise.isBreathLight) {
             this.startBreathLightExercise();
+        } else if (exercise.isPassiveBreathHanger) {
+            this.startPassiveBreathHanger();
         } else {
             this.startBreathingExercise();
         }
@@ -2271,6 +2282,339 @@ class JmeeDeepBreathApp {
 
             this._runBreathLightCycle(totalCyclesInRound, round, phases);
         });
+    }
+
+    // ==========================================
+    // Passive Breath Hanger (Molchanovs / Néry)
+    // ==========================================
+
+    startPassiveBreathHanger() {
+        const exercise = this.currentExercise;
+        this._pbhCycle = 1;
+        this._pbhHoldTimes = [];          // hold durations per cycle (auto-measured)
+        this._pbhUrgeTime = null;         // first urge time per hold
+        this._pbhHoldStart = null;
+        this._pbhPausedTime = 0;
+        this._pbhPauseStart = null;
+
+        document.getElementById('cycleCounter').textContent =
+            `Cycle 1 / ${exercise.cycles}`;
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.start;
+
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.start);
+        }
+
+        // Show "first urge" button (hidden by default in modal, revealed here)
+        const btnUrge = document.getElementById('btnHangerUrge');
+        const btnStop = document.getElementById('btnHangerStop');
+        if (btnUrge) btnUrge.style.display = 'none';
+        if (btnStop) btnStop.style.display = 'none';
+
+        setTimeout(() => this._pbhRunPrepPhase(), 2000);
+    }
+
+    _pbhRunPrepPhase() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+        const prepDur = exercise.prepDuration || 180;
+
+        document.getElementById('breathPhase').textContent = 'Préparation';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.prep;
+        document.getElementById('cycleCounter').textContent =
+            `Cycle ${this._pbhCycle} / ${exercise.cycles} — Double soupir`;
+
+        // Visual: inhale animation (cyclic sighing feel)
+        this.updateBreathPhase({ name: 'Préparation', action: 'inhale', duration: 4 }, null);
+
+        if (window.breathSounds) {
+            window.breathSounds.playPhase('inhale', prepDur);
+        }
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.prep);
+        }
+
+        // Count-down during prep
+        const timerDisplay = document.getElementById('breathTimer');
+        const progressBar = document.getElementById('progressBar');
+        const circumference = 2 * Math.PI * 90;
+        const prepStart = Date.now();
+        let pausedMs = 0;
+        let pauseStart = null;
+
+        if (this.phaseTimer) clearInterval(this.phaseTimer);
+
+        this.phaseTimer = setInterval(() => {
+            if (!this.isRunning) { clearInterval(this.phaseTimer); return; }
+            if (this.isPaused) {
+                if (!pauseStart) pauseStart = Date.now();
+                return;
+            }
+            if (pauseStart) { pausedMs += Date.now() - pauseStart; pauseStart = null; }
+
+            const elapsed = (Date.now() - prepStart - pausedMs) / 1000;
+            const remaining = Math.max(0, prepDur - elapsed);
+            timerDisplay.textContent = this.formatTime(remaining);
+            progressBar.style.strokeDashoffset = circumference * (1 - elapsed / prepDur);
+
+            // Mid-point voice reminder
+            if (elapsed >= prepDur / 2 && !this._pbhPrepMidSpoken) {
+                this._pbhPrepMidSpoken = true;
+                if (window.voiceGuide && window.voiceGuide.enabled) {
+                    window.voiceGuide.speak('Continuez. Presque prêt pour la suspension.');
+                }
+            }
+
+            if (elapsed >= prepDur) {
+                clearInterval(this.phaseTimer);
+                this.phaseTimer = null;
+                this._pbhPrepMidSpoken = false;
+                if (window.breathSounds) window.breathSounds.stop();
+                this._pbhRunInhalePhase();
+            }
+        }, 100);
+    }
+
+    _pbhRunInhalePhase() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+
+        document.getElementById('breathPhase').textContent = 'Inspirez 80%';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.inhale;
+        document.getElementById('cycleCounter').textContent =
+            `Cycle ${this._pbhCycle} / ${exercise.cycles} — Inspiration`;
+
+        const inhaleDur = 4; // 4 sec inhale to 80%
+        this.updateBreathPhase({ name: 'Inspirez', action: 'inhale', duration: inhaleDur }, 'exhale');
+
+        if (window.breathSounds) {
+            window.breathSounds.playPhase('inhale', inhaleDur);
+        }
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.inhale);
+        }
+
+        this.startPhaseTimer(inhaleDur, () => {
+            if (!this.isRunning) return;
+            if (window.breathSounds) window.breathSounds.stop();
+            this._pbhRunHoldPhase();
+        });
+    }
+
+    _pbhRunHoldPhase() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+
+        document.getElementById('breathPhase').textContent = 'Suspension';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.hold;
+        document.getElementById('cycleCounter').textContent =
+            `Cycle ${this._pbhCycle} / ${exercise.cycles} — Suspension`;
+
+        // Hold circle animation
+        const circle = document.getElementById('breathCircle');
+        circle.classList.remove('inhale', 'exhale', 'holdEmpty', 'hold', 'active');
+        circle.classList.add('hold', 'active');
+        circle.style.setProperty('--phase-duration', '1s');
+
+        // Show control buttons
+        const btnUrge = document.getElementById('btnHangerUrge');
+        const btnStop = document.getElementById('btnHangerStop');
+        if (btnUrge) { btnUrge.style.display = ''; btnUrge.disabled = false; btnUrge.textContent = '⚡ 1ère envie'; }
+        if (btnStop) { btnStop.style.display = ''; }
+
+        const timerDisplay = document.getElementById('breathTimer');
+        const progressBar = document.getElementById('progressBar');
+        const circumference = 2 * Math.PI * 90;
+        this._pbhHoldStart = Date.now();
+        this._pbhPausedTime = 0;
+        this._pbhPauseStart = null;
+        this._pbhUrgeTime = null;
+        const maxDur = exercise.maxHoldDuration || 300;
+        const refMax = this.settings.apneaMax || 120;
+
+        // Wire buttons
+        if (btnUrge) {
+            btnUrge.onclick = () => {
+                if (!this._pbhUrgeTime) {
+                    const now = (Date.now() - this._pbhHoldStart - this._pbhPausedTime) / 1000;
+                    this._pbhUrgeTime = Math.round(now);
+                    btnUrge.disabled = true;
+                    btnUrge.textContent = `⚡ ${this.formatTime(this._pbhUrgeTime)}`;
+                    if (window.voiceGuide && window.voiceGuide.enabled) {
+                        window.voiceGuide.speak('Première envie notée. Continuez.');
+                    }
+                }
+            };
+        }
+        if (btnStop) {
+            btnStop.onclick = () => {
+                const elapsed = (Date.now() - this._pbhHoldStart - this._pbhPausedTime) / 1000;
+                this._pbhEndHold(elapsed);
+            };
+        }
+
+        if (window.breathSounds) {
+            window.breathSounds.playPhase('hold', maxDur);
+        }
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.hold);
+        }
+
+        if (this.phaseTimer) clearInterval(this.phaseTimer);
+
+        this.phaseTimer = setInterval(() => {
+            if (!this.isRunning) { clearInterval(this.phaseTimer); return; }
+            if (this.isPaused) {
+                if (!this._pbhPauseStart) this._pbhPauseStart = Date.now();
+                return;
+            }
+            if (this._pbhPauseStart) {
+                this._pbhPausedTime += Date.now() - this._pbhPauseStart;
+                this._pbhPauseStart = null;
+            }
+
+            const elapsed = (Date.now() - this._pbhHoldStart - this._pbhPausedTime) / 1000;
+            timerDisplay.textContent = this.formatTime(elapsed);
+            progressBar.style.strokeDashoffset = circumference * (1 - Math.min(elapsed / refMax, 1));
+
+            if (elapsed >= maxDur) {
+                this._pbhEndHold(elapsed);
+            }
+        }, 100);
+    }
+
+    _pbhEndHold(holdDuration) {
+        clearInterval(this.phaseTimer);
+        this.phaseTimer = null;
+
+        // Hide buttons
+        const btnUrge = document.getElementById('btnHangerUrge');
+        const btnStop = document.getElementById('btnHangerStop');
+        if (btnUrge) btnUrge.style.display = 'none';
+        if (btnStop) btnStop.style.display = 'none';
+
+        if (window.breathSounds) window.breathSounds.stop();
+
+        // Record hold data
+        this._pbhHoldTimes.push({
+            cycle: this._pbhCycle,
+            duration: Math.round(holdDuration),
+            timeToUrge: this._pbhUrgeTime
+        });
+
+        this._pbhRunExhalePhase();
+    }
+
+    _pbhRunExhalePhase() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+
+        document.getElementById('breathPhase').textContent = 'Expirez lentement';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.exhale;
+        document.getElementById('cycleCounter').textContent =
+            `Cycle ${this._pbhCycle} / ${exercise.cycles} — Expiration`;
+
+        const exhaleDur = 10;
+        this.updateBreathPhase({ name: 'Expirez', action: 'exhale', duration: exhaleDur }, 'hold');
+
+        if (window.breathSounds) {
+            window.breathSounds.playPhase('exhale', exhaleDur);
+        }
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.exhale);
+        }
+
+        this.startPhaseTimer(exhaleDur, () => {
+            if (!this.isRunning) return;
+            if (window.breathSounds) window.breathSounds.stop();
+            this._pbhCycle++;
+            if (this._pbhCycle > exercise.cycles) {
+                this._pbhComplete();
+            } else {
+                this._pbhRunRestPhase();
+            }
+        });
+    }
+
+    _pbhRunRestPhase() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+        const restDur = exercise.restDuration || 90;
+
+        document.getElementById('breathPhase').textContent = 'Récupération';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.rest;
+        document.getElementById('cycleCounter').textContent =
+            `Cycle ${this._pbhCycle} / ${exercise.cycles} — Repos`;
+
+        const circle = document.getElementById('breathCircle');
+        circle.classList.remove('hold', 'active', 'holdEmpty');
+        circle.classList.add('inhale');
+        circle.style.setProperty('--phase-duration', `${restDur}s`);
+
+        if (window.breathSounds) {
+            window.breathSounds.playPhase('inhale', restDur);
+        }
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.rest);
+        }
+
+        const timerDisplay = document.getElementById('breathTimer');
+        const progressBar = document.getElementById('progressBar');
+        const circumference = 2 * Math.PI * 90;
+        const restStart = Date.now();
+        let pausedMs = 0;
+        let pauseStart = null;
+
+        if (this.phaseTimer) clearInterval(this.phaseTimer);
+
+        this.phaseTimer = setInterval(() => {
+            if (!this.isRunning) { clearInterval(this.phaseTimer); return; }
+            if (this.isPaused) {
+                if (!pauseStart) pauseStart = Date.now();
+                return;
+            }
+            if (pauseStart) { pausedMs += Date.now() - pauseStart; pauseStart = null; }
+
+            const elapsed = (Date.now() - restStart - pausedMs) / 1000;
+            const remaining = Math.max(0, restDur - elapsed);
+            timerDisplay.textContent = this.formatTime(remaining);
+            progressBar.style.strokeDashoffset = circumference * (1 - elapsed / restDur);
+
+            if (elapsed >= restDur) {
+                clearInterval(this.phaseTimer);
+                this.phaseTimer = null;
+                if (window.breathSounds) window.breathSounds.stop();
+                this._pbhPrepMidSpoken = false;
+                this._pbhRunPrepPhase();
+            }
+        }, 100);
+    }
+
+    _pbhComplete() {
+        // Save raw hold data to localStorage for progression tracking
+        const durations = this._pbhHoldTimes.map(h => h.duration);
+        const best = durations.length ? Math.max(...durations) : 0;
+        const avg  = durations.length ? Math.round(durations.reduce((a,b) => a+b,0) / durations.length) : 0;
+
+        // Store in pending session for coach to retrieve
+        this._pbhSessionData = {
+            holds: this._pbhHoldTimes,
+            best,
+            avg
+        };
+
+        // Show summary
+        const summary = this._pbhHoldTimes.map((h,i) =>
+            `C${i+1}: ${this.formatTime(h.duration)}${h.timeToUrge ? ' (⚡'+this.formatTime(h.timeToUrge)+')' : ''}`
+        ).join(' — ');
+        document.getElementById('exerciseInstruction').textContent =
+            `${summary} — Meilleur: ${this.formatTime(best)}`;
+
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(this.currentExercise.instructions.complete);
+        }
+
+        setTimeout(() => this.completeExercise(), 2000);
     }
 
     // ==========================================

@@ -5711,6 +5711,160 @@ body.optimal-mode #apneaHint {
     50% { transform: scale(1.06); box-shadow: 0 4px 30px rgba(248, 113, 113, 0.5); }
 }
 
+/* ==========================================
+   Passive Breath Hanger — Exercise Controls
+   ========================================== */
+
+.hanger-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 16px auto 8px;
+}
+
+.btn-hanger-urge {
+    padding: 14px 28px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: rgba(245, 197, 24, 0.15);
+    color: #f5c518;
+    border: 2px solid #f5c518;
+    border-radius: var(--radius-full, 50px);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.btn-hanger-urge:hover { background: rgba(245, 197, 24, 0.25); }
+.btn-hanger-urge:active { transform: scale(0.95); }
+.btn-hanger-urge:disabled {
+    opacity: 0.6;
+    cursor: default;
+    font-size: 0.95rem;
+}
+
+.btn-hanger-stop {
+    padding: 14px 28px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: rgba(248, 113, 113, 0.12);
+    color: #f87171;
+    border: 2px solid #f87171;
+    border-radius: var(--radius-full, 50px);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.btn-hanger-stop:hover { background: rgba(248, 113, 113, 0.25); }
+.btn-hanger-stop:active { transform: scale(0.95); }
+
+/* ==========================================
+   Passive Breath Hanger — Feedback Fields
+   ========================================== */
+
+.hanger-feedback-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary, #94a3b8);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.hanger-feedback-divider::before,
+.hanger-feedback-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border, rgba(255,255,255,0.1));
+}
+
+.feedback-hint {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--text-secondary, #94a3b8);
+    margin-left: 4px;
+}
+
+.hanger-mental-state {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+.mental-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    background: var(--surface-2, rgba(255,255,255,0.05));
+    color: var(--text-secondary, #94a3b8);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md, 12px);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+}
+.mental-btn:hover { border-color: var(--primary, #6366f1); color: var(--primary, #6366f1); }
+.mental-btn.active {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: var(--primary, #6366f1);
+    color: var(--primary, #6366f1);
+}
+
+.hanger-trachea {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+.trachea-btn {
+    flex: 1;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: var(--surface-2, rgba(255,255,255,0.05));
+    color: var(--text-secondary, #94a3b8);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md, 12px);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+}
+.trachea-btn:hover { border-color: var(--success, #34d399); }
+.trachea-btn.active {
+    background: rgba(52, 211, 153, 0.12);
+    border-color: var(--success, #34d399);
+    color: var(--success, #34d399);
+}
+
+.hanger-holds-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+.hanger-hold-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: var(--surface-2, rgba(255,255,255,0.06));
+    border-radius: var(--radius-full, 50px);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary, #f1f5f9);
+}
+.hanger-urge-tag {
+    font-size: 0.78rem;
+    color: #f5c518;
+    font-weight: 700;
+}
+
 /* Progression chart */
 .comfort-progress {
     margin: var(--space-lg) 0;

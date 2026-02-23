@@ -127,7 +127,7 @@
             </svg>
             <div class="nav-brand-text">
                 <span>Jmee DeepBreath</span>
-                <span class="beta-badge">BETA v0.83 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
+                <span class="beta-badge">BETA v0.84 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
             </div>
         </div>
         <div class="nav-links">
@@ -1148,6 +1148,29 @@
                     <div class="exercise-actions">
                         <button class="btn-start">Commencer</button>
                         <button class="btn-config" title="Configurer" data-exercise="body-scan-apnea">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Passive Breath Hanger -->
+                <div class="exercise-card" data-exercise="passive-breath-hanger">
+                    <div class="exercise-badge">Molchanovs</div>
+                    <h3>Passive Breath Hanger</h3>
+                    <p>Apnée statique à 80% du volume pulmonaire. Focus relâchement glottique et flexibilité thoracique (Néry / Blunery).</p>
+                    <div class="exercise-meta">
+                        <span>4 cycles</span>
+                        <span>•</span>
+                        <span>Timer ↑</span>
+                        <span>•</span>
+                        <span>80% vol.</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="passive-breath-hanger">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="3"/>
                                 <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
@@ -4062,6 +4085,40 @@
                         </div>
                     </div>
 
+                    <!-- Passive Breath Hanger Settings -->
+                    <div class="exercise-settings" data-exercise="passive-breath-hanger">
+                        <h4>Passive Breath Hanger <span class="ratio-badge">Molchanovs</span></h4>
+                        <div class="settings-row">
+                            <label>Nombre de cycles</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="3" max="6" value="4" data-param="cycles">
+                                <span>cycles</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Préparation (cyclic sighing)</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="60" max="300" value="180" step="30" data-param="prepDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Récupération entre cycles</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="60" max="180" value="90" step="15" data-param="restDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Durée max par suspension</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="60" max="600" value="300" step="30" data-param="maxHoldDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <p class="settings-note">Inspirez à ~80% (3/4 de vos poumons). Relâchez la gorge et restez passif. Appuyez ⚡ à la première envie de respirer, puis ✋ pour sortir.</p>
+                    </div>
+
                     <!-- Breathe-Up Structuré -->
                     <div class="exercise-settings" data-exercise="breathe-up-structure">
                         <h4>Breathe-Up Structuré</h4>
@@ -4277,6 +4334,16 @@
                     ✋ J'arrête
                 </button>
 
+                <!-- Passive Breath Hanger Controls (hidden by default) -->
+                <div class="hanger-controls" id="hangerControls" style="display:none;">
+                    <button class="btn-hanger-urge" id="btnHangerUrge" style="display:none;">
+                        ⚡ 1ère envie
+                    </button>
+                    <button class="btn-hanger-stop" id="btnHangerStop" style="display:none;">
+                        ✋ Sortir
+                    </button>
+                </div>
+
                 <!-- Controls -->
                 <div class="exercise-controls">
                     <button class="btn-control" id="btnReset" title="Recommencer">
@@ -4357,6 +4424,53 @@
                     </div>
                     <div class="rating-labels">
                         <span>Calme</span><span>Tres stresse</span>
+                    </div>
+                </div>
+
+                <!-- Passive Breath Hanger specific fields (hidden by default) -->
+                <div class="hanger-feedback-section" id="hangerFeedbackSection" style="display:none;">
+                    <div class="hanger-feedback-divider">
+                        <span>🤿 Passive Breath Hanger</span>
+                    </div>
+
+                    <!-- Gorge Score -->
+                    <div class="feedback-section">
+                        <label>Score gorge <span class="feedback-hint">(1 = serrée · 5 = ouverte/moelleuse)</span></label>
+                        <div class="feedback-rating" id="feedbackGorgeScore">
+                            <button class="rating-btn" data-value="1">1</button>
+                            <button class="rating-btn" data-value="2">2</button>
+                            <button class="rating-btn" data-value="3">3</button>
+                            <button class="rating-btn" data-value="4">4</button>
+                            <button class="rating-btn" data-value="5">5</button>
+                        </div>
+                        <div class="rating-labels">
+                            <span>Serrée</span><span>Ouverte</span>
+                        </div>
+                    </div>
+
+                    <!-- Mental State -->
+                    <div class="feedback-section">
+                        <label>État mental</label>
+                        <div class="hanger-mental-state" id="feedbackMentalState">
+                            <button class="mental-btn" data-value="Vigilant">⚡ Vigilant</button>
+                            <button class="mental-btn" data-value="Neutre">○ Neutre</button>
+                            <button class="mental-btn" data-value="Flow">🌊 Flow</button>
+                        </div>
+                    </div>
+
+                    <!-- Trachea Comfort -->
+                    <div class="feedback-section">
+                        <label>Confort trachéal <span class="feedback-hint">(tiraillement ?)</span></label>
+                        <div class="hanger-trachea" id="feedbackTracheaComfort">
+                            <button class="trachea-btn" data-value="true">✅ Confortable</button>
+                            <button class="trachea-btn" data-value="false">⚠️ Tiraillement</button>
+                        </div>
+                    </div>
+
+                    <!-- Holds summary (read-only) -->
+                    <div class="feedback-section">
+                        <label>Suspensions <span class="feedback-hint">(⚡ = 1ère envie)</span></label>
+                        <div class="hanger-holds-summary" id="hangerHoldsSummary"></div>
                     </div>
                 </div>
 
