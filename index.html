@@ -641,6 +641,29 @@
                     </div>
                 </div>
 
+                <!-- IMST — Force Inspiratoire -->
+                <div class="exercise-card" data-exercise="imst">
+                    <div class="exercise-badge">Craighead</div>
+                    <h3>IMST — Force Inspiratoire</h3>
+                    <p>Inspirations forcées à haute résistance. −9 mmHg de tension systolique et +9% VO2max en 6 semaines (Craighead 2021). 30 reps × 5 séries.</p>
+                    <div class="exercise-meta">
+                        <span>~15 min</span>
+                        <span>•</span>
+                        <span>Force</span>
+                        <span>•</span>
+                        <span>5 × 30 reps</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="imst">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Breath Light CO2 -->
                 <div class="exercise-card" data-exercise="breath-light-co2">
                     <div class="exercise-badge">Oxygen Advantage</div>
@@ -1980,6 +2003,38 @@
                                 </ul>
                             </div>
                             <p class="guide-when"><strong>Quand :</strong> 3x/semaine, à sec. Ne jamais pratiquer en eau. Idéal combiné avec les tables CO2 classiques. Résultats visibles à partir de 3-4 semaines.</p>
+                        </div>
+
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,general" data-level="beginner" data-exercise-id="imst">
+                            <div class="guide-exercise-header">
+                                <h4>IMST — Force Inspiratoire</h4>
+                                <span class="guide-badge guide-badge-beginner">Tous niveaux</span>
+                            </div>
+                            <p class="guide-exercise-desc">Renforcement musculaire inspiratoire à haute résistance. Protocole Craighead (JAHA 2021) : 30 reps × 5 séries, 6j/semaine → −9 mmHg systolique, +9% VO2max en 6 semaines.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Force</span>
+                                <span class="guide-tag">Cardio</span>
+                                <span class="guide-tag">Craighead 2021</span>
+                                <span class="guide-tag">~15 min</span>
+                            </div>
+                            <div class="guide-detail-block">
+                                <p class="guide-detail-title">💪 Technique</p>
+                                <p class="guide-detail-text"><strong>Avec device (recommandé) :</strong> PowerBreathe ou tout IMT threshold trainer réglé à 75% MIP (~50-70 cmH₂O). Place l'embout, ferme les lèvres, inspire le plus fort et vite possible sur 2 sec, relâche passivement 3 sec. 30 répétitions = une série (~2 min 30). <strong>Sans device :</strong> inspiration diaphragmatique maximale volontaire — ventre qui sort, poitrine qui monte, effort maximal comme soulever un poids lourd avec le souffle. <strong>Posture :</strong> assis droit, épaules fixes, pas de compensation cervicale.</p>
+                            </div>
+                            <div class="guide-detail-block">
+                                <p class="guide-detail-title">🔬 Mécanisme</p>
+                                <p class="guide-detail-text">Les contractions répétées des muscles inspiratoires contre forte résistance réduisent le "metaboreflex" inspiratoire — les métaborécepteurs musculaires qui, en cas de fatigue, volent le débit cardiaque des muscles des jambes pour alimenter la pompe thoracique. Résultat : plus de débit disponible pour l'effort global, meilleure endurance, tension artérielle abaissée par vasodilatation périphérique. Bénéfice apnée : meilleure tolérance à la pression négative intra-thoracique lors des contractions diaphragmatiques.</p>
+                            </div>
+                            <div class="guide-detail-block">
+                                <p class="guide-detail-title">📈 Progression</p>
+                                <ul class="guide-detail-list">
+                                    <li><strong>Semaine 1-2 :</strong> 50-60% MIP, maîtrise du geste, épaules fixes, rythme 2s/3s.</li>
+                                    <li><strong>Semaine 3-4 :</strong> 70% MIP. Les reps 25-30 doivent être difficiles. Premiers effets tensionnels.</li>
+                                    <li><strong>Semaine 5-6 :</strong> 75% MIP. −9 mmHg systolique attendu à 6 semaines de pratique 6j/sem.</li>
+                                    <li><strong>Entretien :</strong> 3x/semaine suffit pour maintenir les gains.</li>
+                                </ul>
+                            </div>
+                            <p class="guide-when"><strong>Quand :</strong> Le matin à jeun ou avant l'entraînement. À sec uniquement. Éviter en cas de douleur thoracique, pneumothorax récent ou HTA non contrôlée.</p>
                         </div>
 
                         <div class="guide-exercise-item" data-objectives="static,dynamic" data-level="intermediate" data-exercise-id="breath-light-co2">
@@ -3688,6 +3743,56 @@
                             </div>
                         </div>
                         <p class="settings-note">Augmentez la durée de pause de +1 sec par semaine (5s → 6s → 7s). L'inconfort CO2 pendant la pause est le stimulus — c'est normal.</p>
+                    </div>
+
+                    <!-- IMST — Force Inspiratoire -->
+                    <div class="exercise-settings" data-exercise="imst">
+                        <h4>IMST — Force Inspiratoire <span class="ratio-badge">Craighead</span></h4>
+                        <div class="settings-row">
+                            <label>Mode</label>
+                            <div class="input-with-unit">
+                                <select data-param="mode" style="flex:1;background:var(--bg-tertiary);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);color:var(--text-primary);padding:var(--space-xs) var(--space-sm);font-family:inherit;font-size:0.88rem;">
+                                    <option value="device">Avec device (PowerBreathe…)</option>
+                                    <option value="free">Sans device (effort max volontaire)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Nombre de séries</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="10" value="5" data-param="sets">
+                                <span>séries</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Répétitions par série</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="10" max="40" value="30" data-param="repsPerSet">
+                                <span>reps</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Durée inhale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="3" value="2" data-param="inhaleDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Durée exhale passif</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="5" value="3" data-param="exhaleDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Repos entre séries</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="30" max="120" value="60" data-param="restDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <p class="settings-note">Résistance cible : 75% de ta pression inspiratoire maximale (MIP). Sur PowerBreathe : ajuste jusqu'à ce que les reps 28-30 soient difficiles. Augmente la résistance de +5% par semaine.</p>
                     </div>
 
                     <!-- Breath Light CO2 -->

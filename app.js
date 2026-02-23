@@ -1521,6 +1521,17 @@ class JmeeDeepBreathApp {
             return exercise;
         }
 
+        // IMST (Inspiratory Muscle Strength Training)
+        if (exercise.isIMST) {
+            exercise.sets           = userSettings.sets           || exercise.sets;
+            exercise.repsPerSet     = userSettings.repsPerSet     || exercise.repsPerSet;
+            exercise.inhaleDuration = userSettings.inhaleDuration || exercise.inhaleDuration;
+            exercise.exhaleDuration = userSettings.exhaleDuration || exercise.exhaleDuration;
+            exercise.restDuration   = userSettings.restDuration   || exercise.restDuration;
+            exercise.mode           = userSettings.mode           || exercise.mode;
+            return exercise;
+        }
+
         // Mode optimal : surcharger userSettings avec les valeurs calculées depuis apneaMax
         if (this.settings.mode === 'optimal') {
             const optParams = this.getOptimalParams(exerciseId);
@@ -2048,6 +2059,8 @@ class JmeeDeepBreathApp {
             this.startPassiveBreathHanger();
         } else if (exercise.isVHL) {
             this.startVHLExercise();
+        } else if (exercise.isIMST) {
+            this.startIMSTExercise();
         } else {
             this.startBreathingExercise();
         }
@@ -2861,6 +2874,120 @@ class JmeeDeepBreathApp {
                 this._vhlRunRestBreath(remaining - 1);
             });
         });
+    }
+
+    // ==========================================
+    // IMST Exercise (Inspiratory Muscle Strength Training)
+    // ==========================================
+
+    startIMSTExercise() {
+        const ex = this.currentExercise;
+        this._imstSet        = 1;
+        this._imstRep        = 1;
+        this._imstSetsTotal  = ex.sets           || 5;
+        this._imstRepsTotal  = ex.repsPerSet     || 30;
+        this._imstInhale     = ex.inhaleDuration || 2;
+        this._imstExhale     = ex.exhaleDuration || 3;
+        this._imstRest       = ex.restDuration   || 60;
+
+        document.getElementById('cycleCounter').textContent =
+            `Série 1/${this._imstSetsTotal} — Rep 1/${this._imstRepsTotal}`;
+        document.getElementById('exerciseInstruction').textContent = ex.instructions.start;
+
+        if (window.voiceGuide?.enabled) {
+            window.voiceGuide.speak(ex.instructions.start);
+        }
+
+        setTimeout(() => this._imstRunRep(), 2500);
+    }
+
+    _imstRunRep() {
+        if (!this.isRunning) return;
+        const ex = this.currentExercise;
+
+        // Mise à jour compteur
+        document.getElementById('cycleCounter').textContent =
+            `Série ${this._imstSet}/${this._imstSetsTotal} — Rep ${this._imstRep}/${this._imstRepsTotal}`;
+
+        // ── Phase INHALE ──
+        this.updateBreathPhase({ name: 'Inspirez fort !', duration: this._imstInhale, action: 'inhale' });
+        document.getElementById('exerciseInstruction').textContent =
+            ex.mode === 'device'
+                ? 'Inspirez fort contre la résistance !'
+                : 'Inspiration diaphragmatique maximale !';
+
+        // Bip sonore au début de chaque inspiration
+        this._imstPlayBip();
+
+        this.startPhaseTimer(this._imstInhale, () => {
+            if (!this.isRunning) return;
+
+            // ── Phase EXHALE (passive) ──
+            this.updateBreathPhase({ name: 'Relâchez', duration: this._imstExhale, action: 'exhale' });
+            document.getElementById('exerciseInstruction').textContent = 'Relâchez passivement.';
+
+            this.startPhaseTimer(this._imstExhale, () => {
+                if (!this.isRunning) return;
+
+                if (this._imstRep < this._imstRepsTotal) {
+                    this._imstRep++;
+                    this._imstRunRep();
+                } else {
+                    this._imstEndSet();
+                }
+            });
+        });
+    }
+
+    _imstEndSet() {
+        const ex = this.currentExercise;
+
+        // Toutes les séries terminées ?
+        if (this._imstSet >= this._imstSetsTotal) {
+            this.completeExercise();
+            return;
+        }
+
+        // Prépare la série suivante
+        this._imstSet++;
+        this._imstRep = 1;
+
+        // Cercle neutre pendant le repos
+        const circle = document.getElementById('breathCircle');
+        circle.classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
+
+        document.getElementById('breathPhase').textContent = 'Repos';
+        document.getElementById('cycleCounter').textContent =
+            `Repos — Série ${this._imstSet}/${this._imstSetsTotal} dans…`;
+        document.getElementById('exerciseInstruction').textContent = ex.instructions.rest;
+
+        if (window.voiceGuide?.enabled) {
+            window.voiceGuide.speak(`Série ${this._imstSet - 1} terminée. Repos.`);
+        }
+
+        this.startPhaseTimer(this._imstRest, () => {
+            if (!this.isRunning) return;
+            document.getElementById('exerciseInstruction').textContent =
+                ex.mode === 'device' ? ex.instructions.inhale : ex.instructions.inhale_free || ex.instructions.inhale;
+            this._imstRunRep();
+        });
+    }
+
+    _imstPlayBip() {
+        try {
+            const ctx = window.breathSounds?.audioContext;
+            if (!ctx || ctx.state === 'suspended') return;
+            const osc  = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.value = 520; // Hz — ton léger et distinct
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.09);
+        } catch (e) { /* silently ignore */ }
     }
 
     // ==========================================

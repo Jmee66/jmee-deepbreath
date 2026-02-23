@@ -137,6 +137,34 @@ const EXERCISES = {
         warning: 'Ne pas pratiquer en eau. Arrêtez si vertiges ou fourmillements intenses. Les premières sessions peuvent générer un inconfort marqué — c\'est normal et attendu.'
     },
 
+    'imst': {
+        name: 'IMST — Force Inspiratoire',
+        category: 'respiration',
+        description: 'Inspirations forcées à haute résistance — 30 reps × 5 séries pour renforcer les muscles respiratoires',
+        science: 'Craighead et al. (JAHA 2021) : 30 reps × 5 séries, 6j/sem, 6 semaines → −9 mmHg systolique (équivalent à 30 min de marche quotidienne), +9% VO2max, +12% force inspiratoire. Résistance cible : 75% MIP (Maximal Inspiratory Pressure). Sur PowerBreathe ou tout IMT threshold trainer.',
+        isIMST: true,
+        duration: 15,
+        sets: 5,
+        repsPerSet: 30,
+        inhaleDuration: 2,
+        exhaleDuration: 3,
+        restDuration: 60,
+        mode: 'device', // 'device' | 'free'
+        phases: [
+            { name: 'Inspirez fort !', duration: 2, action: 'inhale' },
+            { name: 'Relâchez', duration: 3, action: 'exhale' }
+        ],
+        instructions: {
+            start: 'IMST — 30 inspirations forcées par série. Inspirez le plus fort et vite possible contre la résistance. 5 séries au total.',
+            inhale: 'Inspirez fort !',
+            inhale_free: 'Inspiration diaphragmatique maximale !',
+            exhale: 'Relâchez passivement.',
+            rest: 'Repos. Respirez normalement.',
+            complete: 'Session IMST terminée. 5 séries complètes. Pratique régulière 6 jours/semaine = résultats en 6 semaines.'
+        },
+        warning: 'Commencez à résistance modérée (50% MIP). Augmentez progressivement. Arrêtez si douleur thoracique ou vertiges.'
+    },
+
     'breath-light-co2': {
         name: 'Respiration Réduite CO2',
         category: 'respiration',
@@ -1738,6 +1766,17 @@ window.GUIDE_DETAILS = {
             "Sentez la vibration dans le palais, les sinus frontaux, et l'ensemble du crâne",
             "Variante : essayez différentes fréquences (grave à aigu) et observez où la vibration résonne le plus",
             "Pratiquez 5-10 minutes avant le sommeil ou en cas de stress — effet calmant immédiat dès le 3e cycle"
+        ]
+    },
+    'imst': {
+        science: "L'IMST (Inspiratory Muscle Strength Training) est un protocole de renforcement des muscles inspiratoires validé par Craighead et al. (JAHA 2021) : 30 répétitions × 5 séries × 6 jours/semaine pendant 6 semaines → −9 mmHg systolique (effet identique à 30 min de marche quotidienne), +9% VO2max, +12% force inspiratoire maximale (MIP). La résistance cible est 75% de ta MIP — typiquement 50-70 cmH₂O sur un threshold trainer (PowerBreathe, Threshold PEP). Mécanisme : les contractions répétées des muscles intercostaux et du diaphragme contre forte résistance réduisent les métaborécepteurs musculaires qui signalent la fatigue au cerveau ('inspiratory muscle metaboreflex'), libérant ainsi davantage de débit cardiaque vers les muscles locomoteurs. Bénéfices secondaires : augmentation de la compliance thoracique, amélioration de la mécanique ventilatoire en apnée, réduction de la charge respiratoire perçue.",
+        practice: [
+            "Réglage device : ajuste la résistance jusqu'à ce que la répétition 28-30 soit difficile mais réalisable. Commence à 50% MIP (résistance modérée), augmente de +5% par semaine",
+            "Sans device : inspiration diaphragmatique volontaire maximale — le ventre sort, la poitrine monte. Effort maximal comme si tu soulevais quelque chose de lourd avec le souffle",
+            "Rythme : inspire fort sur 2 sec (bouche fermée ou sur l'embout), relâche passivement sur 3 sec. 30 reps = ~2 min 30 par série",
+            "Repos 60 sec entre chaque série — respire normalement, ne force pas",
+            "Progression : 6 semaines minimum pour voir les effets tensionnels. Les gains de force inspiratoire sont visibles dès 3 semaines",
+            "Contre-indications : pneumothorax récent, douleur thoracique, maladie pulmonaire obstructive sévère non contrôlée. Consulte un médecin si doute"
         ]
     },
     'breath-light-co2': {
