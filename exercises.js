@@ -111,6 +111,66 @@ const EXERCISES = {
         cyclesPerMinute: 5
     },
 
+    'breath-light-co2': {
+        name: 'Respiration Réduite CO2',
+        category: 'respiration',
+        description: 'Réduction progressive de l\'amplitude pour générer un inconfort CO2 contrôlé',
+        science: 'McKeown / Oxygen Advantage (2015) & Spengler et al. (2013, PMC3873666) : la réduction du volume courant élève progressivement la PCO2 artérielle, blunts la réponse ventilatoire hypercapnique (−45% de sensibilité au CO2 en 6 semaines) et améliore l\'effet Bohr. Technique inverse du Wim Hof : moins de volume = plus de CO2 = meilleure libération d\'O2 aux tissus.',
+        duration: 7,
+        isBreathLight: true, // flag pour le moteur d'exercice
+        // Paramètres réglables (mode manuel/auto/optimal)
+        // inhale = durée inspiration de base (phase 1)
+        // exhale = durée expiration de base (ratio 1:1.5)
+        // hold = durée pause post-expiration (phases 3 et 4)
+        // Les phases sont progressives : chaque round réduit l'amplitude
+        rounds: [
+            {
+                label: 'Phase 1 — Mise en place',
+                durationSec: 90,
+                instruction: 'Respirez normalement par le nez. Commencez à prendre conscience de votre amplitude.',
+                inhale: 4,
+                exhale: 6,
+                hold: 0
+            },
+            {
+                label: 'Phase 2 — Réduction inspiration',
+                durationSec: 90,
+                instruction: 'Réduisez légèrement l\'inspiration. À peine moins d\'air qu\'à l\'habitude. L\'inconfort doit rester léger.',
+                inhale: 3,
+                exhale: 6,
+                hold: 0
+            },
+            {
+                label: 'Phase 3 — Réduction + pause',
+                durationSec: 120,
+                instruction: 'Réduisez aussi l\'expiration. Après chaque expiration, tenez une courte pause. L\'envie de respirer augmente — c\'est normal.',
+                inhale: 3,
+                exhale: 5,
+                hold: 3
+            },
+            {
+                label: 'Phase 4 — Inconfort contrôlé',
+                durationSec: 120,
+                instruction: 'Amplitude minimale. La faim d\'air est présente — restez calme, c\'est l\'entraînement. Maintenez la pause.',
+                inhale: 2.5,
+                exhale: 4.5,
+                hold: 4
+            }
+        ],
+        // phases plate pour compatibilité moteur — sera overridé par isBreathLight
+        phases: [
+            { name: 'Inspirez', duration: 4, action: 'inhale' },
+            { name: 'Expirez', duration: 6, action: 'exhale' }
+        ],
+        instructions: {
+            start: 'Respiration Réduite CO2 — Méthode Oxygen Advantage. 7 minutes de réduction progressive d\'amplitude pour entraîner votre tolérance au CO2.',
+            'Inspirez': 'Inspiration réduite, douce, par le nez uniquement',
+            'Expirez': 'Expiration contrôlée et lente, laissez l\'air sortir sans forcer',
+            'Pause': 'Pause post-expiration : restez calme, tolérez l\'envie de respirer'
+        },
+        warning: 'Si vous ressentez des étourdissements, revenez à une respiration normale. Ne pratiquez pas en conduisant.'
+    },
+
     'relaxation': {
         name: 'Respiration 4-7-8',
         category: 'respiration',

@@ -127,7 +127,7 @@
             </svg>
             <div class="nav-brand-text">
                 <span>Jmee DeepBreath</span>
-                <span class="beta-badge">BETA v0.81 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
+                <span class="beta-badge">BETA v0.82 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
             </div>
         </div>
         <div class="nav-links">
@@ -137,6 +137,12 @@
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
                 Coach
+            </button>
+            <button class="nav-link nav-favoris" data-section="favoris">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                Favoris
             </button>
             <button class="nav-link" data-section="journal">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
@@ -164,12 +170,6 @@
             <button class="nav-link nav-urgence" data-section="urgence">Urgence</button>
             <button class="nav-link" data-section="preperformance">Pré-Perf</button>
             <button class="nav-link nav-hypnose" data-section="autohypnose">Hypnose</button>
-            <button class="nav-link nav-favoris" data-section="favoris">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                </svg>
-                Favoris
-            </button>
             <button class="nav-link nav-guide" data-section="guide">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
                     <circle cx="12" cy="12" r="10"/>
@@ -571,6 +571,27 @@
                     <div class="exercise-actions">
                         <button class="btn-start">Commencer</button>
                         <button class="btn-config" title="Configurer" data-exercise="co2-tolerance">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Breath Light CO2 -->
+                <div class="exercise-card" data-exercise="breath-light-co2">
+                    <div class="exercise-badge">Oxygen Advantage</div>
+                    <h3>Respiration Réduite CO2</h3>
+                    <p>Réduction progressive de l'amplitude pour générer un inconfort CO2 contrôlé. Entraîne la tolérance des chémorécepteurs. Inverse du Wim Hof.</p>
+                    <div class="exercise-meta">
+                        <span>7 min</span>
+                        <span>•</span>
+                        <span>Tolérance CO2</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="breath-light-co2">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="3"/>
                                 <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
@@ -3442,6 +3463,40 @@
                                 <span>sec</span>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Breath Light CO2 -->
+                    <div class="exercise-settings" data-exercise="breath-light-co2">
+                        <h4>Respiration Réduite CO2 <span class="ratio-badge">progressif 4 phases</span></h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="3" max="15" value="7" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Inspiration phase 1 (base)</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="8" step="0.5" value="4" data-param="inhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Expiration phase 1 (base)</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="3" max="12" step="0.5" value="6" data-param="exhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Pause post-expir (phases 3-4)</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="0" max="8" step="0.5" value="3" data-param="hold">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <p class="settings-note">Les phases 2, 3 et 4 réduisent automatiquement les durées pour créer la progression.</p>
                     </div>
 
                     <!-- 4-7-8 -->

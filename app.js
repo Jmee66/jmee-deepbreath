@@ -73,6 +73,12 @@ class JmeeDeepBreathApp {
                     inhale: 4,
                     exhale: 8
                 },
+                'breath-light-co2': {
+                    duration: 7,
+                    inhale: 4,
+                    exhale: 6,
+                    hold: 3
+                },
                 'relaxation': {
                     cycles: 4,
                     inhale: 4,
@@ -1068,12 +1074,13 @@ class JmeeDeepBreathApp {
     setupExerciseSettingsInputs() {
         // Ratios fixes par exercice : { param_référence: { param_lié: multiplicateur, ... }, ... }
         const RATIO_LOCKS = {
-            'coherent':       { ref: 'inhale', locked: { exhale: 1 } },
-            'ujjayi':         { ref: 'inhale', locked: { exhale: 1 } },
-            'bhramari':       { ref: 'inhale', locked: { exhale: 2 } },
-            'co2-tolerance':  { ref: 'inhale', locked: { exhale: 2 } },
-            'pranayama-142':  { ref: 'inhale', locked: { hold: 4, exhale: 2 } },
-            'relaxation':     { ref: 'inhale', locked: { hold: 1.75, exhale: 2 } },
+            'coherent':         { ref: 'inhale', locked: { exhale: 1 } },
+            'ujjayi':           { ref: 'inhale', locked: { exhale: 1 } },
+            'bhramari':         { ref: 'inhale', locked: { exhale: 2 } },
+            'co2-tolerance':    { ref: 'inhale', locked: { exhale: 2 } },
+            'breath-light-co2': { ref: 'inhale', locked: { exhale: 1.5, hold: 0.75 } },
+            'pranayama-142':    { ref: 'inhale', locked: { hold: 4, exhale: 2 } },
+            'relaxation':       { ref: 'inhale', locked: { hold: 1.75, exhale: 2 } },
             'surya-bhedana':  { ref: 'inhale', locked: { hold: 2, exhale: 1.5 } },
         };
 
@@ -1353,6 +1360,7 @@ class JmeeDeepBreathApp {
             'coherent':       { param: 'inhale',  divisor: 20, min: 4,   max: 8  },
             'box':            { param: 'boxTime', divisor: 20, min: 3,   max: 8  },
             'co2-tolerance':  { param: 'inhale',  divisor: 25, min: 3,   max: 7  },
+            'breath-light-co2': { param: 'inhale', divisor: 22, min: 2.5, max: 6 },
             'relaxation':     { param: 'inhale',  divisor: 30, min: 3,   max: 6  },
             'pranayama-142':  { param: 'inhale',  divisor: 25, min: 3,   max: 8  },
             'nadi-shodhana':  { param: 'phaseTime', divisor: 22, min: 3, max: 8  },
@@ -1384,6 +1392,7 @@ class JmeeDeepBreathApp {
             'ujjayi':         { exhale: 1 },
             'bhramari':       { exhale: 2 },
             'co2-tolerance':  { exhale: 2 },
+            'breath-light-co2': { exhale: 1.5, hold: 0.75 },
             'pranayama-142':  { hold: 4, exhale: 2 },
             'relaxation':     { hold: 1.75, exhale: 2 },
             'surya-bhedana':  { hold: 2, exhale: 1.5 },
@@ -1488,6 +1497,29 @@ class JmeeDeepBreathApp {
                 exercise.duration = userSettings.duration || exercise.duration;
                 exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
                 exercise.phases[1].duration = userSettings.exhale || exercise.phases[1].duration;
+                break;
+
+            case 'breath-light-co2':
+                exercise.duration = userSettings.duration || exercise.duration;
+                // Recalcule les rounds selon les paramètres base
+                const blInhale = userSettings.inhale || 4;
+                const blExhale = userSettings.exhale || 6;
+                const blHold   = userSettings.hold   || 3;
+                exercise.rounds = [
+                    { label: 'Phase 1 — Mise en place',       durationSec: 90,  instruction: 'Respirez normalement par le nez. Prenez conscience de votre amplitude.',                                              inhale: blInhale,        exhale: blExhale,        hold: 0 },
+                    { label: 'Phase 2 — Réduction inspiration', durationSec: 90,  instruction: 'Réduisez légèrement l\'inspiration — à peine moins d\'air qu\'à l\'habitude. Inconfort léger.',                      inhale: Math.max(1.5, blInhale - 1),   exhale: blExhale,        hold: 0 },
+                    { label: 'Phase 3 — Réduction + pause',    durationSec: 120, instruction: 'Réduisez aussi l\'expiration. Ajoutez une pause après chaque expiration. L\'envie de respirer augmente — restez calme.', inhale: Math.max(1.5, blInhale - 1),   exhale: Math.max(2, blExhale - 1), hold: blHold },
+                    { label: 'Phase 4 — Inconfort contrôlé',   durationSec: 120, instruction: 'Amplitude minimale. Faim d\'air présente — c\'est l\'entraînement. Maintenez la pause sans forcer.',                   inhale: Math.max(1.5, blInhale - 1.5), exhale: Math.max(2, blExhale - 1.5), hold: Math.min(8, blHold + 1) }
+                ];
+                // Ajuster durées selon duration totale
+                {
+                    const totalSec = (exercise.duration || 7) * 60;
+                    const baseSec = 90 + 90 + 120 + 120; // 420s = 7min
+                    if (totalSec !== baseSec) {
+                        const scale = totalSec / baseSec;
+                        exercise.rounds.forEach(r => { r.durationSec = Math.round(r.durationSec * scale); });
+                    }
+                }
                 break;
 
             case 'relaxation':
@@ -1945,6 +1977,8 @@ class JmeeDeepBreathApp {
             this.startGuidedExercise();
         } else if (exercise.isWimHof) {
             this.startWimHofExercise();
+        } else if (exercise.isBreathLight) {
+            this.startBreathLightExercise();
         } else {
             this.startBreathingExercise();
         }
@@ -2112,6 +2146,131 @@ class JmeeDeepBreathApp {
                 callback();
             }
         }, 100);
+    }
+
+    // ==========================================
+    // Breath Light CO2 Exercise (Oxygen Advantage)
+    // ==========================================
+
+    startBreathLightExercise() {
+        const exercise = this.currentExercise;
+        this._blRoundIndex = 0;
+        this._blCycleInRound = 1;
+        this._blRoundStartTime = null;
+
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.start;
+        document.getElementById('cycleCounter').textContent = '';
+
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.start);
+        }
+
+        setTimeout(() => this.runBreathLightRound(), 2500);
+    }
+
+    runBreathLightRound() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+        const rounds = exercise.rounds;
+
+        if (this._blRoundIndex >= rounds.length) {
+            this.completeExercise();
+            return;
+        }
+
+        const round = rounds[this._blRoundIndex];
+        this._blCycleInRound = 1;
+        this._blRoundStartTime = Date.now();
+
+        // Announce phase transition
+        const phaseLabel = round.label;
+        document.getElementById('cycleCounter').textContent = phaseLabel;
+        document.getElementById('exerciseInstruction').textContent = round.instruction;
+
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(phaseLabel + '. ' + round.instruction);
+        }
+
+        // Build phases for this round
+        const phases = [
+            { name: 'Inspirez', duration: round.inhale, action: 'inhale' },
+            { name: 'Expirez', duration: round.exhale, action: 'exhale' }
+        ];
+        if (round.hold > 0) {
+            phases.push({ name: 'Pause', duration: round.hold, action: 'hold' });
+        }
+
+        // Calculate nb cycles for this round
+        const cycleDur = phases.reduce((s, p) => s + p.duration, 0);
+        const totalCyclesInRound = Math.max(1, Math.round(round.durationSec / cycleDur));
+
+        // Temporarily override exercise phases for the round
+        exercise.phases = phases;
+        this.currentPhaseIndex = 0;
+
+        // Start cycling
+        this._runBreathLightCycle(totalCyclesInRound, round, phases);
+    }
+
+    _runBreathLightCycle(totalCyclesInRound, round, phases) {
+        if (!this.isRunning) return;
+        if (this.isPaused) {
+            if (window.breathSounds) window.breathSounds.stop();
+            setTimeout(() => this._runBreathLightCycle(totalCyclesInRound, round, phases), 100);
+            return;
+        }
+
+        const exercise = this.currentExercise;
+        const phase = phases[this.currentPhaseIndex];
+        const previousAction = this.currentPhaseIndex > 0
+            ? phases[this.currentPhaseIndex - 1].action
+            : (this._blCycleInRound > 1 ? phases[phases.length - 1].action : null);
+
+        // Update UI
+        document.getElementById('cycleCounter').textContent =
+            `${round.label}  •  Cycle ${this._blCycleInRound} / ${totalCyclesInRound}`;
+        document.getElementById('exerciseInstruction').textContent = round.instruction;
+        this.updateBreathPhase(phase, previousAction);
+
+        // Sound
+        if (window.breathSounds) {
+            let soundPhase = phase.action;
+            if (phase.action === 'hold' && previousAction === 'exhale') soundPhase = 'holdEmpty';
+            window.breathSounds.playPhase(soundPhase, phase.duration);
+        }
+
+        // Voice on first cycle of each phase type (inhale / pause)
+        if (this._blCycleInRound === 1 && window.voiceGuide && window.voiceGuide.enabled) {
+            if (phase.action === 'inhale') window.voiceGuide.speak(phase.name);
+            if (phase.action === 'hold')   window.voiceGuide.speak(phase.name);
+        }
+
+        this.startPhaseTimer(phase.duration, () => {
+            this.currentPhaseIndex++;
+
+            if (this.currentPhaseIndex >= phases.length) {
+                this.currentPhaseIndex = 0;
+                this._blCycleInRound++;
+
+                if (this._blCycleInRound > totalCyclesInRound) {
+                    // Round terminé — passer au suivant
+                    this._blRoundIndex++;
+                    if (this._blRoundIndex < exercise.rounds.length) {
+                        const nextRound = exercise.rounds[this._blRoundIndex];
+                        // Announce next phase
+                        if (window.voiceGuide && window.voiceGuide.enabled) {
+                            window.voiceGuide.speak('Prochaine phase : ' + nextRound.label);
+                        }
+                        setTimeout(() => this.runBreathLightRound(), 1500);
+                    } else {
+                        this.completeExercise();
+                    }
+                    return;
+                }
+            }
+
+            this._runBreathLightCycle(totalCyclesInRound, round, phases);
+        });
     }
 
     // ==========================================
