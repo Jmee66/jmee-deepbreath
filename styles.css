@@ -222,36 +222,124 @@ body::before {
     border-color: var(--accent-primary);
 }
 
-/* Volume sliders */
-.volume-sliders {
+/* Volume panel button */
+.volume-panel-btn {
+    position: relative;
+}
+
+/* Volume Panel popup */
+.volume-panel {
+    position: fixed;
+    top: 60px;
+    right: var(--space-sm);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 1100;
+    min-width: 260px;
+    max-width: 320px;
+}
+
+.volume-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.volume-panel-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    line-height: 1;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+}
+.volume-panel-close:hover { background: var(--bg-tertiary); }
+
+.volume-panel-body {
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    width: 0;
-    overflow: hidden;
-    transition: width var(--transition-base);
+    gap: 20px;
 }
 
-.audio-controls:hover .volume-sliders {
-    width: 70px;
+.volume-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-.volume-sliders input {
-    width: 70px;
-    height: 3px;
+.volume-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.volume-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Big touch-friendly slider */
+.volume-slider {
+    flex: 1;
     -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
     background: var(--bg-tertiary);
     border-radius: var(--radius-full);
     outline: none;
+    cursor: pointer;
 }
-
-.volume-sliders input::-webkit-slider-thumb {
+.volume-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 10px;
-    height: 10px;
-    border-radius: var(--radius-full);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
     background: var(--accent-primary);
     cursor: pointer;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.4);
+    border: 2px solid rgba(255,255,255,0.15);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.volume-slider::-webkit-slider-thumb:active {
+    transform: scale(1.15);
+    box-shadow: 0 2px 16px rgba(99,102,241,0.6);
+}
+.volume-slider::-moz-range-thumb {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    cursor: pointer;
+    border: 2px solid rgba(255,255,255,0.15);
+    box-shadow: 0 2px 8px rgba(99,102,241,0.4);
+}
+
+.volume-value {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    min-width: 36px;
+    text-align: right;
 }
 
 /* Voice toggle specific */
@@ -1126,14 +1214,14 @@ body::before {
         height: 44px;
     }
 
-    /* Volume sliders always visible on mobile (no hover) */
-    .volume-sliders {
-        width: 70px;
-    }
-
-    .volume-sliders input::-webkit-slider-thumb {
-        width: 20px;
-        height: 20px;
+    /* Volume panel: full width on mobile */
+    .volume-panel {
+        top: auto;
+        bottom: 60px;
+        left: var(--space-sm);
+        right: var(--space-sm);
+        max-width: none;
+        min-width: 0;
     }
 
     /* Spotify panel: full width on mobile */
@@ -1233,10 +1321,6 @@ body::before {
     .audio-controls {
         gap: 4px;
         padding: var(--space-xs) var(--space-sm);
-    }
-
-    .volume-sliders {
-        width: 50px;
     }
 
     .exercise-card h3 {

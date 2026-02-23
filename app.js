@@ -241,6 +241,7 @@ class JmeeDeepBreathApp {
         this.applySettingsMode();
         this.setupOfflineMode();
         this.setupSpotifyControls();
+        this.setupVolumePanelControls();
         this.setupGuide();
         this.setupWakeLock();
         this.initJournal();
@@ -781,6 +782,17 @@ class JmeeDeepBreathApp {
             breathVolumeRange.addEventListener('input', (e) => {
                 const vol = e.target.value / 100;
                 window.breathSounds.setVolume(vol);
+                const valEl = document.getElementById('volumeRangeValue');
+                if (valEl) valEl.textContent = Math.round(vol * 100) + '%';
+            });
+        }
+
+        // breath volume value display
+        const breathValEl = document.getElementById('breathVolumeValue');
+        if (breathValEl && breathVolumeRange) {
+            breathValEl.textContent = breathVolumeRange.value + '%';
+            breathVolumeRange.addEventListener('input', (e) => {
+                breathValEl.textContent = e.target.value + '%';
             });
         }
     }
@@ -855,6 +867,40 @@ class JmeeDeepBreathApp {
                 }
             });
         }
+    }
+
+    // ==========================================
+    // Volume Panel Controls
+    // ==========================================
+
+    setupVolumePanelControls() {
+        const btn = document.getElementById('volumePanelBtn');
+        const panel = document.getElementById('volumePanel');
+        const closeBtn = document.getElementById('volumePanelClose');
+
+        if (!btn || !panel) return;
+
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isVisible = panel.style.display !== 'none';
+            panel.style.display = isVisible ? 'none' : 'block';
+            // Close spotify if open
+            const spotifyPanel = document.getElementById('spotifyPanel');
+            if (spotifyPanel) spotifyPanel.style.display = 'none';
+        });
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                panel.style.display = 'none';
+            });
+        }
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!panel.contains(e.target) && !btn.contains(e.target)) {
+                panel.style.display = 'none';
+            }
+        });
     }
 
     // ==========================================
