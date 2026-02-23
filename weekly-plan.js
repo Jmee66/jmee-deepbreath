@@ -276,6 +276,9 @@ class WeeklyPlan {
         const dayLabels = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
         const datesLine = dayLabels.map((label, i) => `${label}: ${weekDates[i]}`).join(', ');
 
+        const directiveEl = document.getElementById('planDirective');
+        const directive = directiveEl ? directiveEl.value.trim() : '';
+
         return `Génère un plan d'entraînement pour la semaine du ${mondayStr}.
 
 ## Profil de l'élève
@@ -296,7 +299,7 @@ ${catalog}
 
 ## Dates de la semaine
 ${datesLine}
-
+${directive ? `\n## Consigne spéciale de l'utilisateur (PRIORITAIRE)\n${directive}\n` : ''}
 ## Consignes
 - 1 à 3 exercices par jour maximum
 - Respecte la progressivité (échauffement/respiration avant tables, CO2 avant O2)
@@ -566,11 +569,13 @@ Règles : exerciseId = exactement les IDs de la liste ci-dessus. exercises=[] po
         const empty = document.getElementById('planEmpty');
         const grid = document.getElementById('weekGrid');
         const rationale = document.getElementById('planRationale');
+        const deleteBtn = document.getElementById('btnDeletePlan');
 
         if (loading) loading.style.display = (state === 'loading') ? 'flex' : 'none';
         if (empty) empty.style.display = (state === 'empty') ? 'flex' : 'none';
         if (grid) grid.style.display = (state === 'grid') ? 'grid' : 'none';
         if (rationale) rationale.style.display = (state === 'grid') ? 'block' : 'none';
+        if (deleteBtn) deleteBtn.style.display = (state === 'grid') ? 'inline-flex' : 'none';
     }
 
     _showLoading(show) {
@@ -729,6 +734,7 @@ Règles : exerciseId = exactement les IDs de la liste ci-dessus. exercises=[] po
         }
 
         this._setupGenerateButton();
+        this._setupDeleteButton();
         this._setupWeekNavigation();
         this.render();
     }
@@ -738,6 +744,36 @@ Règles : exerciseId = exactement les IDs de la liste ci-dessus. exercises=[] po
         if (btn) {
             btn.addEventListener('click', () => this.generatePlan());
         }
+    }
+
+    _setupDeleteButton() {
+        const btn = document.getElementById('btnDeletePlan');
+        if (btn) {
+            btn.addEventListener('click', () => this.deletePlan());
+        }
+    }
+
+    deletePlan() {
+        const plan = this.getViewingPlan();
+        if (!plan) return;
+
+        if (!confirm(`Supprimer le plan "${plan.title || 'ce plan'}" ?\nCette action est irréversible.`)) return;
+
+        this.data.plans = this.data.plans.filter(p => p.id !== plan.id);
+
+        // Mettre à jour currentPlanId si besoin
+        if (this.data.currentPlanId === plan.id) {
+            const latest = this.data.plans[this.data.plans.length - 1];
+            this.data.currentPlanId = latest ? latest.id : null;
+        }
+
+        // Mettre à jour viewingPlanId
+        const latest = this.data.plans[this.data.plans.length - 1];
+        this.viewingPlanId = latest ? latest.id : null;
+
+        this.save();
+        this.render();
+        window.app?.showToast('Plan supprimé.');
     }
 
     _setupWeekNavigation() {

@@ -381,6 +381,19 @@
                 <p>Programme personnalisé par ton coach IA</p>
             </div>
 
+            <!-- Champ directive coach -->
+            <div class="plan-directive-row">
+                <label class="plan-directive-label" for="planDirective">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    Consigne pour le coach
+                </label>
+                <input type="text" id="planDirective" class="plan-directive-input"
+                    placeholder="Ex : focus CO2 cette semaine, séance légère de récupération, prépare-moi pour une compétition…"
+                    maxlength="300">
+            </div>
+
             <!-- Barre de contrôle : navigation semaine + bouton générer -->
             <div class="plan-controls-bar">
                 <div class="plan-week-nav">
@@ -396,12 +409,23 @@
                         </svg>
                     </button>
                 </div>
-                <button class="btn-generate-plan" id="btnGeneratePlan">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                        <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
-                    </svg>
-                    Générer un plan
-                </button>
+                <div class="plan-actions-right">
+                    <button class="btn-delete-plan" id="btnDeletePlan" title="Supprimer ce plan" style="display:none">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                            <polyline points="3,6 5,6 21,6"/>
+                            <path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/>
+                            <path d="M10,11v6M14,11v6"/>
+                            <path d="M9,6V4a1,1,0,0,1,1-1h4a1,1,0,0,1,1,1v2"/>
+                        </svg>
+                        Supprimer
+                    </button>
+                    <button class="btn-generate-plan" id="btnGeneratePlan">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
+                        </svg>
+                        Générer un plan
+                    </button>
+                </div>
             </div>
 
             <!-- Titre + Rationale du coach (masqué si pas de plan) -->
