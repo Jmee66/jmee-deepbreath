@@ -1704,6 +1704,16 @@ window.GUIDE_DETAILS = {
             "Pratiquez 5-10 minutes avant le sommeil ou en cas de stress — effet calmant immédiat dès le 3e cycle"
         ]
     },
+    'breath-light-co2': {
+        science: "La Respiration Réduite CO2 (McKeown / Oxygen Advantage, 2015) est l'inverse exact du Wim Hof : au lieu de vider le CO2 par hyperventilation, on l'accumule progressivement en réduisant l'amplitude respiratoire. Spengler et al. (2013, PMC3873666) démontrent que cette exposition répétée désensibilise les chémorécepteurs centraux de 45% en 6 semaines, reculant significativement le seuil de déclenchement des contractions diaphragmatiques. L'exercice comporte 4 phases progressives : mise en place (amplitude normale), réduction inspiration, réduction + pause post-expiration, inconfort contrôlé à amplitude minimale. Durée totale ~7 minutes.",
+        practice: [
+            "Phase 1 (1:30) — Inspiration nasale normale (4 sec), expiration lente (6 sec). Rythme calme, volume habituel. Fermez les yeux et établissez une respiration régulière",
+            "Phase 2 (1:30) — Réduisez l'inspiration à ~3 sec : inspirez aux deux tiers seulement. L'expiration reste longue (6 sec). Pas de forçage — juste moins d'air",
+            "Phase 3 (2:00) — Inspiration réduite (3 sec) + expiration réduite (5 sec) + pause post-expiration (3 sec). La légère envie de respirer pendant la pause est normale et recherchée",
+            "Phase 4 (2:00) — Amplitude minimale (~2,5/4,5 sec) avec pause rallongée (4 sec). Observez l'inconfort CO2 sans y céder — exactement comme lors d'une apnée",
+            "Si étourdissements : revenez à une respiration normale immédiatement. L'inconfort doit disparaître en 30 sec après l'exercice"
+        ]
+    },
     'passive-breath-hanger': {
         science: "Le Passive Breath Hanger (Molchanovs T1/T2) est une apnée statique à 80% du volume pulmonaire. Contrairement à l'apnée à pleine inspiration, le volume intermédiaire évite la sur-activation des mécanorécepteurs pulmonaires (réflexe de Hering-Breuer) et offre plus de flexibilité thoracique pour absorber les contractions diaphragmatiques. Le relâchement glottique (Blunery/Néry) crée une légère résistance passive qui inhibe la signalisation CO2 sans effort musculaire. La préparation par cyclic sighing (Huberman/Stanford 2023) optimise les échanges gazeux et active le nerf vague. Le logging subjectif (Gorge Score, Mental State, Trachea Comfort) permet une progression structurée semaine après semaine.",
         practice: [
