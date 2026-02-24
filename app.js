@@ -4784,7 +4784,7 @@ class ChasseModule {
         this.setupTabSwitcher();
         this.setupProtocolButtons();
         this.setupRecupTimer();
-        this.buildGuidedModal();
+        this.setupGuidedModalButtons();
     }
 
     // ── Tab switcher (Chasse / Statique / Dynamique / Profondeur / Synthèse) ──
@@ -4803,12 +4803,13 @@ class ChasseModule {
 
     // ── Protocol guided timers ──
     setupProtocolButtons() {
-        // Listen on both old and new button classes
-        document.querySelectorAll('.btn-chasse-start, .wbu-btn[data-protocol]').forEach(btn => {
-            btn.addEventListener('click', () => {
+        // Use event delegation on document for reliability
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.wbu-btn[data-protocol], .btn-chasse-start[data-protocol]');
+            if (btn) {
                 const protocol = btn.dataset.protocol;
                 if (protocol) this.startGuidedProtocol(protocol);
-            });
+            }
         });
     }
 
@@ -4913,35 +4914,12 @@ class ChasseModule {
     }
 
     // ── Modal de timer guidé ──
-    buildGuidedModal() {
-        const modal = document.createElement('div');
-        modal.id = 'chasseTimerModal';
-        modal.className = 'chasse-timer-modal';
-        modal.innerHTML = `
-            <div class="chasse-timer-inner">
-                <div class="chasse-timer-title" id="chasseTimerTitle">Préparation</div>
-                <div class="chasse-timer-phase" id="chasseTimerPhase">Phase 1</div>
-                <div class="chasse-timer-instruction" id="chasseTimerInstruction"></div>
-                <div class="chasse-timer-ring-wrap">
-                    <svg class="chasse-timer-ring-svg" viewBox="0 0 140 140">
-                        <circle class="chasse-ring-bg" cx="70" cy="70" r="62"/>
-                        <circle class="chasse-ring-progress" id="chasseRingProgress" cx="70" cy="70" r="62"/>
-                    </svg>
-                    <div class="chasse-timer-inner-text">
-                        <span class="chasse-timer-count" id="chasseTimerCount">--</span>
-                        <span class="chasse-timer-action" id="chasseTimerAction">--</span>
-                    </div>
-                </div>
-                <div class="chasse-timer-btns">
-                    <button class="btn-chasse-timer-pause" id="chasseTimerPauseBtn">Pause</button>
-                    <button class="btn-chasse-timer-stop" id="chasseTimerStopBtn">Arrêter</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-
-        document.getElementById('chasseTimerPauseBtn').addEventListener('click', () => this.togglePauseGuided());
-        document.getElementById('chasseTimerStopBtn').addEventListener('click', () => this.stopGuided());
+    setupGuidedModalButtons() {
+        // Modal is already in HTML — just attach listeners
+        const pauseBtn = document.getElementById('chasseTimerPauseBtn');
+        const stopBtn = document.getElementById('chasseTimerStopBtn');
+        if (pauseBtn) pauseBtn.addEventListener('click', () => this.togglePauseGuided());
+        if (stopBtn) stopBtn.addEventListener('click', () => this.stopGuided());
     }
 
     startGuidedProtocol(protocolId) {

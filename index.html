@@ -205,13 +205,7 @@
             <button class="nav-link" data-section="respiration">Respiration</button>
             <button class="nav-link" data-section="visualisation">Visualisation</button>
             <button class="nav-link" data-section="apnee">Apnée</button>
-            <button class="nav-link nav-chasse" data-section="chasse">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
-                    <path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/>
-                    <circle cx="12" cy="9" r="2.5" fill="currentColor"/>
-                </svg>
-                Warm &amp; Breath Up
-            </button>
+            <button class="nav-link nav-chasse" data-section="chasse">W&amp;B Up</button>
             <button class="nav-link" data-section="multitimer">Multi Timer</button>
             <button class="nav-link nav-urgence" data-section="urgence">Urgence</button>
             <button class="nav-link" data-section="preperformance">Pré-Perf</button>
@@ -5485,6 +5479,29 @@
     <script src="exercises.js" defer></script>
     <script src="voice-guide.js" defer></script>
     <script src="breath-sounds.js" defer></script>
+    <!-- Chasse Guided Timer Modal -->
+    <div id="chasseTimerModal" class="chasse-timer-modal">
+        <div class="chasse-timer-inner">
+            <div class="chasse-timer-title" id="chasseTimerTitle">Préparation</div>
+            <div class="chasse-timer-phase" id="chasseTimerPhase">Phase 1</div>
+            <div class="chasse-timer-instruction" id="chasseTimerInstruction"></div>
+            <div class="chasse-timer-ring-wrap">
+                <svg class="chasse-timer-ring-svg" viewBox="0 0 140 140">
+                    <circle class="chasse-ring-bg" cx="70" cy="70" r="62"/>
+                    <circle class="chasse-ring-progress" id="chasseRingProgress" cx="70" cy="70" r="62"/>
+                </svg>
+                <div class="chasse-timer-inner-text">
+                    <span class="chasse-timer-count" id="chasseTimerCount">--</span>
+                    <span class="chasse-timer-action" id="chasseTimerAction">--</span>
+                </div>
+            </div>
+            <div class="chasse-timer-btns">
+                <button class="btn-chasse-timer-pause" id="chasseTimerPauseBtn">Pause</button>
+                <button class="btn-chasse-timer-stop" id="chasseTimerStopBtn">Arrêter</button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js" defer></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js" defer></script>
