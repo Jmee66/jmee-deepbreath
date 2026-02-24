@@ -3,6 +3,8 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
+const APP_VERSION = '0.93';
+
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
 
@@ -252,6 +254,14 @@ class JmeeDeepBreathApp {
         this.updateFrcComfortProgress();
         this.setupFavoris();
         this.initChasseModule();
+        this.injectVersion();
+    }
+
+    injectVersion() {
+        const badge = document.getElementById('appVersionBadge');
+        if (badge) badge.textContent = `BETA v${APP_VERSION} — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.`;
+        const pin = document.getElementById('appVersionPin');
+        if (pin) pin.textContent = `v${APP_VERSION}`;
     }
 
     initChasseModule() {
@@ -532,7 +542,7 @@ class JmeeDeepBreathApp {
                 try { data[key] = JSON.parse(raw); } catch { data[key] = raw; }
             }
         }
-        const payload = { exportDate: new Date().toISOString(), version: '0.76', appName: 'JmeeDeepBreath', data };
+        const payload = { exportDate: new Date().toISOString(), version: APP_VERSION, appName: 'JmeeDeepBreath', data };
         const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
         const filename = `deepbreath-backup-${new Date().toISOString().slice(0, 10)}.json`;
         const url = URL.createObjectURL(blob);
@@ -4910,14 +4920,17 @@ class ChasseModule {
 
     startGuidedProtocol(protocolId) {
         const def = this.getProtocolPhases(protocolId);
-        if (!def) return;
+        if (!def) { console.error('[Chasse] Protocol not found:', protocolId); return; }
+        const modal = document.getElementById('chasseTimerModal');
+        if (!modal) { console.error('[Chasse] Modal #chasseTimerModal not found'); return; }
 
         this.guidedPhases = def.phases;
         this.guidedPhaseIndex = 0;
         this.guidedPaused = false;
 
-        document.getElementById('chasseTimerTitle').textContent = def.title;
-        document.getElementById('chasseTimerModal').classList.add('open');
+        const titleEl = document.getElementById('chasseTimerTitle');
+        if (titleEl) titleEl.textContent = def.title;
+        modal.classList.add('open');
         this.runGuidedPhase();
     }
 
@@ -5001,7 +5014,8 @@ class ChasseModule {
         this.recupRemaining = seconds;
 
         const display = document.getElementById('recupTimerDisplay');
-        if (display) display.style.display = 'flex';
+        if (!display) { console.error('[Chasse] recupTimerDisplay not found'); return; }
+        display.style.display = 'flex';
 
         const circumference = 2 * Math.PI * 52; // r=52
         this.updateRecupDisplay(seconds, seconds, circumference);
@@ -5046,5 +5060,24 @@ class ChasseModule {
         const display = document.getElementById('recupTimerDisplay');
         if (display) display.style.display = 'none';
     }
+}
+
+// ── Fonctions globales pour les onclick inline HTML ──
+function startProtocol(id) {
+    if (window.chasseModule) {
+        window.chasseModule.startGuidedProtocol(id);
+    } else {
+        console.error('[Chasse] chasseModule non initialisé');
+    }
+}
+function startRecup(seconds, btn) {
+    if (window.chasseModule) {
+        window.chasseModule.startRecupTimer(seconds, btn);
+    } else {
+        console.error('[Chasse] chasseModule non initialisé');
+    }
+}
+function stopRecup() {
+    if (window.chasseModule) window.chasseModule.stopRecupTimer();
 }
 

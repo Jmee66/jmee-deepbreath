@@ -36,7 +36,7 @@
                 placeholder="PIN" autocomplete="off">
             <button class="btn-primary pin-unlock-btn" id="pinUnlockBtn">Deverrouiller</button>
             <p class="pin-error" id="pinError" style="display:none">PIN incorrect</p>
-            <p class="pin-version">v0.92</p>
+            <p class="pin-version" id="appVersionPin"></p>
         </div>
     </div>
 
@@ -167,7 +167,7 @@
             </svg>
             <div class="nav-brand-text">
                 <span>Jmee DeepBreath</span>
-                <span class="beta-badge">BETA v0.86 — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
+                <span class="beta-badge" id="appVersionBadge">BETA — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.</span>
             </div>
         </div>
         <div class="nav-links">
@@ -3506,7 +3506,7 @@
                         <div class="wbu-tip">Assieds-toi après l'habillage — ne reste pas debout avec les palmes</div>
                         <div class="wbu-tip">Objectif : FC &lt; 75 bpm avant l'entrée dans l'eau (3-5 min minimum)</div>
                     </div>
-                    <button class="wbu-btn" onclick="window.chasseModule.startGuidedProtocol('chasse-terre')">
+                    <button class="wbu-btn" onclick="startProtocol('chasse-terre')">
                         <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         Lancer timer 5 min
                     </button>
@@ -3527,7 +3527,7 @@
                         <div class="wbu-tip">Flottaison sur le ventre, tuba en bouche, 5 min calme · rate qui se pré-contracte</div>
                         <div class="wbu-tip">3-4 premières plongées toujours moins efficaces (rate froide) — c'est normal</div>
                     </div>
-                    <button class="wbu-btn" onclick="window.chasseModule.startGuidedProtocol('chasse-eau')">
+                    <button class="wbu-btn" onclick="startProtocol('chasse-eau')">
                         <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         Lancer timer 8 min guidé
                     </button>
@@ -3552,7 +3552,7 @@
                         </div>
                         <div class="wbu-alert">⚠️ UN SEUL cycle profond final — plusieurs souffles forts = hyperventilation = blackout</div>
                     </div>
-                    <button class="wbu-btn wbu-btn-featured" onclick="window.chasseModule.startGuidedProtocol('chasse-breatheup')">
+                    <button class="wbu-btn wbu-btn-featured" onclick="startProtocol('chasse-breatheup')">
                         <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         Lancer le breathe-up guidé
                     </button>
@@ -3594,11 +3594,11 @@
                             <div class="recup-row recup-row-alert"><span>30-40 m</span><span>8 min min.</span><span>10-12 min</span></div>
                         </div>
                         <div class="recup-quick-btns" style="margin-top:10px;">
-                            <button class="btn-recup-quick" onclick="window.chasseModule.startRecupTimer(120, this)">2 min</button>
-                            <button class="btn-recup-quick" onclick="window.chasseModule.startRecupTimer(180, this)">3 min</button>
-                            <button class="btn-recup-quick" onclick="window.chasseModule.startRecupTimer(240, this)">4 min</button>
-                            <button class="btn-recup-quick" onclick="window.chasseModule.startRecupTimer(300, this)">5 min</button>
-                            <button class="btn-recup-quick" onclick="window.chasseModule.startRecupTimer(480, this)">8 min</button>
+                            <button class="btn-recup-quick" onclick="startRecup(120, this)">2 min</button>
+                            <button class="btn-recup-quick" onclick="startRecup(180, this)">3 min</button>
+                            <button class="btn-recup-quick" onclick="startRecup(240, this)">4 min</button>
+                            <button class="btn-recup-quick" onclick="startRecup(300, this)">5 min</button>
+                            <button class="btn-recup-quick" onclick="startRecup(480, this)">8 min</button>
                         </div>
                         <div class="recup-timer-display" id="recupTimerDisplay" style="display:none">
                             <div class="recup-timer-ring">
@@ -3611,7 +3611,7 @@
                                     <span id="recupTimerPhase">Récupération</span>
                                 </div>
                             </div>
-                            <button class="btn-recup-stop" id="recupTimerStop" onclick="window.chasseModule.stopRecupTimer()">Arrêter</button>
+                            <button class="btn-recup-stop" id="recupTimerStop" onclick="stopRecup()">Arrêter</button>
                         </div>
                         <div class="wbu-alert" style="margin-top:8px;">Si envie de respirer dans les 30 premières secondes → surface interval trop court</div>
                     </div>
@@ -3638,7 +3638,7 @@
                         </div>
                     </div>
                     <div class="wbu-body"><div class="wbu-tip">Allongé dans l'eau, tenu par le buddy. FC cible &lt; 65 bpm. Active le parasympathique.</div></div>
-                    <button class="wbu-btn" onclick="window.chasseModule.startGuidedProtocol('statique-coherence')">
+                    <button class="wbu-btn" onclick="startProtocol('statique-coherence')">
                         <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         2 min cohérence
                     </button>
@@ -3653,7 +3653,7 @@
                         </div>
                     </div>
                     <div class="wbu-body"><div class="wbu-tip">PaCO₂ stable à 40 mmHg. Max 2 min → au-delà = risque hyperventilation.</div></div>
-                    <button class="wbu-btn wbu-btn-featured" onclick="window.chasseModule.startGuidedProtocol('statique-prep')">
+                    <button class="wbu-btn wbu-btn-featured" onclick="startProtocol('statique-prep')">
                         <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         Protocole statique complet
                     </button>
@@ -3712,7 +3712,7 @@
                         </div>
                     </div>
                     <div class="wbu-body"><div class="wbu-tip">Pas d'échauffement intense juste avant (monte le métabolisme de base). FC cible &lt; 65 bpm.</div></div>
-                    <button class="wbu-btn" onclick="window.chasseModule.startGuidedProtocol('dynamique-coherence')">
+                    <button class="wbu-btn" onclick="startProtocol('dynamique-coherence')">
                         <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         2 min cohérence
                     </button>
@@ -3727,7 +3727,7 @@
                         </div>
                     </div>
                     <div class="wbu-body"><div class="wbu-tip">Plus long qu'en statique : la nage génère plus de CO₂ et d'acide lactique.</div></div>
-                    <button class="wbu-btn wbu-btn-featured" onclick="window.chasseModule.startGuidedProtocol('dynamique-prep')">
+                    <button class="wbu-btn wbu-btn-featured" onclick="startProtocol('dynamique-prep')">
                         <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         Protocole dynamique complet
                     </button>
@@ -3788,7 +3788,7 @@
                         </div>
                     </div>
                     <div class="wbu-body"><div class="wbu-tip">Visualise ta plongée complète : trajectoire, virages, comportement. FC cible &lt; 60 bpm.</div></div>
-                    <button class="wbu-btn" onclick="window.chasseModule.startGuidedProtocol('profondeur-coherence')">
+                    <button class="wbu-btn" onclick="startProtocol('profondeur-coherence')">
                         <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         3 min cohérence méditée
                     </button>
@@ -3803,7 +3803,7 @@
                         </div>
                     </div>
                     <div class="wbu-body"><div class="wbu-tip">Le plus long et le plus calme des 3 disciplines. Au-delà de 2 min sous supervision experte.</div></div>
-                    <button class="wbu-btn wbu-btn-featured" onclick="window.chasseModule.startGuidedProtocol('profondeur-prep')">
+                    <button class="wbu-btn wbu-btn-featured" onclick="startProtocol('profondeur-prep')">
                         <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         Protocole profondeur complet
                     </button>
