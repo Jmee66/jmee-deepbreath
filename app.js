@@ -5063,21 +5063,20 @@ class ChasseModule {
 }
 
 // ── Fonctions globales pour les onclick inline HTML ──
-function startProtocol(id) {
-    if (window.chasseModule) {
-        window.chasseModule.startGuidedProtocol(id);
-    } else {
-        console.error('[Chasse] chasseModule non initialisé');
+function _getChasse() {
+    if (!window.chasseModule) {
+        console.warn('[Chasse] chasseModule absent — création à la volée');
+        window.chasseModule = new ChasseModule();
     }
+    return window.chasseModule;
+}
+function startProtocol(id) {
+    _getChasse().startGuidedProtocol(id);
 }
 function startRecup(seconds, btn) {
-    if (window.chasseModule) {
-        window.chasseModule.startRecupTimer(seconds, btn);
-    } else {
-        console.error('[Chasse] chasseModule non initialisé');
-    }
+    _getChasse().startRecupTimer(seconds, btn);
 }
 function stopRecup() {
-    if (window.chasseModule) window.chasseModule.stopRecupTimer();
+    _getChasse().stopRecupTimer();
 }
 
