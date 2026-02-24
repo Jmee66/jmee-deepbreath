@@ -7309,3 +7309,164 @@ body.optimal-mode #apneaHint {
     transition: all 0.2s;
 }
 .btn-chasse-timer-stop:hover { background: rgba(239, 68, 68, 0.2); }
+
+/* ── WBU (Warm & Breath Up) simplified card components ── */
+
+.wbu-card {
+    background: #16161f;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 1rem 1.1rem 0.9rem;
+    margin-bottom: 0.75rem;
+    transition: border-color 0.2s;
+}
+.wbu-card:hover { border-color: rgba(56, 189, 248, 0.2); }
+.wbu-card-featured {
+    border-color: rgba(56, 189, 248, 0.3);
+    background: linear-gradient(135deg, #16161f 0%, rgba(2,132,199,0.07) 100%);
+}
+.wbu-card-hook {
+    border-color: rgba(139, 92, 246, 0.25);
+    background: linear-gradient(135deg, #16161f 0%, rgba(139,92,246,0.06) 100%);
+}
+
+.wbu-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+.wbu-num {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #a0a0b0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+.wbu-num-featured {
+    background: rgba(56, 189, 248, 0.18);
+    border-color: rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+}
+.wbu-card-main { flex: 1; min-width: 0; }
+.wbu-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #f0f0f5;
+    margin: 0 0 5px;
+    line-height: 1.3;
+}
+.wbu-breath-pill {
+    display: inline-block;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    color: #7dd3fc;
+    font-weight: 500;
+}
+
+.wbu-body { margin: 6px 0 10px; }
+.wbu-tip {
+    position: relative;
+    padding: 3px 4px 3px 18px;
+    font-size: 0.79rem;
+    color: #a0a0b0;
+    line-height: 1.5;
+}
+.wbu-tip::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #38bdf8;
+    font-size: 0.75rem;
+}
+.wbu-alert {
+    background: rgba(239,68,68,0.08);
+    border-left: 3px solid rgba(239,68,68,0.5);
+    border-radius: 0 6px 6px 0;
+    padding: 7px 10px;
+    font-size: 0.78rem;
+    color: #fca5a5;
+    margin-top: 6px;
+    line-height: 1.5;
+}
+.wbu-danger {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    color: #fca5a5;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+}
+.wbu-badge { font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-bottom: 5px; }
+.wbu-steps-inline {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 4px 10px;
+    align-items: start;
+    font-size: 0.79rem;
+}
+.wbu-step-dot {
+    font-family: monospace;
+    font-weight: 700;
+    color: #38bdf8;
+    font-size: 0.72rem;
+    padding-top: 1px;
+}
+
+.wbu-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 16px;
+    background: rgba(56,189,248,0.1);
+    border: 1px solid rgba(56,189,248,0.28);
+    border-radius: 8px;
+    color: #38bdf8;
+    font-size: 0.83rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    justify-content: center;
+}
+.wbu-btn:hover {
+    background: rgba(56,189,248,0.18);
+    border-color: rgba(56,189,248,0.5);
+}
+.wbu-btn-featured {
+    background: rgba(56,189,248,0.16);
+    border-color: rgba(56,189,248,0.45);
+    font-weight: 600;
+    padding: 10px 16px;
+}
+
+/* Discipline banners */
+.wbu-discipline-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    margin-bottom: 0.9rem;
+    border: 1px solid rgba(255,255,255,0.07);
+    font-size: 0.82rem;
+}
+.wbu-discipline-banner strong { display: block; font-size: 0.92rem; color: #f0f0f5; margin-bottom: 2px; }
+.wbu-discipline-banner span { color: #a0a0b0; }
+.wbu-discipline-icon { font-size: 1.6rem; }
+.wbu-banner-statique { background: rgba(139,92,246,0.08); border-color: rgba(139,92,246,0.2); }
+.wbu-banner-dynamique { background: rgba(6,182,212,0.08); border-color: rgba(6,182,212,0.2); }
+.wbu-banner-profondeur { background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.2); }

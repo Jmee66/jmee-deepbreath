@@ -251,6 +251,11 @@ class JmeeDeepBreathApp {
         this.updateComfortZoneProgress();
         this.updateFrcComfortProgress();
         this.setupFavoris();
+        this.initChasseModule();
+    }
+
+    initChasseModule() {
+        window.chasseModule = new ChasseModule();
     }
 
     initJournal() {
@@ -4798,10 +4803,11 @@ class ChasseModule {
 
     // ── Protocol guided timers ──
     setupProtocolButtons() {
-        document.querySelectorAll('.btn-chasse-start').forEach(btn => {
+        // Listen on both old and new button classes
+        document.querySelectorAll('.btn-chasse-start, .wbu-btn[data-protocol]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const protocol = btn.dataset.protocol;
-                this.startGuidedProtocol(protocol);
+                if (protocol) this.startGuidedProtocol(protocol);
             });
         });
     }
@@ -5089,9 +5095,3 @@ class ChasseModule {
     }
 }
 
-// Initialize chasse module after app
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        window.chasseModule = new ChasseModule();
-    }, 500);
-});
