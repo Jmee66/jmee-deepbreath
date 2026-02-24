@@ -4812,6 +4812,12 @@ body.optimal-mode #apneaHint {
     margin-top: var(--space-md);
     font-weight: 500;
 }
+.pin-version {
+    margin-top: 2rem;
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 0.08em;
+}
 
 /* Shake animation on wrong PIN */
 @keyframes pinShake {
