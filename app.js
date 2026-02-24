@@ -5062,21 +5062,5 @@ class ChasseModule {
     }
 }
 
-// ── Fonctions globales pour les onclick inline HTML ──
-function _getChasse() {
-    if (!window.chasseModule) {
-        console.warn('[Chasse] chasseModule absent — création à la volée');
-        window.chasseModule = new ChasseModule();
-    }
-    return window.chasseModule;
-}
-function startProtocol(id) {
-    _getChasse().startGuidedProtocol(id);
-}
-function startRecup(seconds, btn) {
-    _getChasse().startRecupTimer(seconds, btn);
-}
-function stopRecup() {
-    _getChasse().stopRecupTimer();
-}
+// Les fonctions startProtocol / startRecup / stopRecup sont définies dans wbu-timer.js
 
