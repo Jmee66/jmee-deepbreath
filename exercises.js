@@ -1810,3 +1810,285 @@ window.GUIDE_DETAILS = {
         ]
     }
 };
+
+// ==========================================
+// PROTOCOLES CHASSE SOUS-MARINE & APNÉE
+// Basés sur les dernières recherches scientifiques (2022-2025)
+// ==========================================
+
+const CHASSE_PROTOCOLS = {
+
+    // ----- CHASSE SOUS-MARINE -----
+
+    'chasse-terre': {
+        id: 'chasse-terre',
+        name: 'Arrivée Plage — Récupération Post-Équipement',
+        category: 'chasse',
+        phase: 'terre',
+        icon: '🏖️',
+        badge: 'Phase 1',
+        badgeColor: 'sand',
+        description: 'Après l\'effort de transport et d\'habillage. Amène la FC sous 75 bpm avant la mise à l\'eau.',
+        science: 'L\'habillage en combinaison épaisse (5-7mm) génère un effort physique non négligeable : montée de FC et de CO₂. Entrer dans l\'eau avec un organisme en dette métabolique compromet les premières apnées. (German Journal of Sports Medicine, 2024)',
+        duration: 5,
+        phases: [
+            { name: 'Normoventilation', duration: 300, action: 'hold', breathType: 'normo',
+              instruction: 'Asseyez-vous ou allongez-vous. Respiration naturelle et passive : inspire 3s par le nez, expire 5s par la bouche. Ne forcez rien.' }
+        ],
+        tips: [
+            'Habillez-vous lentement, dans un endroit frais si possible',
+            'Asseyez-vous ou allongez-vous après l\'habillage — ne restez pas debout avec les palmes',
+            'Objectif : FC < 75 bpm avant l\'entrée dans l\'eau',
+            'Respiration diaphragmatique calme — ventre qui gonfle à l\'inspire'
+        ],
+        breathDetails: {
+            type: 'Normoventilation',
+            rhythm: 'Inspire 3s (nez) / Expire 5s (bouche)',
+            rate: '~10 cycles/min',
+            amplitude: 'Modérée — volume courant normal (~500 mL)',
+            goal: 'PaCO₂ stable à 40 mmHg, FC < 75 bpm'
+        }
+    },
+
+    'chasse-eau': {
+        id: 'chasse-eau',
+        name: 'Acclimatation Eau — Premières Minutes',
+        category: 'chasse',
+        phase: 'eau',
+        icon: '🌊',
+        badge: 'Phase 2',
+        badgeColor: 'ocean',
+        description: 'Mise à l\'eau progressive et activation du réflexe de plongée avant les premières apnées.',
+        science: 'La rate se contracte dès l\'immersion en eau tempérée, libérant des érythrocytes avant même les apnées. Ce temps en surface n\'est pas perdu — c\'est de la préparation active. (American Journal of Physiology, 2022)',
+        duration: 8,
+        phases: [
+            { name: 'Entrée progressive', duration: 60, action: 'hold', breathType: 'normo',
+              instruction: 'Entrez lentement dans l\'eau. Immergez le visage 2-3 secondes pour amorcer le réflexe de plongée. Respirez normalement.' },
+            { name: 'Flottaison calme', duration: 180, action: 'hold', breathType: 'diaphragm',
+              instruction: 'Allongez-vous sur le ventre, masque dans l\'eau, tuba en bouche. Ne regardez pas encore le fond. Respirez au tuba.' },
+            { name: 'Respiration diaphragmatique', duration: 240, action: 'hold', breathType: 'diaphragm',
+              instruction: '4-6 cycles : inspire 4s (ventre gonfle) → pause 1s → expire 6-8s (passive, lente). Yeux semi-fermés. Relâchement progressif.' }
+        ],
+        tips: [
+            'Entrée lente : le choc thermique peut déclencher une inspiration réflexe involontaire (cold shock)',
+            'Immersion du visage = amorce du MDR (réflexe de plongée mammalien) et bradycardie',
+            'En eau froide < 18°C : acclimatation 2-3 min minimum avant la première apnée',
+            'Les 3-4 premières plongées d\'une session sont toujours moins efficaces (rate froide) — c\'est normal'
+        ],
+        breathDetails: {
+            type: 'Respiration diaphragmatique calme',
+            rhythm: 'Inspire 4s (nez) / Pause 1s / Expire 6-8s (bouche, passive)',
+            rate: '~5-6 cycles/min',
+            amplitude: 'Modérée-profonde, ventre d\'abord',
+            goal: 'Activer le MDR, pré-contracter la rate, FC < 70 bpm'
+        }
+    },
+
+    'chasse-breatheup': {
+        id: 'chasse-breatheup',
+        name: 'Breathe-Up Pré-Descente',
+        category: 'chasse',
+        phase: 'breatheup',
+        icon: '🫁',
+        badge: 'Phase 3',
+        badgeColor: 'blue',
+        description: 'Protocole identique avant chaque descente. 90 secondes de préparation optimale.',
+        science: 'Même 15 secondes d\'hyperventilation modeste avant une série d\'apnées augmentent significativement le risque de désaturation sévère. UN SEUL cycle profond final après normoventilation est le consensus scientifique. (Frontiers in Physiology, 2024)',
+        duration: 2,
+        phases: [
+            { name: 'Centrage', duration: 30, action: 'hold', breathType: 'coherence',
+              instruction: 'Stop. Position stationnaire. Ferme les yeux. Relâchement progressif : pieds → mollets → cuisses → abdomen → épaules → mâchoire. 3 respirations calmes.' },
+            { name: 'Breathe-up diaphragmatique', duration: 40, action: 'hold', breathType: 'breatheup',
+              instruction: 'Inspire 5s (diaphragme, ventre gonfle) → pause 1-2s → expire 10s lente et passive. Répète 2-3 fois. Corps relâché.' },
+            { name: 'Cycle final', duration: 10, action: 'inhale', breathType: 'lastbreath',
+              instruction: 'UNE SEULE grande expiration (80-90% de l\'air sorti) → UNE SEULE grande inspiration en 3 phases : ventre → côtes → épaules. Duck-dive immédiatement.' }
+        ],
+        tips: [
+            'RÈGLE ABSOLUE : un seul cycle profond final — jamais plusieurs souffles forts de suite',
+            'Visualise mentalement ta descente avant le cycle final',
+            'Le corps doit "tomber" dans l\'eau par son propre poids — pas forcer avec les bras',
+            'Palmage lent et ample : 1 palme toutes les 1,5-2 secondes en surface'
+        ],
+        breathDetails: {
+            type: 'Breathe-up diaphragmatique lent + Last breath en 3 phases',
+            rhythm: 'Breathe-up : Inspire 5s / Expire 10s. Last breath : Abdo → Costal → Apical',
+            rate: '4 cycles/min pendant le breathe-up',
+            volume: 'TLC 100% pour la chasse',
+            goal: 'PaCO₂ stable, SvO₂ maximale, FC < 65 bpm'
+        }
+    },
+
+    'chasse-fond': {
+        id: 'chasse-fond',
+        name: 'Technique au Fond — Affût',
+        category: 'chasse',
+        phase: 'fond',
+        icon: '🐟',
+        badge: 'Au Fond',
+        badgeColor: 'deep',
+        description: 'Économiser l\'O₂ au maximum. La tension musculaire est ton premier ennemi.',
+        science: 'La rate continue de se contracter au fond, libérant +10-15% d\'hémoglobine circulante. La PaO₂ est paradoxalement élevée au fond (hyperoxie de compression). Le danger est aux 10 derniers mètres de remontée. (European Journal of Applied Physiology, 2025)',
+        tips: [
+            'Position HORIZONTALE — jamais debout (consommation O₂ maximale)',
+            'Ne bouge que les yeux pour scanner la zone',
+            'Attends que le poisson vienne à toi (technique d\'affût / aspetto)',
+            'Égalisation PRÉVENTIVE dès 0,5m — jamais forcée',
+            'Remonte DÈS les 2ème-3ème contractions diaphragmatiques',
+            'Lestage précis : neutre à ta profondeur (±1 kg) → pas de lutte contre la flottabilité'
+        ],
+        warning: 'Le danger n\'est PAS au fond — c\'est aux 10 derniers mètres de remontée que la PaO₂ chute brutalement.'
+    },
+
+    'chasse-recup': {
+        id: 'chasse-recup',
+        name: 'Récupération en Surface',
+        category: 'chasse',
+        phase: 'recup',
+        icon: '♻️',
+        badge: 'Surface',
+        badgeColor: 'green',
+        description: 'Entre chaque apnée. Respecter le temps de récup est aussi important que la plongée elle-même.',
+        science: 'La récupération insuffisante est la cause principale des mauvaises performances et des incidents. La rate se pré-contracte progressivement en cours de session : les plongées s\'améliorent après 20-30 min. (DAN/UCSD Workshop, 2023)',
+        duration: 4,
+        phases: [
+            { name: 'Expirations actives', duration: 30, action: 'exhale', breathType: 'recovery',
+              instruction: '4-5 EXPIRATIONS ACTIVES et forcées (souffle fort pour évacuer le CO₂ résiduel), puis inspirations normales. Stabilise-toi en surface, voies aériennes hors de l\'eau.' },
+            { name: 'Normoventilation horizontale', duration: 210, action: 'hold', breathType: 'normo',
+              instruction: 'RESTE HORIZONTAL — nager en surface consomme 30-40% d\'O₂ de plus. Respiration normale au tuba. Ne fixe pas ta zone de chasse (évite l\'excitation sympathique).' }
+        ],
+        recoveryTable: [
+            { depth: '< 10 m', minRatio: '× 2 le temps d\'apnée', recRatio: '× 3' },
+            { depth: '10-30 m', minRatio: '× 3 le temps d\'apnée', recRatio: '× 4' },
+            { depth: '30-40 m', minRatio: '8 min minimum', recRatio: '10-12 min' }
+        ],
+        readyCheck: [
+            'FC revenue sous 70-75 bpm',
+            'Respiration redevenue calme et non-laborieuse',
+            'Aucun sifflement, oppression thoracique ou tête lourde',
+            'Délai minimum respecté selon la profondeur'
+        ],
+        breathDetails: {
+            type: 'Expirations actives → Normoventilation',
+            rhythm: 'Phase 1 : Expire fort 2s / Inspire 3s (×4-5). Phase 2 : Inspire 3s / Expire 5s',
+            warning: 'Si forte envie de respirer dans les 30 premières secondes de la plongée suivante → surface interval trop court'
+        }
+    },
+
+    // ----- APNÉE STATIQUE -----
+
+    'statique-prep': {
+        id: 'statique-prep',
+        name: 'Préparation Apnée Statique',
+        category: 'statique',
+        icon: '🧘',
+        badge: 'Statique',
+        badgeColor: 'purple',
+        description: 'Protocole complet avant une apnée statique. Cohérence cardiaque → breathe-up → last breath.',
+        science: 'Le breathe-up diaphragmatique passif maintient le PaCO₂ à 40 mmHg et maximise la SvO₂. Ne pas dépasser 2 minutes de breathe-up pour éviter la dérive vers l\'hyperventilation. (PFI, Molchanovs)',
+        duration: 4,
+        phases: [
+            { name: 'Cohérence cardiaque', duration: 120, action: 'hold', breathType: 'coherence',
+              instruction: 'Position allongée. Inspire 5s → expire 5s. Diaphragmatique, yeux fermés. Active le système parasympathique. FC cible < 65 bpm.' },
+            { name: 'Breathe-up (PFI)', duration: 90, action: 'hold', breathType: 'breatheup',
+              instruction: 'Inspire 2-5s → pause 1-2s → expire 8-10s très lente et passive. 4 cycles/min. Corps relâché. PaCO₂ stable. Maximum 2 min.' },
+            { name: 'Last breath complet', duration: 8, action: 'inhale', breathType: 'lastbreath',
+              instruction: '1. Ventre gonfle (lobes inférieurs) → 2. Côtes s\'écartent (lobes médians) → 3. Épaules montent légèrement (apex). Fluide, 4-5s. TLC 100%. Glotte fermée → apnée.' }
+        ],
+        tips: [
+            'TLC 100% : capacité pulmonaire totale complète',
+            'Pendant l\'arrêt : glotte fermée, muscles respiratoires relâchés',
+            'Tolérer les contractions involontaires du diaphragme (signal CO₂ normal)',
+            'Remonter à la 2ème-3ème contraction intense'
+        ],
+        breathDetails: {
+            type: 'Cohérence cardiaque → Breathe-up diaphragmatique → Last breath 3 phases',
+            phase1: 'Cohérence : Inspire 5s / Expire 5s (2 min)',
+            phase2: 'Breathe-up : Inspire 5s / Expire 10s (max 2 min)',
+            phase3: 'Last breath : Abdo → Costal → Apical — TLC 100%',
+            recovery: '6 cleansing breaths après l\'arrêt (expirations/inspirations actives rapides)'
+        }
+    },
+
+    // ----- APNÉE DYNAMIQUE -----
+
+    'dynamique-prep': {
+        id: 'dynamique-prep',
+        name: 'Préparation Apnée Dynamique',
+        category: 'dynamique',
+        icon: '🏊',
+        badge: 'Dynamique',
+        badgeColor: 'cyan',
+        description: 'Protocole adapté pour la dynamique. Breathe-up plus long, last breath à 90-95% du TLC.',
+        science: 'Le métabolisme en dynamique est 3-5× supérieur à la statique. L\'acide lactique peut atteindre 10 mmol/L après la nage. Volume à 90-95% du TLC (pas 100%) pour réduire la traînée hydrodynamique. (PMC8176094, 2021)',
+        duration: 4,
+        phases: [
+            { name: 'Cohérence cardiaque', duration: 120, action: 'hold', breathType: 'coherence',
+              instruction: 'Au mur, au repos. Inspire 5s → expire 5s. Diaphragmatique. Ne pas faire d\'échauffement intense juste avant (monte le métabolisme de base). FC cible < 65 bpm.' },
+            { name: 'Breathe-up (3 min)', duration: 120, action: 'hold', breathType: 'breatheup',
+              instruction: 'Inspire 5s → pause 1-2s → expire 10s. Plus long qu\'en statique : la nage va générer plus de CO₂. Corps immobile, position horizontale si possible.' },
+            { name: 'Last breath 90-95%', duration: 8, action: 'inhale', breathType: 'lastbreath',
+              instruction: '1. Ventre gonfle → 2. Côtes s\'écartent → 3. Épaules montent — mais STOP à 90-95% du max. Pas le maximum absolu : évite la tension corporelle et la traînée. Push → nage.' }
+        ],
+        tips: [
+            '90-95% du TLC (pas 100%) : réduit la tension et la traînée hydrodynamique',
+            'Palmage économe, glissades maximales pour minimiser la consommation d\'O₂',
+            'La dette en lactate prolonge l\'inconfort post-nage : normoventilation plus longue nécessaire',
+            'Remonter avant que les contractions diaphragmatiques deviennent incontrôlables'
+        ],
+        breathDetails: {
+            type: 'Cohérence → Breathe-up long → Last breath partiel',
+            phase1: 'Cohérence : Inspire 5s / Expire 5s (2 min)',
+            phase2: 'Breathe-up : Inspire 5s / Expire 10s (2-3 min)',
+            phase3: 'Last breath : Abdo → Costal → Apical — 90-95% TLC',
+            recovery: '6 cleansing breaths après la nage'
+        }
+    },
+
+    // ----- APNÉE EN PROFONDEUR -----
+
+    'profondeur-prep': {
+        id: 'profondeur-prep',
+        name: 'Préparation Apnée en Profondeur',
+        category: 'profondeur',
+        icon: '🤿',
+        badge: 'Profondeur',
+        badgeColor: 'indigo',
+        description: 'Protocole complet pour l\'apnée en profondeur. Breathe-up méditatif + last breath 100% TLC.',
+        science: 'La loi de Boyle compresse les poumons pendant la descente (TLC → Volume Résiduel vers 30-40m). Plus le volume de départ est grand, plus la PaO₂ initiale est haute et plus la compression à VR est repoussée. Le hook breathing accélère la récupération de SaO₂ (PubMed 2025, essai randomisé croisé à -40m).',
+        duration: 6,
+        phases: [
+            { name: 'Cohérence + méditation', duration: 180, action: 'hold', breathType: 'coherence',
+              instruction: 'Flottaison dorsale idéale. Inspire 5s → expire 5s. Yeux fermés. Visualise ta plongée : trajectoire, virages, comportement. État semi-méditatif. FC cible < 60 bpm.' },
+            { name: 'Breathe-up profond', duration: 120, action: 'hold', breathType: 'breatheup',
+              instruction: 'Inspire 5s → pause 1-2s → expire 10s. Le plus lent et le plus méditatif des 3 disciplines. Certains athlètes : jusqu\'à 5 min. Laisse le corps guider.' },
+            { name: 'Last breath TLC 100%', duration: 10, action: 'inhale', breathType: 'lastbreath',
+              instruction: '1. Ventre gonfle (lobes inférieurs) → 2. Côtes s\'écartent (lobes médians) → 3. Épaules montent, gorge grande ouverte (apex). MAXIMUM physiologique. Descente fluide et verticale.' }
+        ],
+        tips: [
+            'TLC 100% obligatoire en profondeur (loi de Boyle)',
+            'Égalisation PRÉVENTIVE dès 0,5m — Frenzel ou Mouthfill, jamais forcée',
+            'À partir de 10-15m : glisse passive (flottabilité négative)',
+            'DANGER aux 10 derniers mètres de remontée : chute brutale de PaO₂',
+            'NE JAMAIS plonger sans buddy entraîné aux sauvetages apnée'
+        ],
+        hookBreathing: {
+            title: 'Récupération : Hook Breathing (profondeur uniquement)',
+            steps: [
+                'Inspire profonde et rapide',
+                'Début d\'expiration → ARRÊT brusque (son "k" retenu, glotte fermée)',
+                'Expire lente contre résistance de la glotte',
+                'Répéter 3 fois',
+                'Puis 3 cleansing breaths normales',
+                'Signal OK verbal + visuel'
+            ],
+            science: 'Valide scientifiquement (PubMed 2025) : SaO₂ à 95% en ~60s vs >120s sans hook breathing.'
+        },
+        breathDetails: {
+            type: 'Cohérence méditée → Breathe-up profond → Last breath TLC 100%',
+            phase1: 'Cohérence : Inspire 5s / Expire 5s (2-3 min)',
+            phase2: 'Breathe-up : Inspire 5s / Expire 10s (2-5 min)',
+            phase3: 'Last breath : Abdo → Costal → Apical — TLC 100%',
+            recovery: '3 HOOK BREATHS + 3 cleansing breaths'
+        }
+    }
+};

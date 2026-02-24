@@ -205,6 +205,13 @@
             <button class="nav-link" data-section="respiration">Respiration</button>
             <button class="nav-link" data-section="visualisation">Visualisation</button>
             <button class="nav-link" data-section="apnee">Apnée</button>
+            <button class="nav-link nav-chasse" data-section="chasse">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;">
+                    <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/>
+                    <polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/>
+                </svg>
+                Chasse
+            </button>
             <button class="nav-link" data-section="multitimer">Multi Timer</button>
             <button class="nav-link nav-urgence" data-section="urgence">Urgence</button>
             <button class="nav-link" data-section="preperformance">Pré-Perf</button>
@@ -3465,6 +3472,510 @@
                 </div>
             </div>
         </section>
+
+        <!-- Chasse Sous-Marine Section -->
+        <section class="section" id="chasse">
+            <div class="section-header section-header-chasse">
+                <h2>Préparation & Apnée Chasse</h2>
+                <p>Protocoles scientifiques complets — de la plage jusqu'à chaque descente</p>
+            </div>
+
+            <!-- Tab selector -->
+            <div class="chasse-tabs">
+                <button class="chasse-tab active" data-chasse-tab="chasse">Chasse Sous-Marine</button>
+                <button class="chasse-tab" data-chasse-tab="statique">Apnée Statique</button>
+                <button class="chasse-tab" data-chasse-tab="dynamique">Apnée Dynamique</button>
+                <button class="chasse-tab" data-chasse-tab="profondeur">Apnée Profondeur</button>
+                <button class="chasse-tab" data-chasse-tab="synthese">Synthèse</button>
+            </div>
+
+            <!-- ═══ CHASSE SOUS-MARINE ═══ -->
+            <div class="chasse-panel active" id="chasse-panel-chasse">
+
+                <div class="chasse-warning">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span>Toujours chasser avec un buddy. Ne jamais pratiquer l'apnée seul. Application expérimentale — ne pas utiliser en conditions réelles.</span>
+                </div>
+
+                <!-- Phase 1 : Plage -->
+                <div class="chasse-protocol-card" id="chasse-card-terre">
+                    <div class="chasse-phase-header">
+                        <div class="chasse-phase-number">1</div>
+                        <div class="chasse-phase-info">
+                            <span class="chasse-phase-badge badge-sand">Phase Terrestre</span>
+                            <h3>Arrivée Plage — Récupération Post-Équipement</h3>
+                            <p>Après l'effort de transport et d'habillage. Amène la FC sous 75 bpm avant la mise à l'eau.</p>
+                        </div>
+                        <div class="chasse-phase-icon">🏖️</div>
+                    </div>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Respiration :</span>
+                        <span class="breath-value">Normoventilation passive — Inspire 3s (nez) / Expire 5s (bouche)</span>
+                    </div>
+                    <div class="chasse-tips">
+                        <div class="chasse-tip">Habillez-vous lentement, dans un endroit frais si possible</div>
+                        <div class="chasse-tip">Asseyez-vous ou allongez-vous après l'habillage — ne restez pas debout avec les palmes</div>
+                        <div class="chasse-tip">Objectif : FC &lt; 75 bpm avant l'entrée dans l'eau</div>
+                        <div class="chasse-tip">Durée : 3-5 minutes de récupération minimum</div>
+                    </div>
+                    <div class="chasse-card-actions">
+                        <button class="btn-chasse-start" data-protocol="chasse-terre">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            Timer 5 min
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Phase 2 : Mise à l'eau -->
+                <div class="chasse-protocol-card" id="chasse-card-eau">
+                    <div class="chasse-phase-header">
+                        <div class="chasse-phase-number">2</div>
+                        <div class="chasse-phase-info">
+                            <span class="chasse-phase-badge badge-ocean">Mise à l'eau</span>
+                            <h3>Acclimatation Eau — Premières Minutes</h3>
+                            <p>Activation du réflexe de plongée mammalien. La rate se pré-contracte dès l'immersion.</p>
+                        </div>
+                        <div class="chasse-phase-icon">🌊</div>
+                    </div>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Respiration :</span>
+                        <span class="breath-value">Diaphragmatique calme — Inspire 4s / Pause 1s / Expire 6-8s (passive)</span>
+                    </div>
+                    <div class="chasse-tips">
+                        <div class="chasse-tip">Entrée lente : évite le cold shock (inspiration réflexe involontaire)</div>
+                        <div class="chasse-tip">Immersion du visage 2-3s → amorce le MDR et la bradycardie</div>
+                        <div class="chasse-tip">Flottaison sur le ventre, tuba en bouche, 5 min de flottaison calme</div>
+                        <div class="chasse-tip">Les 3-4 premières plongées sont toujours moins efficaces (rate froide) — c'est normal</div>
+                    </div>
+                    <div class="chasse-science-note">
+                        <strong>Science :</strong> La rate libère des érythrocytes dès l'immersion en eau tempérée, avant même les apnées. Ce temps en surface est de la préparation active. <em>(American Journal of Physiology, 2022)</em>
+                    </div>
+                    <div class="chasse-card-actions">
+                        <button class="btn-chasse-start" data-protocol="chasse-eau">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            Timer 8 min guidé
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Phase 3 : Breathe-up -->
+                <div class="chasse-protocol-card chasse-card-featured" id="chasse-card-breatheup">
+                    <div class="chasse-phase-header">
+                        <div class="chasse-phase-number">3</div>
+                        <div class="chasse-phase-info">
+                            <span class="chasse-phase-badge badge-blue">Avant chaque descente</span>
+                            <h3>Breathe-Up Pré-Descente — 90 secondes</h3>
+                            <p>Protocole identique avant chaque plongée. Le plus critique.</p>
+                        </div>
+                        <div class="chasse-phase-icon">🫁</div>
+                    </div>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Respiration :</span>
+                        <span class="breath-value">Breathe-up (Inspire 5s / Expire 10s) → 1 seul last breath (Abdo → Costal → Apical)</span>
+                    </div>
+                    <div class="chasse-alert">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        RÈGLE ABSOLUE : UN SEUL cycle profond final. Plusieurs souffles forts = hyperventilation = risque de blackout. <em>(Frontiers in Physiology, 2024)</em>
+                    </div>
+                    <div class="chasse-steps">
+                        <div class="chasse-step"><span class="step-time">T-90s</span><span>Stop. Centrage. Relâchement progressif pieds → mâchoire. 3 respirations calmes.</span></div>
+                        <div class="chasse-step"><span class="step-time">T-60s</span><span>Breathe-up diaphragmatique : Inspire 5s → Pause 1-2s → Expire 10s. 2-3 cycles.</span></div>
+                        <div class="chasse-step"><span class="step-time">T-10s</span><span>Visualisation de la descente. UNE grande expiration (80-90%) → UNE grande inspiration 3 phases.</span></div>
+                        <div class="chasse-step"><span class="step-time">T-0</span><span>Duck-dive fluide et vertical. Palmage lent. Corps "tombe" par son propre poids.</span></div>
+                    </div>
+                    <div class="chasse-card-actions">
+                        <button class="btn-chasse-start btn-chasse-featured" data-protocol="chasse-breatheup">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            Lancer le breathe-up guidé
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Phase 4 : Au fond -->
+                <div class="chasse-protocol-card" id="chasse-card-fond">
+                    <div class="chasse-phase-header">
+                        <div class="chasse-phase-number">4</div>
+                        <div class="chasse-phase-info">
+                            <span class="chasse-phase-badge badge-deep">Au Fond</span>
+                            <h3>Technique au Fond — Économie d'O₂</h3>
+                            <p>La tension musculaire est ton premier ennemi du bottom time.</p>
+                        </div>
+                        <div class="chasse-phase-icon">🐟</div>
+                    </div>
+                    <div class="chasse-fond-danger">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        Le danger N'EST PAS au fond — c'est aux 10 derniers mètres de remontée que la PaO₂ chute brutalement (risque blackout).
+                    </div>
+                    <div class="chasse-tips">
+                        <div class="chasse-tip">Position HORIZONTALE — jamais debout (consommation O₂ maximale)</div>
+                        <div class="chasse-tip">Ne bouge que les yeux pour scanner — technique d'affût / aspetto</div>
+                        <div class="chasse-tip">Égalisation PRÉVENTIVE dès 0,5m — jamais forcée</div>
+                        <div class="chasse-tip">Remonte DÈS les 2ème-3ème contractions diaphragmatiques</div>
+                        <div class="chasse-tip">Lestage précis : neutre à ta profondeur (±1 kg)</div>
+                    </div>
+                </div>
+
+                <!-- Phase 5 : Récupération -->
+                <div class="chasse-protocol-card" id="chasse-card-recup">
+                    <div class="chasse-phase-header">
+                        <div class="chasse-phase-number">5</div>
+                        <div class="chasse-phase-info">
+                            <span class="chasse-phase-badge badge-green">Entre chaque plongée</span>
+                            <h3>Récupération en Surface</h3>
+                            <p>Phase la plus négligée. Aussi importante que la plongée elle-même.</p>
+                        </div>
+                        <div class="chasse-phase-icon">♻️</div>
+                    </div>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Respiration :</span>
+                        <span class="breath-value">Phase 1 : 4-5 expirations actives forcées → Phase 2 : Normoventilation horizontale</span>
+                    </div>
+
+                    <!-- Recovery table -->
+                    <div class="recup-table">
+                        <div class="recup-table-title">Temps de récupération minimum :</div>
+                        <div class="recup-row recup-header">
+                            <span>Profondeur</span><span>Minimum</span><span>Recommandé</span>
+                        </div>
+                        <div class="recup-row">
+                            <span>&lt; 10 m</span><span>× 2 l'apnée</span><span>× 3</span>
+                        </div>
+                        <div class="recup-row">
+                            <span>10-30 m</span><span>× 3 l'apnée</span><span>× 4</span>
+                        </div>
+                        <div class="recup-row recup-row-alert">
+                            <span>30-40 m</span><span>8 min min.</span><span>10-12 min</span>
+                        </div>
+                    </div>
+
+                    <!-- Recovery timer -->
+                    <div class="recup-timer-container">
+                        <div class="recup-timer-label">Timer de récupération rapide :</div>
+                        <div class="recup-quick-btns">
+                            <button class="btn-recup-quick" data-seconds="120">2 min</button>
+                            <button class="btn-recup-quick" data-seconds="180">3 min</button>
+                            <button class="btn-recup-quick" data-seconds="240">4 min</button>
+                            <button class="btn-recup-quick" data-seconds="300">5 min</button>
+                            <button class="btn-recup-quick" data-seconds="480">8 min</button>
+                        </div>
+                        <div class="recup-timer-display" id="recupTimerDisplay" style="display:none">
+                            <div class="recup-timer-ring">
+                                <svg class="recup-ring-svg" viewBox="0 0 120 120">
+                                    <circle class="recup-ring-bg" cx="60" cy="60" r="52"/>
+                                    <circle class="recup-ring-progress" id="recupRingProgress" cx="60" cy="60" r="52"/>
+                                </svg>
+                                <div class="recup-timer-text">
+                                    <span id="recupTimerCount">--:--</span>
+                                    <span id="recupTimerPhase">Récupération</span>
+                                </div>
+                            </div>
+                            <button class="btn-recup-stop" id="recupTimerStop">Arrêter</button>
+                        </div>
+                    </div>
+
+                    <div class="chasse-ready-check">
+                        <div class="ready-check-title">Prêt à replonger si :</div>
+                        <div class="ready-item"><span class="ready-check">✓</span> FC revenue sous 70-75 bpm</div>
+                        <div class="ready-item"><span class="ready-check">✓</span> Respiration redevenue calme</div>
+                        <div class="ready-item"><span class="ready-check">✓</span> Aucune oppression, sifflement, tête lourde</div>
+                        <div class="ready-item"><span class="ready-check">✓</span> Délai minimum respecté</div>
+                    </div>
+
+                    <div class="chasse-alert chasse-alert-warning">
+                        Si forte envie de respirer dans les 30 premières secondes de la plongée suivante → surface interval trop court.
+                    </div>
+                </div>
+
+            </div><!-- end chasse-panel-chasse -->
+
+            <!-- ═══ APNÉE STATIQUE ═══ -->
+            <div class="chasse-panel" id="chasse-panel-statique">
+                <div class="discipline-intro discipline-intro-statique">
+                    <div class="discipline-intro-icon">🧘</div>
+                    <div>
+                        <h3>Apnée Statique</h3>
+                        <p>Facteur limitant : tolérance CO₂ + relaxation. TLC 100%. Récupération : 6 cleansing breaths.</p>
+                    </div>
+                </div>
+
+                <div class="chasse-protocol-card">
+                    <h3 class="protocol-step-title">① Cohérence cardiaque (2 min)</h3>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Respiration :</span>
+                        <span class="breath-value">Inspire 5s / Expire 5s — diaphragmatique, yeux fermés</span>
+                    </div>
+                    <p class="protocol-desc">Active le système parasympathique. Maximise la HRV. Idéalement allongé sur le ventre dans l'eau ou sur le dos tenu par le buddy. FC cible : &lt; 65 bpm.</p>
+                    <div class="chasse-card-actions">
+                        <button class="btn-chasse-start" data-protocol="statique-coherence">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            2 min cohérence cardiaque
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chasse-protocol-card chasse-card-featured">
+                    <h3 class="protocol-step-title">② Breathe-up PFI (90s max)</h3>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Respiration :</span>
+                        <span class="breath-value">Inspire 2-5s → Pause 1-2s → Expire 8-10s lente passive — 4 cycles/min</span>
+                    </div>
+                    <p class="protocol-desc">PaCO₂ stable à 40 mmHg. SvO₂ maximale. Ne PAS dépasser 2 minutes → risque de dérive vers l'hyperventilation. Corps allongé, yeux fermés.</p>
+                    <div class="chasse-card-actions">
+                        <button class="btn-chasse-start btn-chasse-featured" data-protocol="statique-prep">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            Protocole statique complet
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chasse-protocol-card">
+                    <h3 class="protocol-step-title">③ Last breath — TLC 100%</h3>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Technique :</span>
+                        <span class="breath-value">1. Ventre gonfle (lobes inférieurs) → 2. Côtes s'écartent (lobes médians) → 3. Épaules montent, gorge ouverte (apex)</span>
+                    </div>
+                    <p class="protocol-desc">Inspiration en 3 phases fluide, ~4-5s. Capacité pulmonaire totale 100%. Glotte fermée → apnée.</p>
+                </div>
+
+                <div class="chasse-protocol-card">
+                    <h3 class="protocol-step-title">④ Pendant l'arrêt</h3>
+                    <p class="protocol-desc">Glotte fermée. Muscles respiratoires relâchés. Tolérer les contractions involontaires du diaphragme (signal CO₂ normal). Remonter à la 2ème-3ème contraction intense. Ne jamais dépasser 50-60% de sa capacité max en contexte répétitif.</p>
+                </div>
+
+                <div class="chasse-protocol-card">
+                    <h3 class="protocol-step-title">⑤ Récupération — 6 Cleansing Breaths</h3>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Respiration :</span>
+                        <span class="breath-value">6 expirations+inspirations actives de ~30% du volume pulmonaire, rythme rapide (~1s chacune)</span>
+                    </div>
+                    <p class="protocol-desc">Puis signal OK au buddy. Puis normoventilation jusqu'au retour au calme complet.</p>
+                </div>
+            </div><!-- end chasse-panel-statique -->
+
+            <!-- ═══ APNÉE DYNAMIQUE ═══ -->
+            <div class="chasse-panel" id="chasse-panel-dynamique">
+                <div class="discipline-intro discipline-intro-dynamique">
+                    <div class="discipline-intro-icon">🏊</div>
+                    <div>
+                        <h3>Apnée Dynamique</h3>
+                        <p>Métabolisme 3-5× supérieur à la statique. Last breath à 90-95% TLC. Récupération : 6 cleansing breaths.</p>
+                    </div>
+                </div>
+
+                <div class="chasse-protocol-card">
+                    <h3 class="protocol-step-title">① Cohérence cardiaque (2 min)</h3>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Respiration :</span>
+                        <span class="breath-value">Inspire 5s / Expire 5s — au mur, immobile, yeux fermés</span>
+                    </div>
+                    <p class="protocol-desc">Ne pas faire d'échauffement physique intense juste avant (monte le métabolisme de base et réduit l'efficacité du breathe-up). FC cible : &lt; 65 bpm.</p>
+                    <div class="chasse-card-actions">
+                        <button class="btn-chasse-start" data-protocol="dynamique-coherence">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            2 min cohérence
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chasse-protocol-card chasse-card-featured">
+                    <h3 class="protocol-step-title">② Breathe-up plus long (2-3 min)</h3>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Respiration :</span>
+                        <span class="breath-value">Inspire 5s → Pause 1-2s → Expire 10s — plus long qu'en statique</span>
+                    </div>
+                    <p class="protocol-desc">Plus long qu'en statique car la nage va générer plus de CO₂ et d'acide lactique. Corps immobile, position horizontale si possible.</p>
+                    <div class="chasse-card-actions">
+                        <button class="btn-chasse-start btn-chasse-featured" data-protocol="dynamique-prep">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            Protocole dynamique complet
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chasse-protocol-card">
+                    <h3 class="protocol-step-title">③ Last breath — 90-95% TLC</h3>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Technique :</span>
+                        <span class="breath-value">Abdo → Costal → Apical — STOP à 90-95% (pas le maximum absolu)</span>
+                    </div>
+                    <p class="protocol-desc">Contrairement à la statique et la profondeur : pas TLC 100%. L'apport marginal en O₂ entre 95-100% est faible vs la pénalité biomécanique (tension → traînée hydrodynamique accrue).</p>
+                </div>
+
+                <div class="chasse-protocol-card">
+                    <h3 class="protocol-step-title">④ Pendant la nage</h3>
+                    <p class="protocol-desc">Palmage économe, glissades maximales. Tolérer les contractions diaphragmatiques. Remonter avant qu'elles deviennent incontrôlables. L'acide lactique (jusqu'à 10 mmol/L) prolonge l'inconfort post-nage.</p>
+                </div>
+
+                <div class="chasse-protocol-card">
+                    <h3 class="protocol-step-title">⑤ Récupération — 6 Cleansing Breaths</h3>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Respiration :</span>
+                        <span class="breath-value">Identique statique : 6 expirations+inspirations actives rapides (~1s chacune)</span>
+                    </div>
+                    <p class="protocol-desc">La normoventilation suivante sera plus longue qu'en statique (dette en lactate). Signal OK au buddy.</p>
+                </div>
+
+                <div class="chasse-science-note">
+                    <strong>Comparatif Statique vs Dynamique :</strong> Breathe-up plus long · Last breath 90-95% (pas 100%) · Récupération plus longue (lactate). Même type de respiration, durées ajustées.
+                </div>
+            </div><!-- end chasse-panel-dynamique -->
+
+            <!-- ═══ APNÉE PROFONDEUR ═══ -->
+            <div class="chasse-panel" id="chasse-panel-profondeur">
+                <div class="discipline-intro discipline-intro-profondeur">
+                    <div class="discipline-intro-icon">🤿</div>
+                    <div>
+                        <h3>Apnée en Profondeur</h3>
+                        <p>Facteur limitant : équilibration + blood shift + PaO₂ à la remontée. TLC 100%. Récupération : 3 hook breaths + 3 cleansing.</p>
+                    </div>
+                </div>
+
+                <div class="chasse-fond-danger">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    DANGER AUX 10 DERNIERS MÈTRES de remontée : la PaO₂ chute brutalement (latent hypoxia). Ne jamais plonger sans buddy entraîné aux sauvetages apnée.
+                </div>
+
+                <div class="chasse-protocol-card">
+                    <h3 class="protocol-step-title">① Cohérence + méditation (2-3 min)</h3>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Respiration :</span>
+                        <span class="breath-value">Inspire 5s / Expire 5s — flottaison dorsale idéale, yeux fermés, état semi-méditatif</span>
+                    </div>
+                    <p class="protocol-desc">Visualise ta plongée : trajectoire, virages, comportement au fond. FC cible : &lt; 60 bpm. La phase méditée est plus longue et plus profonde qu'en statique ou dynamique.</p>
+                    <div class="chasse-card-actions">
+                        <button class="btn-chasse-start" data-protocol="profondeur-coherence">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            3 min cohérence méditée
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chasse-protocol-card chasse-card-featured">
+                    <h3 class="protocol-step-title">② Breathe-up profond (2-5 min)</h3>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Respiration :</span>
+                        <span class="breath-value">Inspire 5s → Pause 1-2s → Expire 10s — le plus lent et méditatif des 3 disciplines</span>
+                    </div>
+                    <p class="protocol-desc">Certains athlètes de haut niveau utilisent jusqu'à 5 min. Laisse le corps guider. Au-delà de 2 min, sous supervision experte uniquement.</p>
+                    <div class="chasse-card-actions">
+                        <button class="btn-chasse-start btn-chasse-featured" data-protocol="profondeur-prep">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            Protocole profondeur complet
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chasse-protocol-card">
+                    <h3 class="protocol-step-title">③ Last breath — TLC 100%</h3>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Technique :</span>
+                        <span class="breath-value">Abdo → Costal → Apical — MAXIMUM physiologique obligatoire</span>
+                    </div>
+                    <p class="protocol-desc">Loi de Boyle : les poumons se compriment de TLC vers Volume Résiduel vers 30-40m. Plus le volume de départ est grand, plus la PaO₂ initiale est haute et plus la compression est repoussée en profondeur.</p>
+                </div>
+
+                <div class="chasse-protocol-card">
+                    <h3 class="protocol-step-title">④ Descente</h3>
+                    <p class="protocol-desc">Égalisation préventive dès 0,5m (Frenzel ou Mouthfill). Palmage lent et vertical. À partir de 10-15m : glisse passive. Blood shift : jusqu'à 850-1047 mL de sang se redistribuent dans le thorax pour prévenir le lung squeeze.</p>
+                </div>
+
+                <div class="chasse-protocol-card chasse-card-hook">
+                    <h3 class="protocol-step-title">⑤ Récupération — Hook Breathing (profondeur uniquement)</h3>
+                    <div class="chasse-breath-type">
+                        <span class="breath-label">Respiration :</span>
+                        <span class="breath-value">3 HOOK BREATHS + 3 Cleansing Breaths — différent de la statique et dynamique</span>
+                    </div>
+                    <div class="hook-steps">
+                        <div class="hook-step"><span class="hook-num">1</span><span>Inspire profonde et rapide</span></div>
+                        <div class="hook-step"><span class="hook-num">2</span><span>Début d'expiration → ARRÊT brusque (son "k" retenu, glotte fermée)</span></div>
+                        <div class="hook-step"><span class="hook-num">3</span><span>Expire lente contre résistance de la glotte</span></div>
+                        <div class="hook-step"><span class="hook-num">4</span><span>Répéter 3 fois → puis 3 cleansing breaths normales</span></div>
+                        <div class="hook-step"><span class="hook-num">5</span><span>Signal OK verbal + visuel</span></div>
+                    </div>
+                    <div class="chasse-science-note">
+                        <strong>Validé :</strong> SaO₂ à 95% en ~60s vs >120s sans hook breathing. <em>(PubMed 2025, essai randomisé croisé à -40m)</em>
+                    </div>
+                </div>
+            </div><!-- end chasse-panel-profondeur -->
+
+            <!-- ═══ SYNTHÈSE ═══ -->
+            <div class="chasse-panel" id="chasse-panel-synthese">
+                <div class="synthese-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    Synthèse — Feuille de référence
+                </div>
+
+                <!-- Chasse synthese -->
+                <div class="synthese-block synthese-chasse">
+                    <div class="synthese-block-header">
+                        <span class="synthese-icon">🎣</span>
+                        <h3>Chasse Sous-Marine — Journée complète</h3>
+                    </div>
+                    <div class="synthese-content">
+                        <div class="synthese-row"><span class="synthese-label">Plage</span><span class="synthese-val">Habillage lent → 5 min repos → FC &lt; 75 bpm → Normoventilation (3s/5s)</span></div>
+                        <div class="synthese-row"><span class="synthese-label">Eau</span><span class="synthese-val">Entrée progressive → 5 min flottaison → Diaphragmatique (4s/6-8s)</span></div>
+                        <div class="synthese-row"><span class="synthese-label">Chauffe</span><span class="synthese-val">3-4 plongées courtes (rate + MDR)</span></div>
+                        <div class="synthese-row synthese-row-key"><span class="synthese-label">Avant descente</span><span class="synthese-val">Breathe-up 90s (5s/10s) → 1 cycle final (Abdo→Costal→Apical) → TLC 100%</span></div>
+                        <div class="synthese-row"><span class="synthese-label">Fond</span><span class="synthese-val">Horizontal, immobile, affût → remonte aux 2ᵉ-3ᵉ contractions</span></div>
+                        <div class="synthese-row"><span class="synthese-label">Surface</span><span class="synthese-val">Expirations actives → repos horizontal → attendre ×2-4 le temps d'apnée</span></div>
+                        <div class="synthese-row"><span class="synthese-label">Stop</span><span class="synthese-val">Arrête AVANT la fatigue. Jamais sur "une dernière pour voir"</span></div>
+                    </div>
+                </div>
+
+                <!-- Tableau comparatif -->
+                <div class="synthese-block">
+                    <div class="synthese-block-header">
+                        <span class="synthese-icon">📊</span>
+                        <h3>Comparatif des 3 Disciplines</h3>
+                    </div>
+                    <div class="synthese-table-wrapper">
+                        <table class="synthese-table">
+                            <thead>
+                                <tr><th></th><th>🧘 Statique</th><th>🏊 Dynamique</th><th>🤿 Profondeur</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Breathe-up</td><td>Diaphrag. passif</td><td>Diaphrag. passif</td><td>Diaphrag. méditatif</td></tr>
+                                <tr><td>Durée</td><td>90s – 2 min</td><td>2 – 3 min</td><td>2 – 5 min</td></tr>
+                                <tr class="table-row-key"><td>Volume last breath</td><td>TLC 100%</td><td>90-95% TLC</td><td>TLC 100%</td></tr>
+                                <tr><td>Récupération</td><td>6 cleansing</td><td>6 cleansing</td><td>3 hook + 3 cleansing</td></tr>
+                                <tr><td>Facteur limitant</td><td>Tolérance CO₂</td><td>Efficacité nage</td><td>PaO₂ remontée</td></tr>
+                                <tr><td>Principal risque</td><td>Syncope</td><td>Hypoxie mi-nage</td><td>Blackout remontée</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Hook breathing -->
+                <div class="synthese-block synthese-hook">
+                    <div class="synthese-block-header">
+                        <span class="synthese-icon">🔗</span>
+                        <h3>Hook Breath (profondeur uniquement)</h3>
+                    </div>
+                    <div class="synthese-hook-formula">
+                        Inspire → Début expire → <strong>Glotte ferme (k-)</strong> → Expire lent × 3 → 3 cleansing → Signal OK
+                    </div>
+                </div>
+
+                <!-- Règle absolue -->
+                <div class="synthese-block synthese-rule">
+                    <div class="synthese-block-header">
+                        <span class="synthese-icon">⚠️</span>
+                        <h3>Règle Absolue — À ne jamais oublier</h3>
+                    </div>
+                    <div class="synthese-rule-text">
+                        1 seul cycle profond final · Jamais plusieurs souffles forts avant de plonger = hyperventilation = blackout
+                    </div>
+                    <div class="synthese-rule-sub">
+                        Le CO₂ déclenche l'envie de respirer — pas le manque d'O₂. Comprendre ça change tout.
+                    </div>
+                </div>
+
+            </div><!-- end chasse-panel-synthese -->
+
+        </section><!-- end chasse -->
 
         <!-- Settings Section -->
         <section class="section" id="settings">

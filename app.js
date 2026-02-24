@@ -4757,3 +4757,341 @@ class JmeeDeepBreathApp {
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new JmeeDeepBreathApp();
 });
+
+// ═══════════════════════════════════════════════════════════════
+// CHASSE SOUS-MARINE — Module autonome
+// ═══════════════════════════════════════════════════════════════
+
+class ChasseModule {
+    constructor() {
+        this.recupTimer = null;
+        this.recupTotal = 0;
+        this.recupRemaining = 0;
+        this.guidedTimer = null;
+        this.guidedPhases = [];
+        this.guidedPhaseIndex = 0;
+        this.guidedPhaseRemaining = 0;
+        this.guidedPaused = false;
+        this.init();
+    }
+
+    init() {
+        this.setupTabSwitcher();
+        this.setupProtocolButtons();
+        this.setupRecupTimer();
+        this.buildGuidedModal();
+    }
+
+    // ── Tab switcher (Chasse / Statique / Dynamique / Profondeur / Synthèse) ──
+    setupTabSwitcher() {
+        document.querySelectorAll('.chasse-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.chasse-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const target = tab.dataset.chasseTab;
+                document.querySelectorAll('.chasse-panel').forEach(p => p.classList.remove('active'));
+                const panel = document.getElementById('chasse-panel-' + target);
+                if (panel) panel.classList.add('active');
+            });
+        });
+    }
+
+    // ── Protocol guided timers ──
+    setupProtocolButtons() {
+        document.querySelectorAll('.btn-chasse-start').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const protocol = btn.dataset.protocol;
+                this.startGuidedProtocol(protocol);
+            });
+        });
+    }
+
+    // Définition des protocoles guidés
+    getProtocolPhases(protocol) {
+        const protocols = {
+            'chasse-terre': {
+                title: 'Récupération Post-Équipement',
+                phases: [
+                    { label: 'Normoventilation', duration: 300, action: 'hold', color: 'hold',
+                      instruction: 'Assieds-toi ou allonge-toi. Respiration naturelle : inspire 3s par le nez, expire 5s par la bouche. Objectif : FC < 75 bpm avant l\'entrée dans l\'eau.' }
+                ]
+            },
+            'chasse-eau': {
+                title: 'Acclimatation Eau',
+                phases: [
+                    { label: 'Entrée progressive', duration: 60, action: 'hold', color: 'hold',
+                      instruction: 'Entrée lente dans l\'eau. Immerse le visage 2-3 secondes. Respiration normale — amorce le réflexe de plongée.' },
+                    { label: 'Flottaison calme', duration: 180, action: 'exhale', color: 'exhale',
+                      instruction: 'Allonge-toi sur le ventre, masque dans l\'eau, tuba en bouche. Ne regarde pas encore le fond. Respiration calme.' },
+                    { label: 'Respiration diaphragmatique', duration: 240, action: 'inhale', color: 'inhale',
+                      instruction: 'Inspire 4s (ventre gonfle) → Pause 1s → Expire 6-8s passive. Yeux semi-fermés. Relâchement progressif. La rate se pré-contracte.' }
+                ]
+            },
+            'chasse-breatheup': {
+                title: 'Breathe-Up Pré-Descente',
+                phases: [
+                    { label: 'Centrage', duration: 30, action: 'hold', color: 'hold',
+                      instruction: 'Stop. Ferme les yeux. Relâchement progressif : pieds → mollets → cuisses → abdomen → épaules → mâchoire.' },
+                    { label: 'Breathe-up (Expire 10s)', duration: 40, action: 'exhale', color: 'exhale',
+                      instruction: 'Inspire 5s → Pause 1-2s → Expire 10s lente et passive. 2-3 cycles. Corps relâché. Diaphragme.' },
+                    { label: 'Visualisation', duration: 10, action: 'hold', color: 'hold',
+                      instruction: 'Visualise ta descente : trajectoire, équilibration, fond. Prépare le cycle final.' },
+                    { label: 'Cycle final — Expire', duration: 5, action: 'exhale', color: 'exhale',
+                      instruction: 'Grande expiration : 80-90% de l\'air sorti, lente.' },
+                    { label: 'Last breath — Inspire', duration: 5, action: 'inhale', color: 'inhale',
+                      instruction: 'Grande inspiration en 3 phases : ventre → côtes → épaules. TLC 100%. Duck-dive immédiatement !' }
+                ]
+            },
+            'statique-coherence': {
+                title: 'Cohérence Cardiaque — Statique',
+                phases: [
+                    { label: 'Cohérence cardiaque', duration: 120, action: 'hold', color: 'hold',
+                      instruction: 'Inspire 5s / Expire 5s. Diaphragmatique. Yeux fermés. Allongé si possible. Active le système parasympathique. FC cible < 65 bpm.' }
+                ]
+            },
+            'statique-prep': {
+                title: 'Préparation Apnée Statique',
+                phases: [
+                    { label: 'Cohérence cardiaque', duration: 120, action: 'hold', color: 'hold',
+                      instruction: 'Inspire 5s / Expire 5s. Diaphragmatique. Yeux fermés. Allongé. FC cible < 65 bpm.' },
+                    { label: 'Breathe-up PFI', duration: 90, action: 'exhale', color: 'exhale',
+                      instruction: 'Inspire 2-5s → Pause 1-2s → Expire 8-10s lente et passive. 4 cycles/min. PaCO₂ stable. Corps relâché.' },
+                    { label: 'Expire 80-90%', duration: 5, action: 'exhale', color: 'exhale',
+                      instruction: 'Grande expiration passive : 80-90% de l\'air sorti.' },
+                    { label: 'Last breath — TLC 100%', duration: 8, action: 'inhale', color: 'inhale',
+                      instruction: '1. Ventre gonfle (lobes inférieurs) → 2. Côtes s\'écartent (lobes médians) → 3. Épaules montent, gorge ouverte (apex). Fluide, 4-5s. TLC 100%. Glotte fermée.' }
+                ]
+            },
+            'dynamique-coherence': {
+                title: 'Cohérence Cardiaque — Dynamique',
+                phases: [
+                    { label: 'Cohérence cardiaque', duration: 120, action: 'hold', color: 'hold',
+                      instruction: 'Au mur, immobile. Inspire 5s / Expire 5s. Diaphragmatique. Ne pas s\'échauffer juste avant. FC cible < 65 bpm.' }
+                ]
+            },
+            'dynamique-prep': {
+                title: 'Préparation Apnée Dynamique',
+                phases: [
+                    { label: 'Cohérence cardiaque', duration: 120, action: 'hold', color: 'hold',
+                      instruction: 'Au mur, immobile. Inspire 5s / Expire 5s. Corps relâché. FC cible < 65 bpm.' },
+                    { label: 'Breathe-up long', duration: 120, action: 'exhale', color: 'exhale',
+                      instruction: 'Inspire 5s → Pause 1-2s → Expire 10s. Plus long qu\'en statique. Position horizontale si possible.' },
+                    { label: 'Expire', duration: 5, action: 'exhale', color: 'exhale',
+                      instruction: 'Grande expiration douce.' },
+                    { label: 'Last breath — 90-95% TLC', duration: 8, action: 'inhale', color: 'inhale',
+                      instruction: 'Abdo → Costal → Apical. STOP à 90-95% du maximum. Pas le max absolu (tension → traînée). Push-off → nage.' }
+                ]
+            },
+            'profondeur-coherence': {
+                title: 'Cohérence Méditée — Profondeur',
+                phases: [
+                    { label: 'Cohérence + méditation', duration: 180, action: 'hold', color: 'hold',
+                      instruction: 'Flottaison dorsale idéale. Inspire 5s / Expire 5s. Yeux fermés. Visualise ta plongée : trajectoire, virages, comportement au fond. FC cible < 60 bpm.' }
+                ]
+            },
+            'profondeur-prep': {
+                title: 'Préparation Apnée en Profondeur',
+                phases: [
+                    { label: 'Cohérence méditée', duration: 180, action: 'hold', color: 'hold',
+                      instruction: 'Flottaison dorsale. Inspire 5s / Expire 5s. Yeux fermés. Visualise ta plongée complète. FC cible < 60 bpm.' },
+                    { label: 'Breathe-up profond', duration: 120, action: 'exhale', color: 'exhale',
+                      instruction: 'Inspire 5s → Pause 1-2s → Expire 10s. Le plus lent et méditatif. Laisse le corps guider.' },
+                    { label: 'Expire', duration: 5, action: 'exhale', color: 'exhale',
+                      instruction: 'Grande expiration lente.' },
+                    { label: 'Last breath — TLC 100%', duration: 10, action: 'inhale', color: 'inhale',
+                      instruction: 'Abdo → Costal → Apical. MAXIMUM physiologique. Gorge grande ouverte. Descente fluide et verticale. Égalisation dès 0,5m.' }
+                ]
+            }
+        };
+        return protocols[protocol] || null;
+    }
+
+    // ── Modal de timer guidé ──
+    buildGuidedModal() {
+        const modal = document.createElement('div');
+        modal.id = 'chasseTimerModal';
+        modal.className = 'chasse-timer-modal';
+        modal.innerHTML = `
+            <div class="chasse-timer-inner">
+                <div class="chasse-timer-title" id="chasseTimerTitle">Préparation</div>
+                <div class="chasse-timer-phase" id="chasseTimerPhase">Phase 1</div>
+                <div class="chasse-timer-instruction" id="chasseTimerInstruction"></div>
+                <div class="chasse-timer-ring-wrap">
+                    <svg class="chasse-timer-ring-svg" viewBox="0 0 140 140">
+                        <circle class="chasse-ring-bg" cx="70" cy="70" r="62"/>
+                        <circle class="chasse-ring-progress" id="chasseRingProgress" cx="70" cy="70" r="62"/>
+                    </svg>
+                    <div class="chasse-timer-inner-text">
+                        <span class="chasse-timer-count" id="chasseTimerCount">--</span>
+                        <span class="chasse-timer-action" id="chasseTimerAction">--</span>
+                    </div>
+                </div>
+                <div class="chasse-timer-btns">
+                    <button class="btn-chasse-timer-pause" id="chasseTimerPauseBtn">Pause</button>
+                    <button class="btn-chasse-timer-stop" id="chasseTimerStopBtn">Arrêter</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('chasseTimerPauseBtn').addEventListener('click', () => this.togglePauseGuided());
+        document.getElementById('chasseTimerStopBtn').addEventListener('click', () => this.stopGuided());
+    }
+
+    startGuidedProtocol(protocolId) {
+        const def = this.getProtocolPhases(protocolId);
+        if (!def) return;
+
+        this.guidedPhases = def.phases;
+        this.guidedPhaseIndex = 0;
+        this.guidedPaused = false;
+
+        document.getElementById('chasseTimerTitle').textContent = def.title;
+        document.getElementById('chasseTimerModal').classList.add('open');
+        this.runGuidedPhase();
+    }
+
+    runGuidedPhase() {
+        if (this.guidedTimer) clearInterval(this.guidedTimer);
+        if (this.guidedPhaseIndex >= this.guidedPhases.length) {
+            this.guidedComplete();
+            return;
+        }
+
+        const phase = this.guidedPhases[this.guidedPhaseIndex];
+        this.guidedPhaseRemaining = phase.duration;
+
+        const totalPhases = this.guidedPhases.length;
+        document.getElementById('chasseTimerPhase').textContent =
+            `Phase ${this.guidedPhaseIndex + 1} / ${totalPhases} — ${phase.label}`;
+        document.getElementById('chasseTimerInstruction').textContent = phase.instruction;
+        document.getElementById('chasseTimerAction').textContent = phase.label;
+
+        // Ring color
+        const ring = document.getElementById('chasseRingProgress');
+        ring.className = 'chasse-ring-progress ' + (phase.color || 'hold');
+        const circumference = 2 * Math.PI * 62; // r=62
+
+        this.updateGuidedDisplay(phase.duration, phase.duration, circumference);
+
+        this.guidedTimer = setInterval(() => {
+            if (this.guidedPaused) return;
+            this.guidedPhaseRemaining--;
+            this.updateGuidedDisplay(this.guidedPhaseRemaining, phase.duration, circumference);
+            if (this.guidedPhaseRemaining <= 0) {
+                clearInterval(this.guidedTimer);
+                this.guidedPhaseIndex++;
+                setTimeout(() => this.runGuidedPhase(), 500);
+            }
+        }, 1000);
+    }
+
+    updateGuidedDisplay(remaining, total, circumference) {
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        document.getElementById('chasseTimerCount').textContent =
+            mins > 0 ? `${mins}:${String(secs).padStart(2,'0')}` : String(remaining);
+
+        const progress = remaining / total;
+        const offset = circumference * (1 - progress);
+        document.getElementById('chasseRingProgress').style.strokeDasharray = circumference;
+        document.getElementById('chasseRingProgress').style.strokeDashoffset = offset;
+    }
+
+    guidedComplete() {
+        document.getElementById('chasseTimerPhase').textContent = 'Terminé !';
+        document.getElementById('chasseTimerInstruction').textContent =
+            'Protocole terminé. Respire naturellement quelques instants avant de continuer.';
+        document.getElementById('chasseTimerCount').textContent = '✓';
+        document.getElementById('chasseRingProgress').style.strokeDashoffset = 0;
+        document.getElementById('chasseRingProgress').style.stroke = '#34d399';
+        setTimeout(() => this.stopGuided(), 3000);
+    }
+
+    togglePauseGuided() {
+        this.guidedPaused = !this.guidedPaused;
+        document.getElementById('chasseTimerPauseBtn').textContent =
+            this.guidedPaused ? 'Reprendre' : 'Pause';
+    }
+
+    stopGuided() {
+        if (this.guidedTimer) clearInterval(this.guidedTimer);
+        this.guidedTimer = null;
+        this.guidedPaused = false;
+        document.getElementById('chasseTimerModal').classList.remove('open');
+    }
+
+    // ── Recovery quick timer ──
+    setupRecupTimer() {
+        document.querySelectorAll('.btn-recup-quick').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const seconds = parseInt(btn.dataset.seconds);
+                this.startRecupTimer(seconds);
+                document.querySelectorAll('.btn-recup-quick').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        const stopBtn = document.getElementById('recupTimerStop');
+        if (stopBtn) stopBtn.addEventListener('click', () => this.stopRecupTimer());
+    }
+
+    startRecupTimer(seconds) {
+        if (this.recupTimer) clearInterval(this.recupTimer);
+        this.recupTotal = seconds;
+        this.recupRemaining = seconds;
+
+        const display = document.getElementById('recupTimerDisplay');
+        if (display) display.style.display = 'flex';
+
+        const circumference = 2 * Math.PI * 52; // r=52
+        this.updateRecupDisplay(seconds, seconds, circumference);
+
+        this.recupTimer = setInterval(() => {
+            this.recupRemaining--;
+            this.updateRecupDisplay(this.recupRemaining, this.recupTotal, circumference);
+
+            if (this.recupRemaining <= 0) {
+                this.stopRecupTimer();
+                document.getElementById('recupTimerPhase').textContent = 'Prêt à replonger !';
+                document.getElementById('recupTimerCount').textContent = '✓';
+                document.getElementById('recupRingProgress').style.stroke = '#34d399';
+                // Play a gentle bell if available
+                if (window.app && window.app.playZenBell) window.app.playZenBell();
+            }
+        }, 1000);
+    }
+
+    updateRecupDisplay(remaining, total, circumference) {
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        const countEl = document.getElementById('recupTimerCount');
+        const phaseEl = document.getElementById('recupTimerPhase');
+        const ringEl = document.getElementById('recupRingProgress');
+
+        if (countEl) countEl.textContent = `${mins}:${String(secs).padStart(2,'0')}`;
+        if (phaseEl) phaseEl.textContent = remaining > 0 ? 'Récupération' : 'Prêt !';
+
+        if (ringEl) {
+            const progress = remaining / total;
+            const offset = circumference * (1 - progress);
+            ringEl.style.strokeDasharray = circumference;
+            ringEl.style.strokeDashoffset = offset;
+        }
+    }
+
+    stopRecupTimer() {
+        if (this.recupTimer) clearInterval(this.recupTimer);
+        this.recupTimer = null;
+        document.querySelectorAll('.btn-recup-quick').forEach(b => b.classList.remove('active'));
+        const display = document.getElementById('recupTimerDisplay');
+        if (display) display.style.display = 'none';
+    }
+}
+
+// Initialize chasse module after app
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        window.chasseModule = new ChasseModule();
+    }, 500);
+});
