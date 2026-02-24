@@ -6591,6 +6591,17 @@ body.optimal-mode #apneaHint {
     color: #f5c518;
     background: rgba(245, 197, 24, 0.12);
 }
+/* Favoris dans la barre audio */
+.fav-shortcut {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
 
 /* Bouton favori sur les cartes */
 .btn-favorite {
