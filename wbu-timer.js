@@ -263,8 +263,19 @@ var WBU = (function () {
         if (display) display.style.display = 'none';
     }
 
+    // ── Version injection (avant app.js defer) ───────────────────
+    var VERSION = '0.93';
+
+    function injectVersion() {
+        var pin   = el('appVersionPin');
+        var badge = el('appVersionBadge');
+        if (pin)   pin.textContent   = 'v' + VERSION;
+        if (badge) badge.textContent = 'BETA v' + VERSION + ' — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.';
+    }
+
     // ── Setup modal buttons (appelé au DOMContentLoaded) ─────────
     function setup() {
+        injectVersion();
         var pauseBtn = el('chasseTimerPauseBtn');
         var stopBtn  = el('chasseTimerStopBtn');
         if (pauseBtn) pauseBtn.onclick = togglePause;
