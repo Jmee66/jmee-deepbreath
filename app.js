@@ -4782,8 +4782,6 @@ class ChasseModule {
 
     init() {
         this.setupTabSwitcher();
-        this.setupProtocolButtons();
-        this.setupRecupTimer();
         this.setupGuidedModalButtons();
     }
 
@@ -4798,18 +4796,6 @@ class ChasseModule {
                 const panel = document.getElementById('chasse-panel-' + target);
                 if (panel) panel.classList.add('active');
             });
-        });
-    }
-
-    // ── Protocol guided timers ──
-    setupProtocolButtons() {
-        // Use event delegation on document for reliability
-        document.addEventListener('click', (e) => {
-            const btn = e.target.closest('.wbu-btn[data-protocol], .btn-chasse-start[data-protocol]');
-            if (btn) {
-                const protocol = btn.dataset.protocol;
-                if (protocol) this.startGuidedProtocol(protocol);
-            }
         });
     }
 
@@ -5006,21 +4992,10 @@ class ChasseModule {
     }
 
     // ── Recovery quick timer ──
-    setupRecupTimer() {
-        document.querySelectorAll('.btn-recup-quick').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const seconds = parseInt(btn.dataset.seconds);
-                this.startRecupTimer(seconds);
-                document.querySelectorAll('.btn-recup-quick').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
-        });
-
-        const stopBtn = document.getElementById('recupTimerStop');
-        if (stopBtn) stopBtn.addEventListener('click', () => this.stopRecupTimer());
-    }
-
-    startRecupTimer(seconds) {
+    startRecupTimer(seconds, btn) {
+        // Highlight active button
+        document.querySelectorAll('.btn-recup-quick').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
         if (this.recupTimer) clearInterval(this.recupTimer);
         this.recupTotal = seconds;
         this.recupRemaining = seconds;
