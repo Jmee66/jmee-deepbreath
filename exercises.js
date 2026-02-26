@@ -137,6 +137,32 @@ const EXERCISES = {
         warning: 'Ne pas pratiquer en eau. Arrêtez si vertiges ou fourmillements intenses. Les premières sessions peuvent générer un inconfort marqué — c\'est normal et attendu.'
     },
 
+    'co2-vhl-classic': {
+        name: 'VHL Classique Woorons',
+        category: 'respiration',
+        description: 'Protocole VHL original de Woorons — 2 respirations normales puis pause poumons bas. Durée de pause plus longue (6s). Conçu pour la progression après maîtrise du protocole CO2.',
+        science: 'Woorons et al. (2014, 2017) : protocole source des études sur la VHL. 2 respirations normales + pause end-expiratory 6-8s × 8 cycles. Charge CO2 progressive supérieure au protocole court. Recommandé pour les pratiquants ayant complété 4 semaines de VHL CO2 standard.',
+        isVHL: true,
+        duration: 14,
+        cycles: 8,
+        breathsPerCycle: 2,
+        holdDuration: 6,
+        restBreaths: 4,
+        phases: [
+            { name: 'Respirez', duration: 3, action: 'inhale' },
+            { name: 'Expirez', duration: 3, action: 'exhale' },
+            { name: 'Pause CO2', duration: 6, action: 'holdEmpty' }
+        ],
+        instructions: {
+            start: 'VHL Classique Woorons. 2 respirations normales, puis expirez normalement et faites une pause poumons bas 6 secondes. 8 cycles.',
+            breathe: 'Respirez normalement. Préparez la pause.',
+            hold: 'Expirez normalement — pas à fond. Pause 6 secondes. Poumons à mi-vide.',
+            rest: 'Respirez librement. Récupérez avant le prochain cycle.',
+            complete: 'Session VHL Classique terminée. Protocole source Woorons. Progression vers 8s de pause possible.'
+        },
+        warning: 'Ne pas pratiquer en eau. Arrêtez si vertiges ou fourmillements intenses. Réservé aux pratiquants ayant déjà maîtrisé le VHL CO2 standard.'
+    },
+
     'imst': {
         name: 'IMST — Force Inspiratoire',
         category: 'respiration',

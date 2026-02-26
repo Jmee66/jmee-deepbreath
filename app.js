@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '1.00';
+const APP_VERSION = '1.01';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -2806,7 +2806,7 @@ class JmeeDeepBreathApp {
         const circle = document.getElementById('breathCircle');
         circle.classList.remove('inhale', 'exhale', 'hold', 'active');
         circle.classList.add('holdEmpty', 'active');
-        circle.style.setProperty('--phase-duration', '1s');
+        circle.style.setProperty('--phase-duration', `${holdDur}s`);
 
         if (window.breathSounds) window.breathSounds.playPhase('holdEmpty', holdDur);
         if (window.voiceGuide?.enabled) window.voiceGuide.speak(exercise.instructions.hold);
@@ -2862,10 +2862,7 @@ class JmeeDeepBreathApp {
 
         const circle = document.getElementById('breathCircle');
         circle.classList.remove('holdEmpty', 'hold', 'active');
-        circle.classList.add('inhale');
-        circle.style.setProperty('--phase-duration', '4s');
 
-        if (window.breathSounds) window.breathSounds.playPhase('inhale', restCount * 6);
         if (window.voiceGuide?.enabled) window.voiceGuide.speak(exercise.instructions.rest);
 
         this._vhlRunRestBreath(restCount);
@@ -2883,8 +2880,19 @@ class JmeeDeepBreathApp {
         document.getElementById('cycleCounter').textContent =
             `Repos libre — encore ${remaining} souffle${remaining > 1 ? 's' : ''}`;
 
-        // inhale 3s + exhale 3s
+        // inhale 3s
+        const circle = document.getElementById('breathCircle');
+        circle.classList.remove('exhale', 'holdEmpty', 'hold');
+        circle.classList.add('inhale');
+        circle.style.setProperty('--phase-duration', '3s');
+        if (window.breathSounds) window.breathSounds.playPhase('inhale', 3);
+
         this.startPhaseTimer(3, () => {
+            // exhale 3s
+            circle.classList.remove('inhale');
+            circle.classList.add('exhale');
+            circle.style.setProperty('--phase-duration', '3s');
+            if (window.breathSounds) window.breathSounds.playPhase('exhale', 3);
             this.startPhaseTimer(3, () => {
                 this._vhlRunRestBreath(remaining - 1);
             });

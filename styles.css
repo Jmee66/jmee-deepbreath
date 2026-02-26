@@ -923,13 +923,11 @@ body::before {
 .breath-circle.hold {
     /* Poumons pleins - reste à la taille max */
     transform: scale(1.2);
-    transition: transform 0.3s ease-out;
 }
 
 .breath-circle.holdEmpty {
     /* Poumons vides - reste à la taille min */
     transform: scale(0.85);
-    transition: transform 0.3s ease-out;
 }
 
 .breath-inner {
