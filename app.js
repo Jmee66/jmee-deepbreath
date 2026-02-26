@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '1.04';
+const APP_VERSION = '1.05';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -2682,8 +2682,7 @@ class JmeeDeepBreathApp {
                 clearInterval(this.phaseTimer);
                 this.phaseTimer = null;
                 if (window.breathSounds) window.breathSounds.stop();
-                this._pbhPrepMidSpoken = false;
-                this._pbhRunPrepPhase();
+                this._pbhRunInhalePhase(); // cyclic sighing uniquement au démarrage
             }
         }, 100);
     }
@@ -3059,7 +3058,7 @@ class JmeeDeepBreathApp {
             if (this._vhlsCycle > this._vhlsSeriesTotal) {
                 this.completeExercise();
             } else {
-                this._vhlsRunPrepPhase();
+                this._vhlsRunHoldPhase(); // cyclic sighing uniquement au démarrage
             }
             return;
         }
