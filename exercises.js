@@ -1545,6 +1545,18 @@ window.GUIDE_DETAILS = {
             "Récupérez 4 respirations libres entre chaque série. Augmentez la pause de +1 sec/semaine (5s → 6s → 7s). L'inconfort CO2 durant la pause est le stimulus — observez-le sans y céder"
         ]
     },
+    'co2-vhl-static': {
+        science: "Le VHL Statique prolonge le principe du VHL CO2 avec une pause FRC beaucoup plus longue (20s+). À la FRC (Functional Residual Capacity — position d'équilibre naturelle du thorax à ~40% CV), le CO2 s'accumule rapidement car le tampon gazeux résiduel est faible. Une pause de 20s à la FRC génère une hypercapnie (PCO2 ~60-65 mmHg) et une légère hypoxie (PO2 ~85-90 mmHg) — une combinaison qui simule efficacement les conditions d'une apnée statique réelle. Le relâchement de la gorge (glotte ouverte, méthode Molchanovs/Néry) réduit la signalisation d'alarme CO2 : la pression perçue diminue sans que la charge physiologique ne change. La préparation par cyclic sighing (Huberman/Stanford 2023) prépare le système nerveux autonome à rester calme sous stress CO2.",
+        practice: [
+            "Prérequis : maîtrisez le VHL CO2 standard depuis au moins 4 semaines avant de débuter ce protocole",
+            "Cyclic Sighing (3 min) : inspirez à fond, ajoutez un snif court en haut, puis expirez très lentement par le nez. Répétez. Cela active le nerf vague et calme le réflexe de panique CO2",
+            "Pause VHL : à la fin d'une expiration naturelle (relâchement passif de la poitrine — NE PAS vider à fond), bloquez la respiration",
+            "En pause : gorge ouverte (tentez de déglutir — si possible, vous êtes bien relâché), mâchoire détendue, mains ouvertes. Observez l'inconfort CO2 comme une sensation neutre, pas une menace",
+            "Appuyez ✋ Sortir quand vous atteignez votre limite, ou laissez le compte à rebours se terminer",
+            "Récupération : exactement le nombre de souffles paramétrés, pas un de plus. L'hypercapnie maintenue entre les cycles est l'entraînement",
+            "Notez votre gorgeScore (1-5) après chaque session — c'est votre principal indicateur de progression"
+        ]
+    },
     'wimhof': {
         science: "L'hyperventilation contrôlée provoque une alcalose respiratoire temporaire (le pH sanguin augmente) et abaisse fortement le CO2, supprimant l'envie de respirer pendant la rétention. Pendant la phase de rétention poumons vides, l'adrénaline est libérée, activant le système immunitaire inné. Étude Radboud University 2014 (Kox et al.) : les pratiquants présentent une réponse immunitaire modulée avec moins de symptômes inflammatoires.",
         practice: [
