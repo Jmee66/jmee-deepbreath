@@ -665,6 +665,29 @@
                     </div>
                 </div>
 
+                <!-- VHL Statique -->
+                <div class="exercise-card" data-exercise="co2-vhl-static">
+                    <div class="exercise-badge">Woorons</div>
+                    <h3>VHL Statique</h3>
+                    <p>Pause FRC longue (20s+) sur bas volume pulmonaire. Gorge relâchée, progression par paliers CO2. Post VHL CO2 avancé.</p>
+                    <div class="exercise-meta">
+                        <span>12 min</span>
+                        <span>•</span>
+                        <span>CO2 avancé</span>
+                        <span>•</span>
+                        <span>6 cycles</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="co2-vhl-static">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- IMST — Force Inspiratoire -->
                 <div class="exercise-card" data-exercise="imst">
                     <div class="exercise-badge">Craighead</div>
@@ -4225,6 +4248,81 @@
                             </div>
                         </div>
                         <p class="settings-note">Augmentez la durée de pause de +1 sec par semaine (5s → 6s → 7s). L'inconfort CO2 pendant la pause est le stimulus — c'est normal.</p>
+                    </div>
+
+                    <!-- VHL Classique Woorons -->
+                    <div class="exercise-settings" data-exercise="co2-vhl-classic">
+                        <h4>VHL Classique Woorons <span class="ratio-badge">Woorons</span></h4>
+                        <div class="settings-row">
+                            <label>Nombre de séries</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="3" max="12" value="8" data-param="cycles">
+                                <span>séries</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Respirations avant pause</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="4" value="2" data-param="breathsPerCycle">
+                                <span>souffles</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Durée pause CO2</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="4" max="15" value="6" data-param="holdDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Respirations de repos</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="8" value="4" data-param="restBreaths">
+                                <span>souffles</span>
+                            </div>
+                        </div>
+                        <p class="settings-note">Protocole Woorons classique. Progression : +1s de pause par semaine (6s → 7s → 8s). Après 4 semaines de VHL CO2 standard.</p>
+                    </div>
+
+                    <!-- VHL Statique -->
+                    <div class="exercise-settings" data-exercise="co2-vhl-static">
+                        <h4>VHL Statique <span class="ratio-badge">Woorons</span></h4>
+                        <div class="settings-row">
+                            <label>Durée d'apnée</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="10" max="60" value="20" step="5" data-param="holdDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Respirations de récup</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="5" value="3" data-param="restBreaths">
+                                <span>souffles</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Nombre de cycles</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="3" max="10" value="6" data-param="cycles">
+                                <span>cycles</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Préparation (cyclic sighing)</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="60" max="300" value="180" step="30" data-param="prepDuration">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Volume</label>
+                            <select data-param="volumeMode" style="flex:1;background:var(--bg-tertiary);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);color:var(--text-primary);padding:var(--space-xs) var(--space-sm);font-family:inherit;font-size:0.88rem;">
+                                <option value="frc">FRC — Expir passive (débutant)</option>
+                                <option value="rv">RV — Expir forcée (avancé)</option>
+                            </select>
+                        </div>
+                        <p class="settings-note">Augmentez +5s d'apnée quand gorgeScore ≥ 4 sur 3 sessions consécutives. Réduisez de 1 souffle récup pour plus d'acidose. Ne jamais pratiquer en eau.</p>
                     </div>
 
                     <!-- IMST — Force Inspiratoire -->

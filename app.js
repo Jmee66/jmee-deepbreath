@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '1.01';
+const APP_VERSION = '1.02';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -1526,6 +1526,16 @@ class JmeeDeepBreathApp {
             return exercise;
         }
 
+        // VHL Statique (Woorons — pause longue FRC)
+        if (exercise.isVHLStatic) {
+            exercise.cycles       = userSettings.cycles       || exercise.cycles;
+            exercise.holdDuration = userSettings.holdDuration || exercise.holdDuration;
+            exercise.restBreaths  = userSettings.restBreaths  || exercise.restBreaths;
+            exercise.prepDuration = userSettings.prepDuration || exercise.prepDuration;
+            exercise.volumeMode   = userSettings.volumeMode   || exercise.volumeMode;
+            return exercise;
+        }
+
         // VHL (Hypoventilation à bas volume)
         if (exercise.isVHL) {
             exercise.cycles       = userSettings.cycles       || exercise.cycles;
@@ -2072,6 +2082,8 @@ class JmeeDeepBreathApp {
             this.startBreathLightExercise();
         } else if (exercise.isPassiveBreathHanger) {
             this.startPassiveBreathHanger();
+        } else if (exercise.isVHLStatic) {
+            this.startVHLStaticExercise();
         } else if (exercise.isVHL) {
             this.startVHLExercise();
         } else if (exercise.isIMST) {
@@ -2895,6 +2907,180 @@ class JmeeDeepBreathApp {
             if (window.breathSounds) window.breathSounds.playPhase('exhale', 3);
             this.startPhaseTimer(3, () => {
                 this._vhlRunRestBreath(remaining - 1);
+            });
+        });
+    }
+
+    // ==========================================
+    // VHL Statique (Woorons — pause longue FRC)
+    // ==========================================
+
+    startVHLStaticExercise() {
+        const exercise = this.currentExercise;
+        this._vhlsCycle = 1;
+        this._vhlsSeriesTotal = exercise.cycles || 6;
+        this._vhlsHoldDuration = exercise.holdDuration || 20;
+        this._vhlsRestBreaths = exercise.restBreaths || 3;
+        this._vhlsPrepDuration = exercise.prepDuration || 180;
+        this._vhlsVolumeMode = exercise.volumeMode || 'frc';
+        this._vhlsHoldStart = null;
+        this._vhlsPausedMs = 0;
+        this._vhlsPauseStart = null;
+
+        document.getElementById('cycleCounter').textContent =
+            `Cycle 1 / ${this._vhlsSeriesTotal}`;
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.start;
+
+        if (window.voiceGuide?.enabled) window.voiceGuide.speak(exercise.instructions.start);
+
+        const btnUrge = document.getElementById('btnHangerUrge');
+        const btnStop = document.getElementById('btnHangerStop');
+        if (btnUrge) btnUrge.style.display = 'none';
+        if (btnStop) btnStop.style.display = 'none';
+
+        setTimeout(() => this._vhlsRunPrepPhase(), 2000);
+    }
+
+    _vhlsRunPrepPhase() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+        const prepDur = this._vhlsPrepDuration;
+
+        document.getElementById('breathPhase').textContent = 'Préparation';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.prep;
+        document.getElementById('cycleCounter').textContent =
+            `Cycle ${this._vhlsCycle}/${this._vhlsSeriesTotal} — Cyclic Sighing ${prepDur}s`;
+
+        const circle = document.getElementById('breathCircle');
+        circle.classList.remove('holdEmpty', 'hold', 'exhale', 'active');
+        circle.classList.add('inhale', 'active');
+        circle.style.setProperty('--phase-duration', '5s');
+
+        if (window.breathSounds) window.breathSounds.playPhase('inhale', prepDur);
+        if (window.voiceGuide?.enabled) window.voiceGuide.speak(exercise.instructions.prep);
+
+        this.startPhaseTimer(prepDur, () => {
+            this._vhlsRunHoldPhase();
+        });
+    }
+
+    _vhlsRunHoldPhase() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+        const holdDur = this._vhlsHoldDuration;
+
+        document.getElementById('breathPhase').textContent = 'Pause VHL';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.hold;
+        document.getElementById('cycleCounter').textContent =
+            `Cycle ${this._vhlsCycle}/${this._vhlsSeriesTotal} — Pause ${holdDur}s (poumons bas)`;
+
+        const circle = document.getElementById('breathCircle');
+        circle.classList.remove('inhale', 'exhale', 'hold', 'active');
+        circle.classList.add('holdEmpty', 'active');
+        circle.style.setProperty('--phase-duration', `${holdDur}s`);
+
+        const btnStop = document.getElementById('btnHangerStop');
+        if (btnStop) {
+            btnStop.style.display = '';
+            btnStop.onclick = () => {
+                if (!this._vhlsHoldStart) return;
+                const elapsed = (Date.now() - this._vhlsHoldStart - this._vhlsPausedMs) / 1000;
+                this._vhlsEndHold(elapsed);
+            };
+        }
+
+        if (window.breathSounds) window.breathSounds.playPhase('holdEmpty', holdDur);
+        if (window.voiceGuide?.enabled) window.voiceGuide.speak(exercise.instructions.hold);
+
+        const timerDisplay = document.getElementById('breathTimer');
+        const progressBar = document.getElementById('progressBar');
+        const circumference = 2 * Math.PI * 90;
+        this._vhlsHoldStart = Date.now();
+        this._vhlsPausedMs = 0;
+        this._vhlsPauseStart = null;
+
+        if (this.phaseTimer) clearInterval(this.phaseTimer);
+        this.phaseTimer = setInterval(() => {
+            if (!this.isRunning) { clearInterval(this.phaseTimer); return; }
+            if (this.isPaused) {
+                if (!this._vhlsPauseStart) this._vhlsPauseStart = Date.now();
+                return;
+            }
+            if (this._vhlsPauseStart) {
+                this._vhlsPausedMs += Date.now() - this._vhlsPauseStart;
+                this._vhlsPauseStart = null;
+            }
+
+            const elapsed = (Date.now() - this._vhlsHoldStart - this._vhlsPausedMs) / 1000;
+            const remaining = Math.max(0, holdDur - elapsed);
+            timerDisplay.textContent = this.formatTime(remaining);
+            progressBar.style.strokeDashoffset = circumference * (1 - elapsed / holdDur);
+
+            if (elapsed >= holdDur) {
+                clearInterval(this.phaseTimer);
+                this.phaseTimer = null;
+                this._vhlsEndHold(elapsed);
+            }
+        }, 100);
+    }
+
+    _vhlsEndHold(duration) {
+        clearInterval(this.phaseTimer);
+        this.phaseTimer = null;
+        if (window.breathSounds) window.breathSounds.stop();
+        const btnStop = document.getElementById('btnHangerStop');
+        if (btnStop) btnStop.style.display = 'none';
+        this._vhlsRunRestPhase();
+    }
+
+    _vhlsRunRestPhase() {
+        if (!this.isRunning) return;
+        const exercise = this.currentExercise;
+        const restCount = this._vhlsRestBreaths;
+
+        document.getElementById('breathPhase').textContent = 'Récupérez';
+        document.getElementById('exerciseInstruction').textContent = exercise.instructions.rest;
+        document.getElementById('cycleCounter').textContent =
+            `Récup — Cycle ${this._vhlsCycle}/${this._vhlsSeriesTotal} dans ${restCount} souffles`;
+
+        const circle = document.getElementById('breathCircle');
+        circle.classList.remove('holdEmpty', 'hold', 'active');
+
+        if (window.voiceGuide?.enabled) window.voiceGuide.speak(exercise.instructions.rest);
+
+        this._vhlsRunRestBreath(restCount);
+    }
+
+    _vhlsRunRestBreath(remaining) {
+        if (!this.isRunning) return;
+        if (remaining <= 0) {
+            if (window.breathSounds) window.breathSounds.stop();
+            this._vhlsCycle++;
+            if (this._vhlsCycle > this._vhlsSeriesTotal) {
+                this.completeExercise();
+            } else {
+                this._vhlsRunPrepPhase();
+            }
+            return;
+        }
+
+        document.getElementById('breathTimer').textContent = `${remaining}`;
+        document.getElementById('cycleCounter').textContent =
+            `Récup — encore ${remaining} souffle${remaining > 1 ? 's' : ''}`;
+
+        const circle = document.getElementById('breathCircle');
+        circle.classList.remove('exhale', 'holdEmpty', 'hold');
+        circle.classList.add('inhale');
+        circle.style.setProperty('--phase-duration', '3s');
+        if (window.breathSounds) window.breathSounds.playPhase('inhale', 3);
+
+        this.startPhaseTimer(3, () => {
+            circle.classList.remove('inhale');
+            circle.classList.add('exhale');
+            circle.style.setProperty('--phase-duration', '3s');
+            if (window.breathSounds) window.breathSounds.playPhase('exhale', 3);
+            this.startPhaseTimer(3, () => {
+                this._vhlsRunRestBreath(remaining - 1);
             });
         });
     }

@@ -163,6 +163,34 @@ const EXERCISES = {
         warning: 'Ne pas pratiquer en eau. Arrêtez si vertiges ou fourmillements intenses. Réservé aux pratiquants ayant déjà maîtrisé le VHL CO2 standard.'
     },
 
+    'co2-vhl-static': {
+        name: 'VHL Statique',
+        category: 'respiration',
+        description: 'Apnée sur bas volume pulmonaire (FRC) avec pause longue. Gorge relâchée, suspension passive — protocole Woorons adapté à l\'entraînement CO2 avancé.',
+        science: 'Woorons et al. (2014-2025) : pause end-expiratory longue (≥20s) → accumulation CO2/hypoxie contrôlée. La gorge relâchée (glotte ouverte) réduit la pression réflexe. Progression par paliers : +5s apnée OU −1 souffle récup selon confort (gorgeScore, spasmes).',
+        isVHLStatic: true,
+        duration: 12,
+        cycles: 6,
+        holdDuration: 20,
+        restBreaths: 3,
+        prepDuration: 180,
+        volumeMode: 'frc',
+        phases: [
+            { name: 'Préparez', duration: 180, action: 'exhale' },
+            { name: 'Expirez', duration: 3, action: 'holdEmpty' },
+            { name: 'Pause VHL', duration: 20, action: 'holdEmpty' },
+            { name: 'Récupérez', duration: 18, action: 'inhale' }
+        ],
+        instructions: {
+            start: 'VHL Statique. Préparation cyclic sighing : double inspirez (snif sonore), expirez lentement. 3 minutes.',
+            prep: 'Cyclic Sighing. Inspirez profondément, snif court, expirez lentement par le nez. Relâchez tout le visage.',
+            hold: 'Expirez passivement — relâche naturelle de la poitrine. Bloque. Gorge ouverte, mâchoire relâchée. Reste passif.',
+            rest: 'Respirez librement. Exactement le nombre de souffles paramétrés, puis prochain cycle.',
+            complete: 'VHL Statique terminé. Notez vos sensations. La progression se fait sur 3 semaines minimum.'
+        },
+        warning: 'Ne jamais pratiquer en eau. Arrêter si fourmillements intenses ou perte de contrôle. L\'inconfort CO2 est attendu — la panique ne l\'est pas.'
+    },
+
     'imst': {
         name: 'IMST — Force Inspiratoire',
         category: 'respiration',

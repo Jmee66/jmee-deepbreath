@@ -378,9 +378,9 @@ class CoachAI {
             phaseTimings,
         };
 
-        // Passive Breath Hanger — attach hold data from app engine
-        const isHanger = exercise.isPassiveBreathHanger;
-        if (isHanger && window.app && window.app._pbhSessionData) {
+        // Passive Breath Hanger ou VHL Statique — afficher section gorge/mental
+        const isHanger = exercise.isPassiveBreathHanger || exercise.isVHLStatic;
+        if (exercise.isPassiveBreathHanger && window.app && window.app._pbhSessionData) {
             this.pendingSession.hangerData = window.app._pbhSessionData;
         }
 
@@ -475,7 +475,8 @@ class CoachAI {
     saveFeedback() {
         if (!this.pendingSession) return;
 
-        const isHanger = this.pendingSession.exerciseId === 'passive-breath-hanger';
+        const isHanger = this.pendingSession.exerciseId === 'passive-breath-hanger'
+                      || this.pendingSession.exerciseId === 'co2-vhl-static';
         const hangerFeedback = isHanger ? this._getHangerFeedback() : {};
 
         const session = {
@@ -500,7 +501,46 @@ class CoachAI {
         }
 
         if (isHanger) this._checkHangerProgression(session);
+        this._checkVHLStaticProgression(session);
         if (window.app) window.app.showToast('Session enregistree');
+    }
+
+    _checkVHLStaticProgression(session) {
+        if (session.exerciseId !== 'co2-vhl-static') return;
+
+        const vhlSessions = this.sessions
+            .filter(s => s.exerciseId === 'co2-vhl-static' && s.gorgeScore)
+            .slice(-3);
+
+        if (vhlSessions.length < 3) return;
+
+        const last3 = vhlSessions.slice(-3);
+        const gorgeOk = last3.every(s => s.gorgeScore >= 4);
+        const stressOk = last3.every(s => !s.stressAfter || s.stressAfter <= (last3[0].stressBefore || 3));
+
+        // Palier Confort → progression
+        if (gorgeOk && stressOk) {
+            setTimeout(() => {
+                window.app?.showToast('🎯 VHL Statique : 3 sessions gorge ouverte — essayez −1 souffle récup OU +5s apnée', 'success');
+            }, 1500);
+            return;
+        }
+
+        // Palier Alerte → recul
+        const lastSession = last3[last3.length - 1];
+        if (lastSession.stressAfter > (lastSession.stressBefore || 3) || lastSession.gorgeScore <= 2) {
+            setTimeout(() => {
+                window.app?.showToast('⚠️ VHL Statique : session difficile — réduire l\'apnée de 5s ou ajouter 1 souffle de récup', 'warning');
+            }, 1500);
+            return;
+        }
+
+        // Palier Stagnation → maintien + tip
+        if (last3.every(s => s.gorgeScore === 3)) {
+            setTimeout(() => {
+                window.app?.showToast('📊 VHL Statique : gorgeScore stable à 3 — focus sur relâchement nuque/mâchoire', 'info');
+            }, 1500);
+        }
     }
 
     skipFeedback() {
