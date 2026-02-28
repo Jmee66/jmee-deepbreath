@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '1.12.2';
+const APP_VERSION = '1.12.3';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -131,7 +131,8 @@ class JmeeDeepBreathApp {
                     zoneDuration: 60
                 },
                 'deep-sleep-478': {
-                    duration: 15
+                    duration: 15,
+                    rhythmBong: true
                 },
                 'pettlep': {
                     phasePhysical: 60,
@@ -1269,6 +1270,17 @@ class JmeeDeepBreathApp {
                 input.addEventListener('input', applyAndSave);
             });
         });
+
+        // Toggle bong rythme 4-7-8 pendant body scan (Deep Sleep)
+        const bongToggle = document.getElementById('deepSleepRhythmBong');
+        if (bongToggle) {
+            bongToggle.checked = this.settings.exercises?.['deep-sleep-478']?.rhythmBong ?? true;
+            bongToggle.addEventListener('change', () => {
+                if (!this.settings.exercises['deep-sleep-478']) this.settings.exercises['deep-sleep-478'] = {};
+                this.settings.exercises['deep-sleep-478'].rhythmBong = bongToggle.checked;
+                this.saveSettings(true);
+            });
+        }
 
         // En mode optimal : quand apneaMax change, recalculer tous les inputs exercices en temps réel
         const apneaMinutes = document.getElementById('apneaMinutes');
@@ -3691,7 +3703,8 @@ class JmeeDeepBreathApp {
         const exercise = this.currentExercise;
 
         // Démarrer la boucle rythme 4-7-8 de fond au premier segment (bong discret)
-        if (this.guidedSegmentIndex === 0 && !this.deepSleepRhythmActive) {
+        const rhythmBong = this.settings.exercises?.['deep-sleep-478']?.rhythmBong ?? true;
+        if (this.guidedSegmentIndex === 0 && !this.deepSleepRhythmActive && rhythmBong) {
             this.deepSleepRhythmActive = true;
             this.run478Rhythm();
         }
