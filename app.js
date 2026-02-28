@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '1.06';
+const APP_VERSION = '1.07';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -2270,6 +2270,12 @@ class JmeeDeepBreathApp {
         progressBar.style.strokeDashoffset = circumference;
 
         this.phaseTimer = setInterval(() => {
+            // Bug F : stop immediately if exercise was closed (race-condition guard)
+            if (!this.isRunning) {
+                clearInterval(this.phaseTimer);
+                this.phaseTimer = null;
+                return;
+            }
             if (this.isPaused) {
                 if (!pauseStart) pauseStart = Date.now();
                 return;
@@ -2472,6 +2478,7 @@ class JmeeDeepBreathApp {
         // Visual: inhale animation (cyclic sighing feel)
         this.updateBreathPhase({ name: 'Préparation', action: 'inhale', duration: 4 }, null);
 
+        if (window.breathSounds) window.breathSounds.stop();
         if (window.breathSounds) {
             window.breathSounds.playPhase('inhale', prepDur);
         }
@@ -2927,7 +2934,8 @@ class JmeeDeepBreathApp {
             `Repos — Série ${this._vhlSerie}/${this._vhlSeriesTotal} dans ${restCount} respirations`;
 
         const circle = document.getElementById('breathCircle');
-        circle.classList.remove('holdEmpty', 'hold', 'active');
+        // Bug C : also remove inhale/exhale to avoid stacked scale classes
+        circle.classList.remove('inhale', 'exhale', 'holdEmpty', 'hold', 'active');
 
         if (window.voiceGuide?.enabled) window.voiceGuide.speak(exercise.instructions.rest);
 
@@ -3107,7 +3115,8 @@ class JmeeDeepBreathApp {
             `Récup — Cycle ${this._vhlsCycle}/${this._vhlsSeriesTotal} dans ${restCount} souffles`;
 
         const circle = document.getElementById('breathCircle');
-        circle.classList.remove('holdEmpty', 'hold', 'active');
+        // Bug D : also remove inhale/exhale to avoid stacked scale classes
+        circle.classList.remove('inhale', 'exhale', 'holdEmpty', 'hold', 'active');
 
         if (window.voiceGuide?.enabled) window.voiceGuide.speak(exercise.instructions.rest);
 
@@ -3397,6 +3406,7 @@ class JmeeDeepBreathApp {
 
         // Brief inhale
         setTimeout(() => {
+            if (!this.isRunning) return;  // Bug G : guard orphan setTimeout
             const circle = document.getElementById('breathCircle');
             circle.classList.remove('inhale');
             circle.classList.add('hold');
@@ -3412,7 +3422,10 @@ class JmeeDeepBreathApp {
                     document.getElementById('exerciseInstruction').textContent =
                         `Round ${this.wimHofRound} - Recommencez les respirations`;
 
-                    setTimeout(() => this.runWimHofBreathing(), 2000);
+                    setTimeout(() => {
+                        if (!this.isRunning) return;  // Bug G : guard orphan setTimeout
+                        this.runWimHofBreathing();
+                    }, 2000);
                 }
             });
         }, 2000);
@@ -3438,11 +3451,13 @@ class JmeeDeepBreathApp {
         if (window.voiceGuide && window.voiceGuide.enabled) {
             window.voiceGuide.speak(exercise.instructions.start, () => {
                 setTimeout(() => {
+                    if (!this.isRunning) return;  // Bug H : guard orphan setTimeout
                     this.runGuidedSegment();
                 }, 1000);
             });
         } else {
             setTimeout(() => {
+                if (!this.isRunning) return;  // Bug H : guard orphan setTimeout
                 this.runGuidedSegment();
             }, 3000);
         }
@@ -4149,10 +4164,16 @@ class JmeeDeepBreathApp {
         // Speak intro
         if (window.voiceGuide && window.voiceGuide.enabled) {
             window.voiceGuide.speak(exercise.instructions.start, () => {
-                setTimeout(() => this.runApneaGuidedCycle(), 1000);
+                setTimeout(() => {
+                    if (!this.isRunning) return;  // Bug I : guard orphan setTimeout
+                    this.runApneaGuidedCycle();
+                }, 1000);
             });
         } else {
-            setTimeout(() => this.runApneaGuidedCycle(), 3000);
+            setTimeout(() => {
+                if (!this.isRunning) return;  // Bug I : guard orphan setTimeout
+                this.runApneaGuidedCycle();
+            }, 3000);
         }
     }
 
@@ -4175,6 +4196,7 @@ class JmeeDeepBreathApp {
         this.updateBreathPhase({ name: 'Respirez', action: 'inhale', duration: exercise.breatheUpDuration }, 'hold');
 
         if (window.breathSounds) {
+            window.breathSounds.stop();
             window.breathSounds.playPhase('inhale', exercise.breatheUpDuration);
         }
 
