@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '1.12';
+const APP_VERSION = '1.12.1';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -3646,30 +3646,30 @@ class JmeeDeepBreathApp {
         const cycleNum = total - remaining + 1;
         document.getElementById('cycleCounter').textContent = `Cycle ${cycleNum} / ${total}`;
 
-        // Inhale 4s
-        document.getElementById('breathPhase').textContent = 'Inspirez';
-        document.getElementById('exerciseInstruction').textContent = ex.instructions.inhale478;
+        // Inhale 4s — stop son en premier pour éviter tout overlap
+        if (window.breathSounds) window.breathSounds.stop();
         this.updateBreathPhase({ name: 'Inspirez', action: 'inhale', duration: 4 }, 'exhale');
+        document.getElementById('exerciseInstruction').textContent = ex.instructions.inhale478;
         if (window.voiceGuide?.enabled) window.voiceGuide.speak(ex.instructions.inhale478);
-        if (window.breathSounds) { window.breathSounds.stop(); window.breathSounds.playPhase('inhale', 4); }
+        if (window.breathSounds) window.breathSounds.playPhase('inhale', 4);
 
         this.startPhaseTimer(4, () => {
             if (!this.isRunning) return;
             // Hold 7s
-            document.getElementById('breathPhase').textContent = 'Retenez';
-            document.getElementById('exerciseInstruction').textContent = ex.instructions.hold478;
+            if (window.breathSounds) window.breathSounds.stop();
             this.updateBreathPhase({ name: 'Retenez', action: 'hold', duration: 7 }, 'inhale');
+            document.getElementById('exerciseInstruction').textContent = ex.instructions.hold478;
             if (window.voiceGuide?.enabled) window.voiceGuide.speak(ex.instructions.hold478);
-            if (window.breathSounds) { window.breathSounds.stop(); window.breathSounds.playPhase('hold', 7); }
+            if (window.breathSounds) window.breathSounds.playPhase('hold', 7);
 
             this.startPhaseTimer(7, () => {
                 if (!this.isRunning) return;
                 // Exhale 8s
-                document.getElementById('breathPhase').textContent = 'Expirez';
-                document.getElementById('exerciseInstruction').textContent = ex.instructions.exhale478;
+                if (window.breathSounds) window.breathSounds.stop();
                 this.updateBreathPhase({ name: 'Expirez', action: 'exhale', duration: 8 }, 'hold');
+                document.getElementById('exerciseInstruction').textContent = ex.instructions.exhale478;
                 if (window.voiceGuide?.enabled) window.voiceGuide.speak(ex.instructions.exhale478);
-                if (window.breathSounds) { window.breathSounds.stop(); window.breathSounds.playPhase('exhale', 8); }
+                if (window.breathSounds) window.breathSounds.playPhase('exhale', 8);
 
                 this.startPhaseTimer(8, () => {
                     this.run478Block(remaining - 1, total, onComplete);

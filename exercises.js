@@ -974,9 +974,9 @@ const EXERCISES = {
         isDeepSleep: true,
         instructions: {
             start:     'Allongez-vous. Fermez les yeux. Vous n\'avez plus rien à faire ce soir.',
-            inhale478: 'Inspirez... un... deux... trois... quatre',
-            hold478:   'Retenez... un... deux... trois... quatre... cinq... six... sept',
-            exhale478: 'Expirez... un... deux... trois... quatre... cinq... six... sept... huit'
+            inhale478: 'Inspirez',
+            hold478:   'Retenez',
+            exhale478: 'Expirez'
         },
         installation: { duration: 30, instruction: 'Allongez-vous. Fermez les yeux. Vous n\'avez plus rien à faire.' },
         segments: [
