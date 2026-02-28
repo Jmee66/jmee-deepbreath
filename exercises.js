@@ -965,6 +965,39 @@ const EXERCISES = {
         }
     },
 
+    'deep-sleep-478': {
+        name: 'Deep Sleep 4-7-8',
+        category: 'visualisation',
+        description: 'Endormissement profond : blocs 4-7-8 guidés + body scan progressif — 5 à 45 min',
+        science: 'Méthode Dr. Andrew Weil — activation GABA et parasympathique profond',
+        duration: 15,
+        isDeepSleep: true,
+        instructions: {
+            start:     'Allongez-vous. Fermez les yeux. Vous n\'avez plus rien à faire ce soir.',
+            inhale478: 'Inspirez... un... deux... trois... quatre',
+            hold478:   'Retenez... un... deux... trois... quatre... cinq... six... sept',
+            exhale478: 'Expirez... un... deux... trois... quatre... cinq... six... sept... huit'
+        },
+        installation: { duration: 30, instruction: 'Allongez-vous. Fermez les yeux. Vous n\'avez plus rien à faire.' },
+        segments: [
+            { zone: 'Respiration naturelle', duration: 20,  instruction: 'Observez votre respiration naturelle. Ne la contrôlez pas.' },
+            { zone: 'Sommet du crâne',       duration: 25,  instruction: 'Portez toute votre attention au sommet de votre crâne. Sentez-le se détendre.' },
+            { zone: 'Visage',                duration: 30,  instruction: 'Votre front se détend. Vos yeux sont lourds, très lourds.' },
+            { zone: 'Mâchoire et cou',       duration: 25,  instruction: 'Laissez votre mâchoire s\'entrouvrir légèrement. Le cou se relâche.' },
+            { zone: 'Épaules',               duration: 30,  instruction: 'Vos épaules s\'enfoncent dans le matelas. Lourdes.' },
+            { zone: 'Bras et mains',         duration: 30,  instruction: 'Vos bras sont si lourds qu\'il serait impossible de les soulever.' },
+            { zone: 'Poitrine',              duration: 25,  instruction: 'Votre poitrine monte et descend doucement. Sans effort.' },
+            { zone: 'Ventre',                duration: 25,  instruction: 'Votre ventre se détend complètement. Chaque expiration apporte plus de paix.' },
+            { zone: 'Bas du dos',            duration: 25,  instruction: 'Le bas de votre dos s\'enfonce, soutenu, en sécurité.' },
+            { zone: 'Jambes',                duration: 30,  instruction: 'Vos jambes sont lourdes, très lourdes. Elles ne pourraient pas bouger.' },
+            { zone: 'Pieds',                 duration: 25,  instruction: 'Vos pieds sont chauds et détendus. Toute tension a disparu.' },
+            { zone: 'Corps entier',          duration: 35,  instruction: 'Tout votre corps est lourd, détendu, en sécurité. Comme fondu dans le matelas.' },
+            { zone: 'Dissolution',           duration: 40,  instruction: 'Laissez votre conscience se dissoudre doucement dans le silence et le sommeil.' }
+        ]
+        // Base body scan total = 365s
+        // Budget body scan (15 min) = 900 - 30 - 76 - 76 = 718s → ratio ≈ 1.97
+    },
+
     // ==========================================
     // AUTO-HYPNOSE APNÉE
     // ==========================================
@@ -1993,6 +2026,18 @@ window.GUIDE_DETAILS = {
             "Relâchement progressif : front → yeux → mâchoire → épaules → bras → jambes",
             "Imaginez un escalier de 10 marches descendant vers le sommeil. Descendez lentement, une marche à la fois",
             "À la marche 1, laissez votre conscience se dissoudre. Ne cherchez pas le sommeil — il viendra seul"
+        ]
+    },
+
+    'deep-sleep-478': {
+        science: "Le protocole Deep Sleep 4-7-8 combine deux mécanismes distincts. Le ratio 4-7-8 du Dr. Andrew Weil agit comme un tranquillisant naturel : la rétention de 7 secondes poumons pleins augmente la pression intrathoracique et stimule le nerf vague via les barorécepteurs, provoquant une libération de GABA et une activation parasympathique profonde. L'expiration de 8 secondes prolonge cet effet et abaisse la fréquence cardiaque de 8-12 bpm. Le body scan progressif active le cortex somatosensoriel zone par zone, détournant le réseau de mode par défaut (amygdale, ruminations) vers une attention corporelle neutre — mécanisme identique à la thérapie MBSR (Kabat-Zinn). L'enchaînement blocs 4-7-8 ouverture → body scan → blocs 4-7-8 clôture crée un tunnel d'endormissement en trois phases : activation vagale, dissolution attentionnelle, scellement du sommeil.",
+        practice: [
+            "Allongez-vous dans votre lit, éteindre les écrans. Lumière nulle ou veilleuse très faible",
+            "Bloc ouverture : 4 cycles 4-7-8 avec voix comptée et cercle animé — laissez le rythme s'installer",
+            "Body scan : suivez la voix zone par zone, de la tête aux pieds. Ne cherchez pas à rester éveillé",
+            "Bloc clôture : les 4 derniers cycles 4-7-8 scellent l'endormissement — il est normal de s'endormir avant la fin",
+            "Le ratio 4-7-8 est FIXE selon la méthode Dr. Weil — la durée totale est le seul paramètre",
+            "Pratiquer chaque soir pendant 21 jours pour conditionner le réflexe d'endormissement"
         ]
     },
 

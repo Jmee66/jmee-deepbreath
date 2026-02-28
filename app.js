@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '1.11';
+const APP_VERSION = '1.12';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -129,6 +129,9 @@ class JmeeDeepBreathApp {
                 },
                 'body-scan': {
                     zoneDuration: 60
+                },
+                'deep-sleep-478': {
+                    duration: 15
                 },
                 'pettlep': {
                     phasePhysical: 60,
@@ -1623,6 +1626,22 @@ class JmeeDeepBreathApp {
             return exercise;
         }
 
+        // Deep Sleep 4-7-8 — body scan scalable, blocs 4-7-8 fixes
+        if (exercise.isDeepSleep) {
+            exercise.duration = userSettings.duration || exercise.duration;
+            const totalSec = exercise.duration * 60;
+            const FIXED = 30 + 76 * 2;  // installation + 2 blocs 4-7-8 (4 × 19s chacun)
+            const budget = totalSec - FIXED;
+            const base = exercise.segments.reduce((sum, s) => sum + s.duration, 0);
+            if (budget > 0 && base > 0) {
+                const ratio = budget / base;
+                exercise.segments.forEach(s => {
+                    s.duration = Math.max(10, Math.round(s.duration * ratio));
+                });
+            }
+            return exercise;
+        }
+
         // Mode optimal : surcharger userSettings avec les valeurs calculées depuis apneaMax
         if (this.settings.mode === 'optimal') {
             const optParams = this.getOptimalParams(exerciseId);
@@ -2221,6 +2240,8 @@ class JmeeDeepBreathApp {
             this.startContractionTable();
         } else if (exercise.isApneaTable) {
             this.startApneaTable();
+        } else if (exercise.isDeepSleep) {
+            this.startDeepSleepExercise();
         } else if (exercise.isGuided) {
             this.startGuidedExercise();
         } else if (exercise.isWimHof) {
@@ -3568,6 +3589,143 @@ class JmeeDeepBreathApp {
                 if (!this.isRunning) return;  // Bug H : guard orphan setTimeout
                 this.runGuidedSegment();
             }, 3000);
+        }
+    }
+
+    startDeepSleepExercise() {
+        const exercise = this.currentExercise;
+        this.guidedSegmentIndex = 0;
+
+        document.getElementById('exerciseInstruction').textContent = exercise.installation.instruction;
+        document.getElementById('breathPhase').textContent = 'Installation';
+        document.getElementById('cycleCounter').textContent = 'Préparation...';
+        document.getElementById('breathCircle').classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
+
+        const runSequence = () => {
+            if (!this.isRunning) return;
+            this.startPhaseTimer(exercise.installation.duration, () => {
+                if (!this.isRunning) return;
+                // Bloc 4-7-8 ouverture
+                document.getElementById('cycleCounter').textContent = 'Ouverture — cycle 1/4';
+                this.run478Block(4, 4, () => {
+                    if (!this.isRunning) return;
+                    // Body scan
+                    this.guidedSegmentIndex = 0;
+                    this.runDeepSleepBodyScan(() => {
+                        if (!this.isRunning) return;
+                        // Bloc 4-7-8 clôture
+                        document.getElementById('cycleCounter').textContent = 'Clôture — cycle 1/4';
+                        this.run478Block(4, 4, () => {
+                            this.completeExercise();
+                        });
+                    });
+                });
+            });
+        };
+
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.start, () => {
+                if (!this.isRunning) return;
+                runSequence();
+            });
+        } else {
+            setTimeout(runSequence, 3000);
+        }
+    }
+
+    run478Block(remaining, total, onComplete) {
+        if (remaining <= 0) { onComplete(); return; }
+        if (!this.isRunning) return;
+        if (this.isPaused) {
+            if (window.voiceGuide) window.voiceGuide.pause();
+            setTimeout(() => this.run478Block(remaining, total, onComplete), 100);
+            return;
+        }
+
+        const ex = this.currentExercise;
+        const cycleNum = total - remaining + 1;
+        document.getElementById('cycleCounter').textContent = `Cycle ${cycleNum} / ${total}`;
+
+        // Inhale 4s
+        document.getElementById('breathPhase').textContent = 'Inspirez';
+        document.getElementById('exerciseInstruction').textContent = ex.instructions.inhale478;
+        this.updateBreathPhase({ name: 'Inspirez', action: 'inhale', duration: 4 }, 'exhale');
+        if (window.voiceGuide?.enabled) window.voiceGuide.speak(ex.instructions.inhale478);
+        if (window.breathSounds) { window.breathSounds.stop(); window.breathSounds.playPhase('inhale', 4); }
+
+        this.startPhaseTimer(4, () => {
+            if (!this.isRunning) return;
+            // Hold 7s
+            document.getElementById('breathPhase').textContent = 'Retenez';
+            document.getElementById('exerciseInstruction').textContent = ex.instructions.hold478;
+            this.updateBreathPhase({ name: 'Retenez', action: 'hold', duration: 7 }, 'inhale');
+            if (window.voiceGuide?.enabled) window.voiceGuide.speak(ex.instructions.hold478);
+            if (window.breathSounds) { window.breathSounds.stop(); window.breathSounds.playPhase('hold', 7); }
+
+            this.startPhaseTimer(7, () => {
+                if (!this.isRunning) return;
+                // Exhale 8s
+                document.getElementById('breathPhase').textContent = 'Expirez';
+                document.getElementById('exerciseInstruction').textContent = ex.instructions.exhale478;
+                this.updateBreathPhase({ name: 'Expirez', action: 'exhale', duration: 8 }, 'hold');
+                if (window.voiceGuide?.enabled) window.voiceGuide.speak(ex.instructions.exhale478);
+                if (window.breathSounds) { window.breathSounds.stop(); window.breathSounds.playPhase('exhale', 8); }
+
+                this.startPhaseTimer(8, () => {
+                    this.run478Block(remaining - 1, total, onComplete);
+                });
+            });
+        });
+    }
+
+    runDeepSleepBodyScan(onComplete) {
+        if (!this.isRunning) return;
+        if (this.isPaused) {
+            if (window.voiceGuide) window.voiceGuide.pause();
+            setTimeout(() => this.runDeepSleepBodyScan(onComplete), 100);
+            return;
+        }
+        if (window.voiceGuide) window.voiceGuide.resume();
+
+        const exercise = this.currentExercise;
+        if (this.guidedSegmentIndex >= exercise.segments.length) {
+            onComplete();
+            return;
+        }
+
+        const segment = exercise.segments[this.guidedSegmentIndex];
+        document.getElementById('breathPhase').textContent = segment.zone;
+        document.getElementById('exerciseInstruction').textContent = segment.instruction;
+        document.getElementById('cycleCounter').textContent =
+            `Body scan ${this.guidedSegmentIndex + 1} / ${exercise.segments.length}`;
+
+        // Pas d'animation cercle pendant le body scan
+        document.getElementById('breathCircle').classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
+
+        const isAdaptive = this.settings.guidedTimingMode === 'adaptive';
+        const pauseAfterVoice = this.settings.guidedPauseAfterVoice || 8;
+
+        if (isAdaptive && window.voiceGuide?.enabled) {
+            window.voiceGuide.speak(segment.instruction, () => {
+                if (!this.isRunning) return;
+                this.startPhaseTimer(pauseAfterVoice, () => {
+                    this.guidedSegmentIndex++;
+                    this.runDeepSleepBodyScan(onComplete);
+                });
+            });
+            this.startAdaptiveVoiceTimer(segment.instruction);
+        } else if (isAdaptive) {
+            const est = Math.max(3, segment.instruction.length / 15);
+            this.startPhaseTimer(est + pauseAfterVoice, () => {
+                this.guidedSegmentIndex++;
+                this.runDeepSleepBodyScan(onComplete);
+            });
+        } else {
+            if (window.voiceGuide?.enabled) window.voiceGuide.speak(segment.instruction);
+            this.startPhaseTimer(segment.duration, () => {
+                this.guidedSegmentIndex++;
+                this.runDeepSleepBodyScan(onComplete);
+            });
         }
     }
 
