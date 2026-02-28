@@ -382,9 +382,14 @@ class CoachAI {
             sessionParams.cycles = exercise.cycles || exercise.duration; // duration en min pour les exercices timed
             if (exercise.cyclesPerMinute) sessionParams.cyclesPerMinute = exercise.cyclesPerMinute;
         } else if (exercise.isComfortZone || exercise.isApneaWithGuidance) {
-            sessionParams.cycles           = exercise.cycles;
+            sessionParams.cycles            = exercise.cycles;
             sessionParams.breatheUpDuration = exercise.breatheUpDuration;
-            sessionParams.restDuration     = exercise.restDuration;
+            sessionParams.restDuration      = exercise.restDuration;
+            if (exercise.holdResults && exercise.holdResults.length > 0) {
+                sessionParams.holdResults = exercise.holdResults;  // [47, 52, 55] — durées apnées en s
+                sessionParams.holdBest    = exercise.holdBest;     // meilleure apnée
+                sessionParams.holdAverage = exercise.holdAverage;  // moyenne
+            }
         } else if (exercise.isContractionTable) {
             sessionParams.cycles     = exercise.cycles;
             sessionParams.weekLevel  = exercise.weekLevel;

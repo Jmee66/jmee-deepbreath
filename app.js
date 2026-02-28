@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '1.12.3';
+const APP_VERSION = '1.13';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -4362,6 +4362,16 @@ class JmeeDeepBreathApp {
         } catch (e) {
             console.warn('Could not save comfort zone history:', e);
         }
+
+        // Injecter les résultats dans currentExercise pour que coach.js les copie dans sessionParams
+        try {
+            const durations2 = this.comfortHolds.map(h => h.duration);
+            if (durations2.length > 0) {
+                this.currentExercise.holdResults = durations2;
+                this.currentExercise.holdBest    = Math.max(...durations2);
+                this.currentExercise.holdAverage = Math.round(durations2.reduce((a, b) => a + b, 0) / durations2.length);
+            }
+        } catch (e) {}
 
         // Trigger standard exercise completion (feedback modal)
         this.completeExercise();

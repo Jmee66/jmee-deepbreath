@@ -1008,6 +1008,9 @@ class JournalView {
             if (sp.breatheUpDuration) parts.push(`ventil. ${sp.breatheUpDuration}s`);
             if (sp.inhaleDuration)    parts.push(`inspi ${sp.inhaleDuration}s`);
             if (sp.sets && sp.repsPerSet) parts.push(`${sp.sets}×${sp.repsPerSet}`);
+            if (sp.holdResults && sp.holdResults.length > 0) {
+                parts.push(sp.holdResults.map((d, i) => `R${i + 1}: ${d}s`).join(' · '));
+            }
             return parts.join(' · ') || '—';
         }
         // New format: array of objects
@@ -1065,14 +1068,26 @@ class JournalView {
                 recovery: 'Récup. (s)',
                 cyclesPerMinute: 'Fréquence (cpm)',
             };
+            // holdResults est un tableau — traitement spécial, exclu du rendu générique
+            const specialKeys = ['holdResults'];
             const paramParts = Object.entries(sp)
-                .filter(([, v]) => v != null && v !== '')
+                .filter(([k, v]) => v != null && v !== '' && !specialKeys.includes(k))
                 .map(([k, v]) => `<span><strong>${labelMap[k] || k}</strong>&nbsp;${v}</span>`)
                 .join('&nbsp;&nbsp;');
             if (paramParts) {
                 lines.push(`<div class="journal-edit-row">
                     <label>Paramètres</label>
                     <span style="color:var(--text-secondary);font-size:0.9rem;display:flex;flex-wrap:wrap;gap:6px;">${paramParts}</span>
+                </div>`);
+            }
+            // Apnées individuelles par round
+            if (sp.holdResults && sp.holdResults.length > 0) {
+                const roundItems = sp.holdResults.map((d, i) =>
+                    `<span><strong>R${i + 1}</strong>&nbsp;${d}s</span>`
+                ).join('&nbsp;&nbsp;');
+                lines.push(`<div class="journal-edit-row">
+                    <label>Apnées</label>
+                    <span style="color:var(--text-secondary);font-size:0.9rem;display:flex;flex-wrap:wrap;gap:6px;">${roundItems}</span>
                 </div>`);
             }
         }
