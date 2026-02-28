@@ -556,6 +556,27 @@
                     </div>
                 </div>
 
+                <!-- Cohérence Cardiaque Avancée -->
+                <div class="exercise-card" data-exercise="cardiac-coherence">
+                    <div class="exercise-badge">Cohérence HRV</div>
+                    <h3>Cohérence Cardiaque</h3>
+                    <p>Respiration de résonance paramétrable — fréquence, ratio et rétention ajustables pour votre fréquence optimale.</p>
+                    <div class="exercise-meta">
+                        <span>5-20 min</span>
+                        <span>•</span>
+                        <span>HRV avancé</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="cardiac-coherence">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Box Breathing -->
                 <div class="exercise-card" data-exercise="box">
                     <div class="exercise-badge">Navy SEALs</div>
@@ -1956,6 +1977,20 @@
                                 <p class="guide-detail-text">Règle des 3 "R" : Régulier (même heure si possible), Récurrent (3x/jour pour les effets maximaux), Relaxé (aucune tension dans l'effort). Ce n'est pas une performance — c'est un entraînement du système nerveux autonome. 5 min à jeun le matin = fondation de toute la journée.</p>
                             </div>
                             <p class="guide-when"><strong>Quand :</strong> Idéalement 3 fois par jour : réveil, midi, coucher. 5 min suffisent. Fondation absolue de tout entraînement respiratoire.</p>
+                        </div>
+
+                        <!-- Cohérence Cardiaque Avancée -->
+                        <div class="guide-exercise-item" data-objectives="static,dynamic,depth,spearfishing,anxiety" data-level="beginner" data-exercise-id="cardiac-coherence">
+                            <div class="guide-exercise-header">
+                                <h4>Cohérence Cardiaque Avancée</h4>
+                                <span class="guide-badge guide-badge-beginner">Débutant</span>
+                            </div>
+                            <p class="guide-exercise-desc">Version paramétrable de la cohérence cardiaque — fréquence de résonance, ratio inhale:exhale et rétention ajustables.</p>
+                            <div class="guide-tags">
+                                <span class="guide-tag">Quotidien</span>
+                                <span class="guide-tag">HRV</span>
+                                <span class="guide-tag">Paramétrable</span>
+                            </div>
                         </div>
 
                         <div class="guide-exercise-item" data-objectives="static,anxiety" data-level="beginner" data-exercise-id="box">
@@ -4191,6 +4226,44 @@
                             <label>Expiration</label>
                             <div class="input-with-unit">
                                 <input type="number" min="3" max="10" value="5.5" step="0.5" data-param="exhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cohérence Cardiaque Avancée -->
+                    <div class="exercise-settings" data-exercise="cardiac-coherence">
+                        <h4>Cohérence Cardiaque</h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="60" value="10" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Fréquence cible</label>
+                            <select data-param="frequency" style="flex:1;background:var(--bg-tertiary);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);color:var(--text-primary);padding:var(--space-xs) var(--space-sm);font-family:inherit;font-size:0.88rem;">
+                                <option value="4.5">4.5 cycles/min — 13.3s cycle</option>
+                                <option value="5.0">5.0 cycles/min — 12s cycle</option>
+                                <option value="5.5" selected>5.5 cycles/min — 10.9s cycle ✓ optimum</option>
+                                <option value="6.0">6.0 cycles/min — 10s cycle</option>
+                                <option value="6.5">6.5 cycles/min — 9.2s cycle</option>
+                                <option value="7.0">7.0 cycles/min — 8.6s cycle</option>
+                            </select>
+                        </div>
+                        <div class="settings-row">
+                            <label>Ratio inspir:expir</label>
+                            <select data-param="ratio" style="flex:1;background:var(--bg-tertiary);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);color:var(--text-primary);padding:var(--space-xs) var(--space-sm);font-family:inherit;font-size:0.88rem;">
+                                <option value="1:1" selected>1:1 — Équilibre ANS</option>
+                                <option value="1:1.5">1:1.5 — Parasympa modéré</option>
+                                <option value="1:2">1:2 — Parasympa fort</option>
+                            </select>
+                        </div>
+                        <div class="settings-row">
+                            <label>Rétention (poumons pleins)</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="0" max="4" value="0" step="1" data-param="hold">
                                 <span>sec</span>
                             </div>
                         </div>

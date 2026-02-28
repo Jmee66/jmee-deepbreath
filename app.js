@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '1.08';
+const APP_VERSION = '1.09';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -60,6 +60,12 @@ class JmeeDeepBreathApp {
                     duration: 10,
                     inhale: 5.5,
                     exhale: 5.5
+                },
+                'cardiac-coherence': {
+                    duration: 10,
+                    frequency: '5.5',
+                    ratio: '1:1',
+                    hold: 0
                 },
                 'box': {
                     duration: 5,
@@ -1581,6 +1587,48 @@ class JmeeDeepBreathApp {
                 exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
                 exercise.phases[1].duration = userSettings.exhale || exercise.phases[1].duration;
                 break;
+
+            case 'cardiac-coherence': {
+                exercise.duration = userSettings.duration || exercise.duration;
+
+                // Fréquence → durée totale du cycle
+                const ccFreqMap = {
+                    '4.5': 60 / 4.5,
+                    '5.0': 12,
+                    '5.5': 60 / 5.5,
+                    '6.0': 10,
+                    '6.5': 60 / 6.5,
+                    '7.0': 60 / 7
+                };
+                const ccFreq = userSettings.frequency || '5.5';
+                const ccTotalCycle = ccFreqMap[ccFreq] || (60 / 5.5);
+
+                // Rétention poumons pleins (secondes)
+                const ccHold = parseFloat(userSettings.hold) || 0;
+                const ccBreathTime = ccTotalCycle - ccHold;
+
+                // Ratio → répartition inhale / exhale
+                const ccRatioMap = {
+                    '1:1':   [0.5,     0.5],
+                    '1:1.5': [0.4,     0.6],
+                    '1:2':   [1 / 3,   2 / 3]
+                };
+                const ccRatio = userSettings.ratio || '1:1';
+                const [ccInFrac, ccExFrac] = ccRatioMap[ccRatio] || [0.5, 0.5];
+
+                const ccInhale = Math.round(ccBreathTime * ccInFrac * 10) / 10;
+                const ccExhale = Math.round(ccBreathTime * ccExFrac * 10) / 10;
+
+                exercise.phases[0].duration = ccInhale;
+                exercise.phases[1].duration = ccHold;
+                exercise.phases[2].duration = ccExhale;
+
+                // Supprimer la phase hold si durée = 0 (pas de rétention)
+                exercise.phases = exercise.phases.filter(p => p.duration > 0);
+
+                exercise.cyclesPerMinute = parseFloat(ccFreq);
+                break;
+            }
 
             case 'box':
                 exercise.duration = userSettings.duration || exercise.duration;

@@ -46,6 +46,26 @@ const EXERCISES = {
         cyclesPerMinute: 5.45
     },
 
+    'cardiac-coherence': {
+        name: 'Cohérence Cardiaque',
+        category: 'respiration',
+        description: 'Respiration de résonance cardiaque paramétrable — fréquence, ratio et rétention ajustables',
+        science: 'Optimise la HRV à la fréquence de résonance individuelle. Ratio et rétention réglables pour s\'adapter à chaque pratiquant.',
+        duration: 10,
+        phases: [
+            { name: 'Inspirez', duration: 5.5, action: 'inhale' },
+            { name: 'Retenez', duration: 0, action: 'hold' },
+            { name: 'Expirez', duration: 5.5, action: 'exhale' }
+        ],
+        instructions: {
+            start: 'Cohérence cardiaque. Respirez au rythme indiqué. Laissez votre cœur se synchroniser.',
+            'Inspirez': 'Inspiration douce par le nez, en gonflant le ventre',
+            'Retenez': 'Pause poumons pleins, corps détendu',
+            'Expirez': 'Expiration lente et régulière'
+        },
+        cyclesPerMinute: 5.45
+    },
+
     'box': {
         name: 'Box Breathing',
         category: 'respiration',
@@ -2066,6 +2086,23 @@ window.GUIDE_DETAILS = {
             "Observez la différence entre tension et détente — c'est cette conscience qui constitue l'entraînement",
             "Ne sautez aucun groupe : la progression systématique de haut en bas du corps est essentielle",
             "Pratiquez quotidiennement 2-4 semaines pour un effet durable. Ensuite, la détente profonde devient accessible en quelques minutes"
+        ]
+    },
+
+    // ==========================================
+    // GUIDE_DETAILS — Cohérence Cardiaque Avancée
+    // ==========================================
+
+    'cardiac-coherence': {
+        science: "La cohérence cardiaque est atteinte lorsque la respiration oscille à la fréquence de résonance du baroréflexe artériel (~0.1 Hz). À cette fréquence, les oscillations de la pression artérielle et du rythme cardiaque entrent en phase, maximisant la variabilité de la fréquence cardiaque (HRV). L'Institut HeartMath (McCraty et al., 2015) a établi que la fréquence de résonance individuelle varie de 4.5 à 7 cycles/min (optimum moyen : 5.5 cycles/min). La rétention poumons pleins amplifie l'effet en maintenant la pression transpulmonaire et en stimulant les barorécepteurs aortiques. Le ratio inhale:exhale modifie l'équilibre sympathique/parasympathique : ratio 1:1 = équilibre ANS, ratio 1:1.5 ou 1:2 = dominance parasympathique plus marquée. 5-10 minutes de pratique réduisent le cortisol salivaire de 23% (Karavidas et al., 2007) et améliorent le score SDNN de HRV de 55% après 10 semaines.",
+        practice: [
+            "Asseyez-vous dos droit, pieds à plat. Une main sur le ventre pour sentir l'expansion abdominale",
+            "Choisissez votre fréquence : commencez par 5.5 cycles/min (5.5s/5.5s). Si 5.5s semble long, démarrez à 4.5s/4.5s",
+            "Inspiration : gonflez le ventre en premier (diaphragme), puis élargissez les côtes. Douce, sans effort",
+            "Rétention (si activée) : pause naturelle poumons pleins, corps détendu, mâchoire relâchée",
+            "Expiration : lente et régulière. Le ratio 1:1.5 ou 1:2 renforce l'activation parasympathique",
+            "Maintenez un rythme parfaitement régulier — la régularité du rythme est plus importante que la durée absolue",
+            "Pratiquez 10 min matin et soir pour un effet mesurable sur la HRV en 4 semaines"
         ]
     }
 };
