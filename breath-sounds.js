@@ -417,15 +417,19 @@ class BreathSounds {
             } catch (e) {}
         }
 
+        // Capture references NOW — not inside the timeout — so that if playPhase()
+        // is called immediately after stop(), its new nodes are NOT disconnected by this timeout.
+        const nodesToStop = this.currentNodes;
+        this.currentNodes = [];
+        this.currentGain = null;
+
         setTimeout(() => {
-            this.currentNodes.forEach(node => {
+            nodesToStop.forEach(node => {
                 try {
                     if (node.stop) node.stop();
                     if (node.disconnect) node.disconnect();
                 } catch (e) {}
             });
-            this.currentNodes = [];
-            this.currentGain = null;
         }, 400);
     }
 
