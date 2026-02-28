@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '1.12.1';
+const APP_VERSION = '1.12.2';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -3595,6 +3595,7 @@ class JmeeDeepBreathApp {
     startDeepSleepExercise() {
         const exercise = this.currentExercise;
         this.guidedSegmentIndex = 0;
+        this.deepSleepRhythmActive = false;  // s'assurer que la boucle rythme est éteinte au démarrage
 
         document.getElementById('exerciseInstruction').textContent = exercise.installation.instruction;
         document.getElementById('breathPhase').textContent = 'Installation';
@@ -3688,7 +3689,16 @@ class JmeeDeepBreathApp {
         if (window.voiceGuide) window.voiceGuide.resume();
 
         const exercise = this.currentExercise;
+
+        // Démarrer la boucle rythme 4-7-8 de fond au premier segment (bong discret)
+        if (this.guidedSegmentIndex === 0 && !this.deepSleepRhythmActive) {
+            this.deepSleepRhythmActive = true;
+            this.run478Rhythm();
+        }
+
         if (this.guidedSegmentIndex >= exercise.segments.length) {
+            // Arrêter le rythme de fond avant de passer au bloc clôture
+            this.deepSleepRhythmActive = false;
             onComplete();
             return;
         }
@@ -3727,6 +3737,37 @@ class JmeeDeepBreathApp {
                 this.runDeepSleepBodyScan(onComplete);
             });
         }
+    }
+
+    run478Rhythm() {
+        if (!this.deepSleepRhythmActive || !this.isRunning) return;
+        if (this.isPaused) {
+            setTimeout(() => this.run478Rhythm(), 200);
+            return;
+        }
+
+        // Bong discret — début phase inhale
+        if (window.breathSounds) window.breathSounds.playTransition();
+
+        setTimeout(() => {
+            if (!this.deepSleepRhythmActive || !this.isRunning) return;
+            if (this.isPaused) { setTimeout(() => this.run478Rhythm(), 200); return; }
+
+            // Bong discret — début phase hold
+            if (window.breathSounds) window.breathSounds.playTransition();
+
+            setTimeout(() => {
+                if (!this.deepSleepRhythmActive || !this.isRunning) return;
+                if (this.isPaused) { setTimeout(() => this.run478Rhythm(), 200); return; }
+
+                // Bong discret — début phase exhale
+                if (window.breathSounds) window.breathSounds.playTransition();
+
+                setTimeout(() => {
+                    this.run478Rhythm(); // prochain cycle 4-7-8
+                }, 8000);
+            }, 7000);
+        }, 4000);
     }
 
     runGuidedSegment() {
