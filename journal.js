@@ -192,9 +192,7 @@ class JournalView {
         tdTimings.style.color = 'var(--text-secondary)';
         tdTimings.style.fontSize = '0.85rem';
         tdTimings.style.whiteSpace = 'nowrap';
-        tdTimings.textContent = (session.phaseTimings && session.phaseTimings.length > 0)
-            ? session.phaseTimings.map(d => d + 's').join(' / ')
-            : '—';
+        tdTimings.textContent = this.formatPhaseTimings(session);
         tr.appendChild(tdTimings);
 
         // Feeling (hidden on mobile)
@@ -487,11 +485,7 @@ class JournalView {
                             <input type="number" id="jeDurationSec" min="0" max="59" value="${durationSec}" style="width:70px;"> sec
                         </div>
                     </div>
-                    ${session.phaseTimings && session.phaseTimings.length > 0 ? `
-                    <div class="journal-edit-row">
-                        <label>Timings</label>
-                        <span style="color:var(--text-secondary);font-size:0.9rem;">${session.phaseTimings.map(d => d + 's').join(' / ')}</span>
-                    </div>` : ''}
+                    ${this.renderSessionParamsHTML(session)}
                     <div class="journal-edit-row">
                         <label>Ressenti</label>
                         <select id="jeFeeling">
@@ -769,6 +763,11 @@ class JournalView {
                         <div class="journal-detail-label">Categorie</div>
                         <div class="journal-detail-value">${this.formatCategory(session.category)}</div>
                     </div>
+                    ${(session.phaseTimings && session.phaseTimings.length > 0) || (session.sessionParams && Object.keys(session.sessionParams).length > 0) ? `
+                    <div class="journal-detail-section" style="flex-basis:100%;">
+                        <div class="journal-detail-label">Paramètres session</div>
+                        <div class="journal-detail-value" style="font-size:0.9rem;color:var(--text-secondary);">${this.formatPhaseTimings(session)}</div>
+                    </div>` : ''}
                     <div class="journal-detail-section">
                         <div class="journal-detail-label">Ressenti</div>
                         <div class="journal-detail-value journal-detail-stars">${feelingStars}</div>
@@ -991,5 +990,93 @@ class JournalView {
             'autre': 'Autre'
         };
         return map[category] || category || '—';
+    }
+
+    /**
+     * Format phaseTimings for compact display in the table column.
+     * Handles both old format (array of numbers) and new format (array of {name, action, duration}).
+     */
+    formatPhaseTimings(session) {
+        const pt = session.phaseTimings;
+        if (!pt || pt.length === 0) {
+            // Fall back to sessionParams compact summary
+            const sp = session.sessionParams;
+            if (!sp || Object.keys(sp).length === 0) return '—';
+            const parts = [];
+            if (sp.cycles)            parts.push(`${sp.cycles} cycles`);
+            if (sp.holdDuration)      parts.push(`apnée ${sp.holdDuration}s`);
+            if (sp.breatheUpDuration) parts.push(`ventil. ${sp.breatheUpDuration}s`);
+            if (sp.inhaleDuration)    parts.push(`inspi ${sp.inhaleDuration}s`);
+            if (sp.sets && sp.repsPerSet) parts.push(`${sp.sets}×${sp.repsPerSet}`);
+            return parts.join(' · ') || '—';
+        }
+        // New format: array of objects
+        if (typeof pt[0] === 'object') {
+            return pt.map(p => `${p.name} ${p.duration}s`).join(' / ');
+        }
+        // Old format: array of numbers (legacy sessions)
+        return pt.map(d => d + 's').join(' / ');
+    }
+
+    /**
+     * Render full session parameters as HTML for the edit modal.
+     * Handles both old phaseTimings (numbers) and new format (objects + sessionParams).
+     */
+    renderSessionParamsHTML(session) {
+        const pt = session.phaseTimings;
+        const sp = session.sessionParams;
+        const lines = [];
+
+        // Phase timings
+        if (pt && pt.length > 0) {
+            let timingText;
+            if (typeof pt[0] === 'object') {
+                timingText = pt.map(p => `${p.name} : ${p.duration}s`).join(' &nbsp;|&nbsp; ');
+            } else {
+                // Legacy: plain numbers
+                timingText = pt.map(d => d + 's').join(' / ');
+            }
+            lines.push(`<div class="journal-edit-row">
+                <label>Phases</label>
+                <span style="color:var(--text-secondary);font-size:0.9rem;">${timingText}</span>
+            </div>`);
+        }
+
+        // Structured session params
+        if (sp && Object.keys(sp).length > 0) {
+            const labelMap = {
+                cycles: 'Cycles',
+                breatheUpDuration: 'Ventilation (s)',
+                restDuration: 'Récup. (s)',
+                holdDuration: 'Apnée (s)',
+                maxHoldDuration: 'Apnée max (s)',
+                prepDuration: 'Prépa (s)',
+                restBreaths: 'Souffles repos',
+                breathsPerCycle: 'Souffles/cycle',
+                volumeMode: 'Volume',
+                sets: 'Séries',
+                repsPerSet: 'Rép./série',
+                inhaleDuration: 'Inspi (s)',
+                exhaleDuration: 'Expir (s)',
+                mode: 'Mode',
+                weekLevel: 'Niveau semaine',
+                rounds: 'Rounds',
+                breathsPerRound: 'Souffles/round',
+                recovery: 'Récup. (s)',
+                cyclesPerMinute: 'Fréquence (cpm)',
+            };
+            const paramParts = Object.entries(sp)
+                .filter(([, v]) => v != null && v !== '')
+                .map(([k, v]) => `<span><strong>${labelMap[k] || k}</strong>&nbsp;${v}</span>`)
+                .join('&nbsp;&nbsp;');
+            if (paramParts) {
+                lines.push(`<div class="journal-edit-row">
+                    <label>Paramètres</label>
+                    <span style="color:var(--text-secondary);font-size:0.9rem;display:flex;flex-wrap:wrap;gap:6px;">${paramParts}</span>
+                </div>`);
+            }
+        }
+
+        return lines.join('');
     }
 }

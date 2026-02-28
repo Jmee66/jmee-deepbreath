@@ -362,10 +362,65 @@ class CoachAI {
     }
 
     showFeedbackModal(exercise, duration) {
-        // Capturer les timings réels des phases (ex: [8, 32, 16] pour Pranayama 8-32-16)
+        // Capturer les paramètres réels de la session (après application des réglages utilisateur)
+
+        // Phases nommées avec durées réelles (exercices à phases fixes)
         let phaseTimings = null;
         if (exercise.phases && exercise.phases.length > 0) {
-            phaseTimings = exercise.phases.map(p => Math.round(p.duration));
+            phaseTimings = exercise.phases.map(p => ({
+                name: p.name,
+                action: p.action,
+                duration: Math.round(p.duration * 10) / 10  // 1 décimale
+            }));
+        }
+
+        // Paramètres spécifiques selon le type d'exercice
+        const sessionParams = {};
+
+        if (exercise.phases && exercise.phases.length > 0) {
+            // Exercices à phases : durée totale et nbre de cycles
+            sessionParams.cycles = exercise.cycles || exercise.duration; // duration en min pour les exercices timed
+            if (exercise.cyclesPerMinute) sessionParams.cyclesPerMinute = exercise.cyclesPerMinute;
+        } else if (exercise.isComfortZone || exercise.isApneaWithGuidance) {
+            sessionParams.cycles           = exercise.cycles;
+            sessionParams.breatheUpDuration = exercise.breatheUpDuration;
+            sessionParams.restDuration     = exercise.restDuration;
+        } else if (exercise.isContractionTable) {
+            sessionParams.cycles     = exercise.cycles;
+            sessionParams.weekLevel  = exercise.weekLevel;
+            sessionParams.restDuration = exercise.restDuration;
+        } else if (exercise.isPassiveBreathHanger) {
+            sessionParams.cycles          = exercise.cycles;
+            sessionParams.prepDuration    = exercise.prepDuration;
+            sessionParams.restDuration    = exercise.restDuration;
+            sessionParams.maxHoldDuration = exercise.maxHoldDuration;
+        } else if (exercise.isVHLStatic) {
+            sessionParams.cycles        = exercise.cycles;
+            sessionParams.holdDuration  = exercise.holdDuration;
+            sessionParams.restBreaths   = exercise.restBreaths;
+            sessionParams.prepDuration  = exercise.prepDuration;
+            sessionParams.volumeMode    = exercise.volumeMode;
+        } else if (exercise.isVHL) {
+            sessionParams.cycles           = exercise.cycles;
+            sessionParams.breathsPerCycle  = exercise.breathsPerCycle;
+            sessionParams.holdDuration     = exercise.holdDuration;
+            sessionParams.restBreaths      = exercise.restBreaths;
+        } else if (exercise.isIMST) {
+            sessionParams.sets            = exercise.sets;
+            sessionParams.repsPerSet      = exercise.repsPerSet;
+            sessionParams.inhaleDuration  = exercise.inhaleDuration;
+            sessionParams.exhaleDuration  = exercise.exhaleDuration;
+            sessionParams.restDuration    = exercise.restDuration;
+            sessionParams.mode            = exercise.mode;
+        } else if (exercise.isWimHof) {
+            sessionParams.rounds          = exercise.rounds;
+            sessionParams.breathsPerRound = exercise.breathsPerRound;
+            sessionParams.recovery        = exercise.recovery;
+        } else if (exercise.isApneaTable) {
+            sessionParams.cycles          = exercise.cycles;
+            sessionParams.breatheUpDuration = exercise.breatheUpDuration;
+            sessionParams.restDuration    = exercise.restDuration;
+            if (exercise.maxHoldDuration)  sessionParams.maxHoldDuration = exercise.maxHoldDuration;
         }
 
         this.pendingSession = {
@@ -376,6 +431,7 @@ class CoachAI {
             date: new Date().toISOString(),
             completed: true,
             phaseTimings,
+            sessionParams,
         };
 
         // Passive Breath Hanger ou VHL Statique — afficher section gorge/mental
