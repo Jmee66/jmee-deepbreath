@@ -11,8 +11,8 @@ const EXERCISES = {
     'cyclic-sighing': {
         name: 'Cyclic Sighing',
         category: 'respiration',
-        description: 'Double inspiration suivie d\'une expiration prolongée',
-        science: 'Stanford 2023 - 56% plus efficace que la méditation pour améliorer l\'humeur',
+        description: 'Pratique quotidienne 5 min — double inspiration + expiration longue pour améliorer l\'humeur et réduire le stress',
+        science: 'Stanford 2023 — 56% plus efficace que la méditation pour améliorer l\'humeur. Version pratique quotidienne du Soupir Physiologique : même technique, mais répétée sur 5 minutes pour un effet profond et durable sur le système nerveux autonome.',
         duration: 5, // minutes
         phases: [
             { name: 'Inspirez', duration: 2, action: 'inhale' },
@@ -94,9 +94,9 @@ const EXERCISES = {
     },
 
     'co2-tolerance': {
-        name: 'Cohérence Cardiaque',
+        name: 'Respiration 1:2 (HRV)',
         category: 'respiration',
-        description: 'Régulation du système nerveux par respiration lente 1:2 — variabilité cardiaque et calme pré-plongée',
+        description: 'Respiration lente ratio 1:2 (4s/8s) — maximise la variabilité cardiaque et calme le système nerveux avant la plongée',
         science: 'Effet HRV / vagal : la respiration lente (4-6 cycles/min) à ratio 1:2 synchronise la respiration et le rythme cardiaque, maximisant la variabilité cardiaque (HRV). L\'expiration prolongée active le frein vagal parasympathique via les barorécepteurs aortiques. Excellent pour la préparation mentale pré-plongée. Note : ce protocole ne crée pas d\'hypercapnie ni de désensibilisation des chémorécepteurs — pour entraîner la tolérance CO2, voir "Hypoventilation VHL" ou les tables CO2.',
         duration: 5,
         phases: [
@@ -352,16 +352,16 @@ const EXERCISES = {
     'kapalabhati': {
         name: 'Kapalabhati',
         category: 'respiration',
-        description: 'Respiration du crâne brillant — purification et énergie',
+        description: 'Respiration du crâne brillant — 30 expirations forcées rapides par round, purification et énergie',
         science: 'Les expirations forcées rapides augmentent le flux sanguin cérébral de 20% (IRM fonctionnelle, 2020). Active le cortex préfrontal, améliore la vigilance et stimule le métabolisme via l\'action répétée du diaphragme.',
         duration: 5,
-        cycles: 3,
+        cycles: 30,
         phases: [
             { name: 'Expir forcé', duration: 0.5, action: 'exhale' },
             { name: 'Inspir passif', duration: 0.5, action: 'inhale' }
         ],
         instructions: {
-            start: 'Kapalabhati : expirations courtes et puissantes par le nez. L\'inspiration est passive et automatique. 30 respirations puis rétention.',
+            start: 'Kapalabhati : 30 expirations forcées par le nez (1 round = 30 sec). Après le round, inspirez à fond et retenez autant que possible.',
             'Expir forcé': 'Expiration puissante par le nez en contractant les abdominaux',
             'Inspir passif': 'Laissez l\'air rentrer naturellement sans effort'
         },
@@ -750,8 +750,8 @@ const EXERCISES = {
     'physiological-sigh': {
         name: 'Soupir Physiologique',
         category: 'urgence',
-        description: 'Le reset nerveux le plus rapide - 1 à 3 cycles suffisent',
-        science: 'Stanford 2023 - Active immédiatement le nerf vague via les alvéoles pulmonaires',
+        description: 'Reset nerveux immédiat — 3 cycles suffisent, utilisez au moment du stress ou de la panique',
+        science: 'Stanford 2023 — Même double inspiration que le Cyclic Sighing, mais en version SOS : 3 cycles ciblés pour une action immédiate plutôt qu\'une pratique de 5 minutes. Réouvre les alvéoles affaissées et déclenche le frein vagal en quelques secondes.',
         duration: 0.5, // 30 seconds
         cycles: 3,
         phases: [
@@ -1809,8 +1809,8 @@ window.GUIDE_DETAILS = {
         practice: [
             "Asseyez-vous dos droit, mains sur les genoux. Inspirez profondément pour commencer",
             "Expirez brusquement par le nez en contractant les abdominaux — l'inspiration est passive et automatique",
-            "Rythme : 1-2 expirations par seconde. Commencez par 20 expirations, puis augmentez à 30, 50, 100+",
-            "Entre chaque round, inspirez à fond, retenez 30-60s (poumons pleins), puis expirez lentement",
+            "1 round = 30 expirations forcées à ~1 par seconde (30 secondes). L'app compte les 30 cycles et s'arrête",
+            "Après le round : inspirez à fond, retenez 30-60s (poumons pleins), puis expirez lentement. Cette rétention est manuelle",
             "Contre-indiqué : grossesse, hypertension, épilepsie, hernie abdominale. Pratiquer à jeun de préférence"
         ]
     },
@@ -1873,6 +1873,199 @@ window.GUIDE_DETAILS = {
             "Fermez les deux narines, retenez (8s) avec Jalandhara Bandha si confortable",
             "Libérez la narine gauche, expirez lentement par la gauche (6s)",
             "Idéal le matin ou avant une activité intense. Éviter le soir (peut perturber le sommeil)"
+        ]
+    },
+
+    // ==========================================
+    // GUIDE_DETAILS — Exercices urgence / express
+    // ==========================================
+
+    'physiological-sigh': {
+        science: "Le soupir physiologique exploite un mécanisme réflexe de réouverture des alvéoles pulmonaires affaissées. La double inspiration (nasale profonde + sniff court supplémentaire) augmente la pression transpulmonaire, rouvrant les sacs alvéolaires et maximisant la surface d'échange gazeux. L'expiration prolongée qui suit active immédiatement le nerf vague via les barorécepteurs aortiques. Étude Stanford 2023 (Balban et al.) : 1 à 3 cycles suffisent pour une réduction mesurable du cortisol et de la fréquence cardiaque. C'est la version SOS du Cyclic Sighing — même technique, utilisée comme outil d'intervention ponctuelle plutôt que comme pratique quotidienne.",
+        practice: [
+            "Dès que vous ressentez stress, panique ou tension : stoppez ce que vous faites",
+            "Inspirez profondément par le nez pour remplir les poumons aux deux tiers (2s)",
+            "Sans expirer, prenez une seconde inspiration courte et vive par le nez pour remplir complètement (1s)",
+            "Expirez très lentement et longuement par la bouche, en vidant entièrement les poumons (7s+)",
+            "Répétez 1 à 3 fois — l'effet est quasi-immédiat dès le premier cycle"
+        ]
+    },
+
+    'extended-exhale': {
+        science: "L'expiration prolongée en ratio 1:2 (inspire 4s / expire 8s) exploite l'asymétrie du système nerveux autonome : l'inspiration active le système sympathique (accélération cardiaque), l'expiration active le parasympathique via le nerf vague (décélération cardiaque). En allongeant l'expiration à deux fois la durée de l'inspiration, on crée un déséquilibre volontaire en faveur du frein vagal parasympathique. 10 cycles suffisent pour réduire la fréquence cardiaque de 5-8 bpm et abaisser le niveau de cortisol salivaire. Protocole identique à 'Respiration 1:2' mais en version urgence ciblée sur 2 minutes.",
+        practice: [
+            "Installez-vous ou restez où vous êtes — cet exercice se pratique partout",
+            "Inspirez calmement par le nez pendant 4 secondes, gonflant le ventre",
+            "Expirez très lentement, comme à travers une paille imaginaire, pendant 8 secondes",
+            "Maintenez un rythme régulier sans forcer — la douceur est plus efficace que l'effort",
+            "10 cycles suffisent pour un effet notable — répétez jusqu'à ressentir le calme"
+        ]
+    },
+
+    'box-quick': {
+        science: "Le box breathing 4-4-4-4 est adopté par les Navy SEALs pour maintenir la clarté mentale sous stress extrême. La symétrie des quatre phases impose un rythme de 3,75 cycles/min qui augmente la variabilité cardiaque (HRV) et stimule le tonus vagal. Les deux phases de rétention (poumons pleins et poumons vides) augmentent transitoirement la pCO2, ce qui améliore la vasodilatation cérébrale. 6 cycles (2 minutes) suffisent pour une récupération significative de l'état de stress aigu. La version rapide est identique au box breathing complet, mais avec un objectif ciblé : reprendre le contrôle rapidement.",
+        practice: [
+            "Inspirez par le nez pendant 4 secondes en gonflant le ventre puis la poitrine",
+            "Retenez poumons pleins pendant 4 secondes — corps détendu, mâchoire relâchée",
+            "Expirez lentement et complètement pendant 4 secondes",
+            "Retenez poumons vides pendant 4 secondes — sans crispation",
+            "6 cycles (2 min) suffisent pour reprendre le contrôle. Pratiquez partout, discrètement"
+        ]
+    },
+
+    'grounding-555': {
+        science: "La technique 5-5-5 (5 choses vues, 5 sons, 5 sensations) est une technique de grounding cognitivo-sensorielle issue de la thérapie cognitive comportementale (TCC). Elle exploite le phénomène de la 'saturation attentionnelle' : en mobilisant les trois canaux sensoriels principaux (visuel, auditif, kinesthésique), elle interrompt le circuit de rumination et d'anxiété en forçant le cortex préfrontal à traiter des stimuli concrets et présents. Ce mécanisme de 'grounding' active les zones corticales de traitement sensoriel au détriment de l'amygdale hyperactive. Études TCC : 2-3 minutes de grounding réduisent l'intensité perçue d'une attaque de panique de 35-50%.",
+        practice: [
+            "Prenez 3 respirations lentes et profondes pour poser le corps",
+            "Regardez autour de vous et nommez MENTALEMENT 5 choses que vous voyez (couleur, forme, détail)",
+            "Écoutez attentivement et identifiez 5 sons distincts dans votre environnement",
+            "Notez 5 sensations tactiles : le poids de vos vêtements, le sol sous vos pieds, la température de l'air",
+            "Terminez par une respiration profonde — vous êtes ici, maintenant, en sécurité"
+        ]
+    },
+
+    // ==========================================
+    // GUIDE_DETAILS — Pré-performance
+    // ==========================================
+
+    'quick-coherence': {
+        science: "La cohérence cardiaque complète nécessite normalement 10-20 minutes pour un effet profond sur la HRV (variabilité de la fréquence cardiaque). Cependant, la recherche de l'Institut HeartMath montre qu'un minimum de 3 minutes à 5,5 cycles/min suffit pour amorcer la synchronisation cardio-respiratoire et réduire le cortisol. Cette version express est conçue pour s'insérer dans les dernières minutes avant une performance, un examen ou une décision importante. L'effet est moins profond qu'une session complète, mais immédiatement accessible.",
+        practice: [
+            "Asseyez-vous ou restez debout, dos droit, yeux mi-fermés",
+            "Inspirez doucement par le nez pendant exactement 5 secondes",
+            "Expirez doucement pendant exactement 5 secondes — aucune pause entre les phases",
+            "Maintenez un rythme fluide et régulier — imaginez une vague montante et descendante",
+            "3 minutes suffisent avant une performance. Pour un effet durable, pratiquez 10 min matin et soir"
+        ]
+    },
+
+    'power-viz': {
+        science: "L'imagerie mentale de performance active les mêmes circuits neuronaux que l'exécution réelle : le cortex prémoteur, l'aire motrice supplémentaire et le cervelet s'activent à 60-80% de leur niveau d'activation physique (IRMf, Decety et al.). En 2 minutes ciblées, ce protocole court utilise trois éléments clés : l'image de succès (activation motrice), le ressenti émotionnel (ancrage limbique), et l'ancrage physique (conditionnement pavlovien). Idéal comme dernière étape mentale avant une compétition ou une performance.",
+        practice: [
+            "Fermez les yeux. Prenez 3 respirations profondes pour centrer l'attention",
+            "Visualisez-vous en train de réussir parfaitement — en première personne, à travers vos yeux",
+            "Ajoutez les détails sensoriels : sons, température, sensations musculaires",
+            "Ressentez la confiance, la maîtrise, la satisfaction — laissez ces émotions monter pleinement",
+            "Ancrez cet état : pressez pouce contre index. Rouvrez les yeux. Vous êtes cet athlète."
+        ]
+    },
+
+    'dive-prep': {
+        science: "Le breathe-up pré-plongée combine trois mécanismes physiologiques : (1) la respiration diaphragmatique lente amène la FC sous 60-70 bpm via le baroréflexe, (2) la visualisation du parcours active le pré-encodage moteur (cortex préfrontal) réduisant l'anxiété anticipatoire de 20-30%, et (3) le relâchement progressif minimise la consommation d'O2 au repos, maximisant les réserves disponibles pour l'apnée. Ce protocole est la version guidée du 'breathe-up structuré', adapté pour les conditions de plage ou de bord de piscine.",
+        practice: [
+            "Allongez-vous ou asseyez-vous confortablement. Relâchez mâchoire, épaules, abdomen",
+            "Respirez en diaphragmatique lente (ventre → côtes → poitrine), expiration passive 6-8s",
+            "Ralentissez jusqu'à ressentir votre cœur se calmer — objectif : FC < 65 bpm",
+            "Visualisez votre plongée complète : descente, fond, remontée, surface. Restez serein à chaque étape",
+            "Dernières respirations : lentes, profondes, détendues. Bonne plongée."
+        ]
+    },
+
+    // ==========================================
+    // GUIDE_DETAILS — Visualisation / Sommeil
+    // ==========================================
+
+    'sleep-descent': {
+        science: "Ce protocole combine la relaxation musculaire progressive de Jacobson (contraction-relâchement), la respiration 4-7-8 du Dr Andrew Weil (effets sédatifs via stimulation vagale prolongée), et l'imagerie hypnagogique (induction de l'état de transition veille-sommeil par visualisation descendante). L'imagerie d'escalier descendant exploite la métaphore d'approfondissement de conscience utilisée en hypnose clinique (Milton Erickson). L'enchaînement des trois techniques en 7 minutes crée une transition progressive vers le sommeil lent profond.",
+        practice: [
+            "Allongez-vous dans votre lit, yeux fermés, bras le long du corps",
+            "3 cycles de respiration 4-7-8 : inspirez 4s (nez), retenez 7s, expirez 8s (bouche avec son 'whoosh')",
+            "Relâchement progressif : front → yeux → mâchoire → épaules → bras → jambes",
+            "Imaginez un escalier de 10 marches descendant vers le sommeil. Descendez lentement, une marche à la fois",
+            "À la marche 1, laissez votre conscience se dissoudre. Ne cherchez pas le sommeil — il viendra seul"
+        ]
+    },
+
+    'focus': {
+        science: "La visualisation du 'faisceau de lumière' pour la concentration repose sur la métaphore du spotlight attentionnel (Posner, 1980). En imagerie mentale, diriger un projecteur lumineux vers l'objet d'attention active préférentiellement le réseau attentionnel dorsal (cortex pariétal postérieur + frontal oculomoteur). Le maintien de 3 minutes sur un point focal renforce le contrôle inhibiteur (cortex préfrontal dorsolatéral), réduisant la distractibilité. Études de neurofeedback : 8-10 minutes d'entraînement attentionnel quotidien augmentent la densité de matière grise dans le cortex préfrontal en 8 semaines.",
+        practice: [
+            "Asseyez-vous confortablement, dos droit. Respirez calmement pendant 1 minute",
+            "Fermez les yeux et visualisez un faisceau de lumière focalisé devant vous",
+            "Dirigez ce faisceau vers l'objet de votre concentration (tâche, objectif, performance)",
+            "Maintenez l'attention sur ce point lumineux. Quand l'esprit vagabonde, recentrez le faisceau sans jugement",
+            "Pratiquez quotidiennement : l'attention est un muscle qui se renforce avec l'entraînement"
+        ]
+    },
+
+    // ==========================================
+    // GUIDE_DETAILS — Auto-hypnose / Apnée
+    // ==========================================
+
+    'vakog-static': {
+        science: "Le modèle VAKOG (Visuel, Auditif, Kinesthésique, Olfactif, Gustatif) est le cadre de la Programmation Neuro-Linguistique (Bandler & Grinder, 1975) adapté à l'apnée statique. En fragmentant l'attention en canaux sensoriels distincts et en les faisant alterner rapidement, on sature le réseau de mode par défaut (Default Mode Network) — responsable des ruminations et de l'hypervigilance CO2. La technique du 'Switch' (orteil → lobe d'oreille) exploite le phénomène de gate control (Melzack & Wall) : un nouveau stimulus sensoriel fort peut atténuer la perception d'un autre stimulus. Études en auto-hypnose : réduction de 40% de la perception des contractions diaphragmatiques.",
+        practice: [
+            "En position de statique, préparez votre breathe-up habituel avant de lancer l'exercice",
+            "Suivez le guide VAKOG : parcourez les modalités dans l'ordre (Auditif externe → Auditif interne → Kinesthésique → Visuel interne)",
+            "Technique Switch : si une contraction ou sensation désagréable arrive, déplacez INSTANTANÉMENT le focus vers le petit orteil gauche, puis le lobe d'oreille droit",
+            "Créez votre ancre : pressez pouce contre index lors du moment de calme le plus profond",
+            "Utilisez l'ancre (pouce-index) avant chaque statique pour réactiver l'état VAKOG rapidement"
+        ]
+    },
+
+    'scan-sensoriel': {
+        science: "Le scan sensoriel circulaire applique la 'gate control theory' (Melzack & Wall, 1965) : l'attention focalisée sur des zones corporelles neutres active les interneurones inhibiteurs de la corne dorsale, réduisant la signalisation douloureuse ou inconfortable vers le cortex. En rotation rapide entre les zones (crâne → oreilles → mains → orteils), on maintient le traitement attentionnel en mouvement constant, empêchant l'amygdale de se fixer sur les contractions diaphragmatiques. Utilisé par les apnéistes de haut niveau pour les apnées statiques longues (6+ minutes).",
+        practice: [
+            "Position de statique, yeux fermés. Prenez une dernière respiration calme avant le guide",
+            "Suivez le scan corporel du crâne vers les pieds, zone par zone, en observant sans juger",
+            "Lorsque le scan s'accélère (cycles rapides), changez de zone au rythme du guide",
+            "Si une sensation désagréable apparaît : sautez immédiatement vers le petit orteil gauche ou le lobe d'oreille — zones neutres ancrées",
+            "Avec la pratique, vous pourrez faire le scan seul sans guide, à votre propre rythme"
+        ]
+    },
+
+    // ==========================================
+    // GUIDE_DETAILS — CO2 / Apnée avancée
+    // ==========================================
+
+    'co2-vhl-classic': {
+        science: "Le VHL Classique Woorons est le protocole source des études scientifiques sur la VHL (Woorons et al., 2014, 2017). Avec seulement 2 respirations de récupération entre les pauses (vs 3 dans le protocole CO2), la charge hypercapnique inter-cycle est plus élevée : la PCO2 ne redescend pas complètement avant la pause suivante, créant une exposition cumulée plus intense. La pause end-expiratory de 6 secondes (vs 5s) génère une PCO2 artérielle d'environ 58-62 mmHg — davantage que le protocole court. Recommandé uniquement après avoir complété 4 semaines de VHL CO2 standard. Les 8 cycles sur 14 minutes constituent le protocole complet de l'étude originale.",
+        practice: [
+            "Prérequis : complétez 4 semaines de VHL CO2 standard avant de débuter ce protocole",
+            "Respirez normalement 2 fois (inhale + exhale naturels)",
+            "À la 2e expiration : expirez normalement (poumons mi-vides, NE PAS vider à fond), puis PAUSE de 6 secondes",
+            "Reprenez 2 respirations normales, puis répétez la pause. Cycle : 2 respirations → 1 pause × 8 cycles",
+            "Récupérez 4 respirations libres entre chaque série. La pause plus longue et l'intervalle plus court créent une charge CO2 supérieure au protocole standard"
+        ]
+    },
+
+    // ==========================================
+    // GUIDE_DETAILS — Visualisation apnée
+    // ==========================================
+
+    'predive': {
+        science: "La routine mentale pré-plongée complète combine plusieurs techniques validées en psychologie du sport : (1) le breathe-up visualisé active le système parasympathique par conditionnement associatif, (2) la visualisation de la descente en première personne encode le parcours moteur dans le cortex prémoteur, réduisant les décisions conscientes pendant l'apnée, (3) la visualisation positive de la surface conditionne une sortie calme et contrôlée. Étude Swann et al. (2012) : les athlètes qui pratiquent une routine mentale pré-performance montrent une réduction de 25% de l'anxiété précompétitive et une amélioration de 15% des performances.",
+        practice: [
+            "Commencez 10 minutes avant la plongée, dans un environnement calme",
+            "Visualisez le breathe-up en temps réel : sentez votre cœur ralentir, vos muscles se détendre",
+            "Visualisez la descente en première personne : chaque mètre, chaque équilibrage, la sensation de glisse",
+            "Au fond : ressentez le calme absolu, le silence. Voyez-vous serein et maître de la situation",
+            "Visualisez la remontée et la sortie parfaite. Ancrez la sensation de succès avec pouce-index"
+        ]
+    },
+
+    'flow-release': {
+        science: "Le Flow & Release combine la Triple Awareness (technique Molchanovs/AIDA) avec un breathe-up structuré. La Triple Awareness — percevoir simultanément l'environnement externe, les sensations corporelles internes, et l'espace mental — sature le réseau de mode par défaut pour le faire taire. Cette déconcentration sensorielle active le réseau attentionnel ventral (traitement passif, non-analytique), facilitant l'entrée en état de flow (Csikszentmihalyi). La phase de 'cyclic sighing' préalable prépare le nerf vague et calme l'hypervigilance CO2 avant l'apnée.",
+        practice: [
+            "Phase 1 — Cyclic Sighing (5 cycles) : double inspiration nasale + longue expiration. Active le nerf vague",
+            "Phase 2 — Diaphragme segmentaire (3 étages) : ventre, côtes, poitrine. Maximise le volume résiduel",
+            "Phase 3 — Triple Awareness : percevez simultanément un son lointain, une sensation corporelle, et le calme de votre esprit",
+            "Maintenez la Triple Awareness pendant l'apnée — si l'attention se fixe sur une contraction, revenez au son lointain",
+            "Sortie : expirez lentement en restant dans cet état de perception élargie"
+        ]
+    },
+
+    // ==========================================
+    // GUIDE_DETAILS — PMR
+    // ==========================================
+
+    'pmr': {
+        science: "La Relaxation Musculaire Progressive (Edmund Jacobson, 1929) est l'une des techniques de relaxation les mieux validées scientifiquement. Méta-analyse de Manzoni et al. (2008) portant sur 3400 participants : réduction significative du stress, de l'anxiété et de la dépression. Le principe est neurophysiologique : une contraction isométrique maximale de 5-8 secondes épuise localement l'acétylcholine aux plaques motrices, provoquant une inhibition post-tétanique — le muscle se détend bien au-delà de son tonus de repos. Ce contraste contraction-relâchement entraîne également la conscience proprioceptive de la tension résiduelle, facilitant son élimination volontaire.",
+        practice: [
+            "Allongez-vous confortablement. Parcourez 15 groupes musculaires de la main au pied",
+            "Pour chaque groupe : contractez fort pendant 5-8 secondes (sans douleur), puis relâchez brusquement",
+            "Observez la différence entre tension et détente — c'est cette conscience qui constitue l'entraînement",
+            "Ne sautez aucun groupe : la progression systématique de haut en bas du corps est essentielle",
+            "Pratiquez quotidiennement 2-4 semaines pour un effet durable. Ensuite, la détente profonde devient accessible en quelques minutes"
         ]
     }
 };
