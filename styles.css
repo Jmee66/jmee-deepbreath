@@ -908,7 +908,14 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Transition duration is set dynamically via JS */
+    /* Bug #2 : no transition by default — only animate when .active is present.
+       This prevents a stale --phase-duration value from causing a spurious
+       animation when the circle is at rest between phases. */
+    transition: none;
+}
+
+.breath-circle.active {
+    /* Transition duration is set dynamically via JS (--phase-duration) */
     transition: transform var(--phase-duration, 4s) ease-in-out;
 }
 

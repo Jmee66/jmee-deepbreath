@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '1.05';
+const APP_VERSION = '1.06';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -2027,8 +2027,18 @@ class JmeeDeepBreathApp {
     // ==========================================
 
     async startExercise(exerciseId) {
+        // Bug #9 : guard against double-start (button tapped twice)
+        if (this.isRunning) return;
+
         const exercise = this.getExerciseParams(exerciseId);
         if (!exercise) return;
+
+        // Bug #12 : clean up any lingering timers from a previous exercise
+        if (this.phaseTimer) { clearInterval(this.phaseTimer); this.phaseTimer = null; }
+        if (this.displayTimer) { clearInterval(this.displayTimer); this.displayTimer = null; }
+
+        // Stop any residual sounds
+        if (window.breathSounds) window.breathSounds.stop();
 
         this.currentExercise = exercise;
         this.currentExercise.id = exerciseId;
@@ -2040,6 +2050,35 @@ class JmeeDeepBreathApp {
         this.exerciseStartTime = Date.now();
         this.exercisePausedTotal = 0;
         this._exercisePauseStart = null;
+
+        // Bug #10/#11 : reset all exercise-specific state variables
+        // Breath Light
+        this._blRoundIndex = 0;
+        this._blCycleInRound = 1;
+        this._blRoundStartTime = null;
+        // Passive Breath Hanger
+        this._pbhCycle = 1;
+        this._pbhHoldTimes = [];
+        this._pbhUrgeTime = null;
+        this._pbhHoldStart = null;
+        this._pbhPausedTime = 0;
+        this._pbhPauseStart = null;
+        this._pbhPrepMidSpoken = false;   // Bug #11 : reset here, not at end of prep
+        // VHL
+        this._vhlSerie = 1;
+        this._vhlBreathInCycle = 1;
+        this._vhlRestBreathCount = 0;
+        // VHL Statique
+        this._vhlsCycle = 1;
+        this._vhlsHoldStart = null;
+        this._vhlsPausedMs = 0;           // Bug #15 : always reset pause accumulator
+        this._vhlsPauseStart = null;
+        // IMST
+        this._imstSet = 1;
+        this._imstRep = 1;
+        // Wim Hof
+        this.wimHofRound = 1;
+        this.wimHofBreath = 1;
 
         // Prevent screen from sleeping during exercise
         this.requestWakeLock();
@@ -2141,8 +2180,12 @@ class JmeeDeepBreathApp {
             exercise.instructions[phase.name] || phase.instruction || '';
         document.getElementById('cycleCounter').textContent = `Cycle ${this.currentCycle} / ${totalCycles}`;
 
-        // Play breath sound for this phase (only for non-guided exercises)
-        if (window.breathSounds && !exercise.isGuided) {
+        // Play breath sound for this phase (only for non-guided, non-kapalabhati exercises)
+        // Bug #6 : Kapalabhati has 0.5s phases — playing a new sound every 0.5s would stack
+        // 30+ overlapping sounds. Skip entirely for kapalabhati.
+        if (window.breathSounds && !exercise.isGuided && !exercise.isKapalabhati) {
+            // Bug #5 : always stop the previous sound before starting a new one
+            window.breathSounds.stop();
             // 2nd inhale of Cyclic Sighing — short distinct tap
             if (phase.name === 'Inspirez +') {
                 window.breathSounds.playSecondInhale();
@@ -2178,10 +2221,15 @@ class JmeeDeepBreathApp {
         const circle = document.getElementById('breathCircle');
         const phaseText = document.getElementById('breathPhase');
 
-        // Remove all state classes
+        // Remove ALL state classes (Bug #3 : always clean every class)
         circle.classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
 
-        // Set the transition duration to match the phase duration
+        // Bug #1/#4 : force reflow so the browser registers the class removal
+        // before we set --phase-duration and re-add the action class.
+        // Without this, rapid inhale→exhale transitions may not restart the CSS animation.
+        void circle.offsetWidth;
+
+        // Set transition duration BEFORE adding the new class (Bug #1)
         circle.style.setProperty('--phase-duration', `${phase.duration}s`);
 
         // Determine the correct action class
@@ -2189,16 +2237,14 @@ class JmeeDeepBreathApp {
 
         // For hold phases, determine if lungs are full or empty based on previous action
         if (phase.action === 'hold') {
-            // If we just inhaled, we're holding with full lungs
-            // If we just exhaled, we're holding with empty lungs
             if (previousAction === 'exhale') {
                 actionClass = 'holdEmpty';
             } else {
-                actionClass = 'hold'; // Default to full lungs hold
+                actionClass = 'hold';
             }
         }
 
-        // Add appropriate class
+        // Add appropriate class — now after reflow + duration set
         circle.classList.add(actionClass, 'active');
 
         // Update phase text
@@ -2341,8 +2387,9 @@ class JmeeDeepBreathApp {
         document.getElementById('exerciseInstruction').textContent = round.instruction;
         this.updateBreathPhase(phase, previousAction);
 
-        // Sound
+        // Sound (Bug #5 : stop before play)
         if (window.breathSounds) {
+            window.breathSounds.stop();
             let soundPhase = phase.action;
             if (phase.action === 'hold' && previousAction === 'exhale') soundPhase = 'holdEmpty';
             window.breathSounds.playPhase(soundPhase, phase.duration);
@@ -2511,8 +2558,9 @@ class JmeeDeepBreathApp {
         // Hold circle animation
         const circle = document.getElementById('breathCircle');
         circle.classList.remove('inhale', 'exhale', 'holdEmpty', 'hold', 'active');
-        circle.classList.add('hold', 'active');
+        void circle.offsetWidth;
         circle.style.setProperty('--phase-duration', '1s');
+        circle.classList.add('hold', 'active');
 
         // Show control buttons
         const btnUrge = document.getElementById('btnHangerUrge');
@@ -2616,6 +2664,7 @@ class JmeeDeepBreathApp {
         this.updateBreathPhase({ name: 'Expirez', action: 'exhale', duration: exhaleDur }, 'hold');
 
         if (window.breathSounds) {
+            window.breathSounds.stop();
             window.breathSounds.playPhase('exhale', exhaleDur);
         }
         if (window.voiceGuide && window.voiceGuide.enabled) {
@@ -2645,10 +2694,12 @@ class JmeeDeepBreathApp {
             `Cycle ${this._pbhCycle} / ${exercise.cycles} — Repos`;
 
         const circle = document.getElementById('breathCircle');
-        circle.classList.remove('hold', 'active', 'holdEmpty');
-        circle.classList.add('inhale');
+        circle.classList.remove('hold', 'holdEmpty', 'exhale', 'active');
+        void circle.offsetWidth;
         circle.style.setProperty('--phase-duration', `${restDur}s`);
+        circle.classList.add('inhale', 'active');
 
+        if (window.breathSounds) window.breathSounds.stop();
         if (window.breathSounds) {
             window.breathSounds.playPhase('inhale', restDur);
         }
@@ -2780,6 +2831,7 @@ class JmeeDeepBreathApp {
         this.updateBreathPhase({ name: 'Inspirez', action: 'inhale', duration: 3 },
             this._vhlBreathInCycle === 1 ? 'holdEmpty' : 'exhale');
 
+        if (window.breathSounds) window.breathSounds.stop();
         if (window.breathSounds) window.breathSounds.playPhase('inhale', 3);
         if (this._vhlBreathInCycle === 1 && window.voiceGuide?.enabled) {
             window.voiceGuide.speak(exercise.instructions.breathe);
@@ -2791,6 +2843,7 @@ class JmeeDeepBreathApp {
             document.getElementById('breathPhase').textContent = 'Expirez';
             this.updateBreathPhase({ name: 'Expirez', action: 'exhale', duration: 3 }, 'inhale');
 
+            if (window.breathSounds) window.breathSounds.stop();
             if (window.breathSounds) window.breathSounds.playPhase('exhale', 3);
 
             this.startPhaseTimer(3, () => {
@@ -2815,10 +2868,12 @@ class JmeeDeepBreathApp {
 
         // Cercle holdEmpty = poumons vides/bas
         const circle = document.getElementById('breathCircle');
-        circle.classList.remove('inhale', 'exhale', 'hold', 'active');
-        circle.classList.add('holdEmpty', 'active');
+        circle.classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
+        void circle.offsetWidth;
         circle.style.setProperty('--phase-duration', `${holdDur}s`);
+        circle.classList.add('holdEmpty', 'active');
 
+        if (window.breathSounds) window.breathSounds.stop();
         if (window.breathSounds) window.breathSounds.playPhase('holdEmpty', holdDur);
         if (window.voiceGuide?.enabled) window.voiceGuide.speak(exercise.instructions.hold);
 
@@ -2893,16 +2948,21 @@ class JmeeDeepBreathApp {
 
         // inhale 3s
         const circle = document.getElementById('breathCircle');
-        circle.classList.remove('exhale', 'holdEmpty', 'hold');
-        circle.classList.add('inhale');
+        circle.classList.remove('exhale', 'holdEmpty', 'hold', 'active');
+        void circle.offsetWidth;
         circle.style.setProperty('--phase-duration', '3s');
+        circle.classList.add('inhale', 'active');
+        if (window.breathSounds) window.breathSounds.stop();
         if (window.breathSounds) window.breathSounds.playPhase('inhale', 3);
 
         this.startPhaseTimer(3, () => {
+            if (!this.isRunning) return;
             // exhale 3s
-            circle.classList.remove('inhale');
-            circle.classList.add('exhale');
+            circle.classList.remove('inhale', 'active');
+            void circle.offsetWidth;
             circle.style.setProperty('--phase-duration', '3s');
+            circle.classList.add('exhale', 'active');
+            if (window.breathSounds) window.breathSounds.stop();
             if (window.breathSounds) window.breathSounds.playPhase('exhale', 3);
             this.startPhaseTimer(3, () => {
                 this._vhlRunRestBreath(remaining - 1);
@@ -2951,10 +3011,12 @@ class JmeeDeepBreathApp {
             `Cycle ${this._vhlsCycle}/${this._vhlsSeriesTotal} — Cyclic Sighing ${prepDur}s`;
 
         const circle = document.getElementById('breathCircle');
-        circle.classList.remove('holdEmpty', 'hold', 'exhale', 'active');
-        circle.classList.add('inhale', 'active');
+        circle.classList.remove('inhale', 'holdEmpty', 'hold', 'exhale', 'active');
+        void circle.offsetWidth;
         circle.style.setProperty('--phase-duration', '5s');
+        circle.classList.add('inhale', 'active');
 
+        if (window.breathSounds) window.breathSounds.stop();
         if (window.breathSounds) window.breathSounds.playPhase('inhale', prepDur);
         if (window.voiceGuide?.enabled) window.voiceGuide.speak(exercise.instructions.prep);
 
@@ -2974,9 +3036,10 @@ class JmeeDeepBreathApp {
             `Cycle ${this._vhlsCycle}/${this._vhlsSeriesTotal} — Pause ${holdDur}s (poumons bas)`;
 
         const circle = document.getElementById('breathCircle');
-        circle.classList.remove('inhale', 'exhale', 'hold', 'active');
-        circle.classList.add('holdEmpty', 'active');
+        circle.classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
+        void circle.offsetWidth;
         circle.style.setProperty('--phase-duration', `${holdDur}s`);
+        circle.classList.add('holdEmpty', 'active');
 
         const btnStop = document.getElementById('btnHangerStop');
         if (btnStop) {
@@ -2988,6 +3051,7 @@ class JmeeDeepBreathApp {
             };
         }
 
+        if (window.breathSounds) window.breathSounds.stop();
         if (window.breathSounds) window.breathSounds.playPhase('holdEmpty', holdDur);
         if (window.voiceGuide?.enabled) window.voiceGuide.speak(exercise.instructions.hold);
 
@@ -3068,15 +3132,20 @@ class JmeeDeepBreathApp {
             `Récup — encore ${remaining} souffle${remaining > 1 ? 's' : ''}`;
 
         const circle = document.getElementById('breathCircle');
-        circle.classList.remove('exhale', 'holdEmpty', 'hold');
-        circle.classList.add('inhale');
+        circle.classList.remove('exhale', 'holdEmpty', 'hold', 'active');
+        void circle.offsetWidth;
         circle.style.setProperty('--phase-duration', '3s');
+        circle.classList.add('inhale', 'active');
+        if (window.breathSounds) window.breathSounds.stop();
         if (window.breathSounds) window.breathSounds.playPhase('inhale', 3);
 
         this.startPhaseTimer(3, () => {
-            circle.classList.remove('inhale');
-            circle.classList.add('exhale');
+            if (!this.isRunning) return;
+            circle.classList.remove('inhale', 'active');
+            void circle.offsetWidth;
             circle.style.setProperty('--phase-duration', '3s');
+            circle.classList.add('exhale', 'active');
+            if (window.breathSounds) window.breathSounds.stop();
             if (window.breathSounds) window.breathSounds.playPhase('exhale', 3);
             this.startPhaseTimer(3, () => {
                 this._vhlsRunRestBreath(remaining - 1);
@@ -3234,8 +3303,9 @@ class JmeeDeepBreathApp {
         this.updateBreathPhase(inhalePhase, 'exhale'); // Previous was exhale
         document.getElementById('exerciseInstruction').textContent = exercise.instructions[inhalePhase.name];
 
-        // Play breath sound
+        // Play breath sound (Bug #5 : stop before play)
         if (window.breathSounds) {
+            window.breathSounds.stop();
             window.breathSounds.playPhase('inhale', inhalePhase.duration);
         }
 
@@ -3245,8 +3315,9 @@ class JmeeDeepBreathApp {
             this.updateBreathPhase(exhalePhase, 'inhale'); // Previous was inhale
             document.getElementById('exerciseInstruction').textContent = exercise.instructions[exhalePhase.name];
 
-            // Play breath sound
+            // Play breath sound (Bug #5 : stop before play)
             if (window.breathSounds) {
+                window.breathSounds.stop();
                 window.breathSounds.playPhase('exhale', exhalePhase.duration);
             }
 
