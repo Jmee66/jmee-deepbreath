@@ -128,6 +128,32 @@
                     <span class="volume-value" id="volumeRangeValue">50%</span>
                 </div>
             </div>
+            <div style="border-top:1px solid var(--border-color,rgba(255,255,255,0.1));margin:8px 0;"></div>
+            <div class="volume-row">
+                <label class="volume-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    </svg>
+                    Voix TTS
+                </label>
+                <select id="voiceSelect" style="flex:1;background:var(--bg-tertiary,#1a1a2e);color:var(--text-primary,#e0e0e0);border:1px solid var(--border-color,rgba(255,255,255,0.1));border-radius:6px;padding:4px 8px;font-size:0.82rem;cursor:pointer;">
+                    <option value="">— Auto (meilleure disponible) —</option>
+                </select>
+            </div>
+            <div class="volume-row">
+                <label class="volume-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    Vitesse
+                </label>
+                <div class="volume-slider-row">
+                    <input type="range" min="50" max="120" value="78" id="voiceRateRange" class="volume-slider">
+                    <span class="volume-value" id="voiceRateValue">78%</span>
+                </div>
+            </div>
         </div>
     </div>
 

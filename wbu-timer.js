@@ -264,7 +264,7 @@ var WBU = (function () {
     }
 
     // ── Version injection (avant app.js defer) ───────────────────
-    var VERSION = '1.09';
+    var VERSION = '1.10';
 
     function injectVersion() {
         var pin   = el('appVersionPin');

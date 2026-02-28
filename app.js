@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '1.09';
+const APP_VERSION = '1.10';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -47,6 +47,10 @@ class JmeeDeepBreathApp {
             o2StartPercent: 30,
             o2EndPercent: 75,
             noContractionPercent: 30,
+
+            // Voice settings
+            voiceSelectedName: '',  // '' = auto priority, name string = user-selected voice
+            voiceRate: 78,          // % (50-120), divided by 100 for TTS rate (0.78 default)
 
             // Exercise-specific settings
             exercises: {
@@ -840,6 +844,62 @@ class JmeeDeepBreathApp {
                 if (isEnabled) {
                     window.voiceGuide.speak('Guidage vocal activé');
                 }
+            });
+        }
+
+        // --- Voice selector ---
+        const voiceSelect = document.getElementById('voiceSelect');
+        if (voiceSelect && window.voiceGuide) {
+            const populateVoiceSelect = () => {
+                const voices = window.voiceGuide.getAvailableVoices();
+                // Clear all options except the first "Auto" option
+                while (voiceSelect.options.length > 1) voiceSelect.remove(1);
+                voices.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.name;
+                    opt.textContent = v.name + (v.localService ? '' : ' ☁️');
+                    voiceSelect.appendChild(opt);
+                });
+                // Restore saved selection
+                const saved = this.settings.voiceSelectedName || '';
+                voiceSelect.value = saved;
+                if (saved) {
+                    window.voiceGuide.setVoice(saved);
+                }
+            };
+
+            // Populate now (voices may already be loaded) and when they load async
+            populateVoiceSelect();
+            window.voiceGuide.onVoicesChanged = populateVoiceSelect;
+
+            voiceSelect.addEventListener('change', (e) => {
+                const name = e.target.value;
+                window.voiceGuide.setVoice(name || null);
+                this.settings.voiceSelectedName = name;
+                this.saveSettings(true);
+                // Audio feedback with the new voice
+                if (window.voiceGuide.enabled) {
+                    setTimeout(() => window.voiceGuide.speak('Voix sélectionnée'), 200);
+                }
+            });
+        }
+
+        // --- Speech rate slider ---
+        const voiceRateRange = document.getElementById('voiceRateRange');
+        const voiceRateValue = document.getElementById('voiceRateValue');
+        if (voiceRateRange && window.voiceGuide) {
+            // Restore saved rate
+            const savedRate = this.settings.voiceRate || 78;
+            voiceRateRange.value = savedRate;
+            if (voiceRateValue) voiceRateValue.textContent = savedRate + '%';
+            window.voiceGuide.setRate(savedRate / 100);
+
+            voiceRateRange.addEventListener('input', (e) => {
+                const pct = parseInt(e.target.value);
+                if (voiceRateValue) voiceRateValue.textContent = pct + '%';
+                window.voiceGuide.setRate(pct / 100);
+                this.settings.voiceRate = pct;
+                this.saveSettings(true);
             });
         }
     }

@@ -12,13 +12,18 @@ class VoiceGuide {
         this.rate = 0.78; // Slower for more natural, calm delivery
         this.pitch = 1.0; // Natural pitch (avoid distortion)
         this.speaking = false;
+        this.selectedVoiceName = null; // null = auto priority, string = user-selected voice
+        this.onVoicesChanged = null;   // optional callback for app.js to repopulate voice selector
 
         // Load French voice
         this.loadVoice();
 
         // Reload voices when they become available
         if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = () => this.loadVoice();
+            speechSynthesis.onvoiceschanged = () => {
+                this.loadVoice();
+                if (this.onVoicesChanged) this.onVoicesChanged();
+            };
         }
     }
 
@@ -27,6 +32,16 @@ class VoiceGuide {
 
         // Prefer French voices, prioritize high-quality feminine voices
         const frenchVoices = voices.filter(v => v.lang.startsWith('fr'));
+
+        // If user manually selected a voice, use it in priority
+        if (this.selectedVoiceName) {
+            const preferred = frenchVoices.find(v => v.name === this.selectedVoiceName);
+            if (preferred) {
+                this.voice = preferred;
+                console.log('Voice Guide: Using preferred voice', this.voice.name);
+                return;
+            }
+        }
 
         // Priority order for natural French voices:
         // 1. Premium/Enhanced voices (downloaded from macOS settings)
@@ -154,6 +169,14 @@ class VoiceGuide {
      */
     setRate(rate) {
         this.rate = Math.max(0.5, Math.min(2, rate));
+    }
+
+    /**
+     * Set voice by name (null = revert to auto priority)
+     */
+    setVoice(name) {
+        this.selectedVoiceName = name || null;
+        this.loadVoice();
     }
 
     /**
