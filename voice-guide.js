@@ -14,17 +14,37 @@ class VoiceGuide {
         this.speaking = false;
         this.selectedVoiceName = null; // null = auto priority, string = user-selected voice
         this.onVoicesChanged = null;   // optional callback for app.js to repopulate voice selector
+        this._lastVoiceCount = 0;
 
         // Load French voice
         this.loadVoice();
 
-        // Reload voices when they become available
+        // Reload voices when they become available (standard event)
         if (speechSynthesis.onvoiceschanged !== undefined) {
             speechSynthesis.onvoiceschanged = () => {
                 this.loadVoice();
                 if (this.onVoicesChanged) this.onVoicesChanged();
             };
         }
+
+        // iOS workaround: voices (especially downloaded high-res ones) load late
+        // and onvoiceschanged may not fire. Poll until the list stabilises.
+        this._pollVoices();
+    }
+
+    _pollVoices() {
+        let attempts = 0;
+        const maxAttempts = 20; // up to ~10 seconds
+        const interval = setInterval(() => {
+            attempts++;
+            const voices = this.synth.getVoices();
+            if (voices.length !== this._lastVoiceCount) {
+                this._lastVoiceCount = voices.length;
+                this.loadVoice();
+                if (this.onVoicesChanged) this.onVoicesChanged();
+            }
+            if (attempts >= maxAttempts) clearInterval(interval);
+        }, 500);
     }
 
     loadVoice() {
@@ -187,10 +207,15 @@ class VoiceGuide {
     }
 
     /**
-     * Get available voices for settings
+     * Get available voices for settings.
+     * Returns French voices first, then all others — so that downloaded
+     * high-res voices with unexpected lang codes (iOS quirk) are still visible.
      */
     getAvailableVoices() {
-        return this.synth.getVoices().filter(v => v.lang.startsWith('fr'));
+        const all = this.synth.getVoices();
+        const french = all.filter(v => v.lang.startsWith('fr'));
+        const others = all.filter(v => !v.lang.startsWith('fr'));
+        return [...french, ...others];
     }
 }
 

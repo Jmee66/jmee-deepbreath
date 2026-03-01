@@ -779,6 +779,27 @@
                     </div>
                 </div>
 
+                <!-- Square Flow — Cohérence Plus -->
+                <div class="exercise-card" data-exercise="square-flow">
+                    <div class="exercise-badge">Cohérence Plus</div>
+                    <h3>Square Flow 5-10-5-2</h3>
+                    <p>Suspension poumons pleins avec relâchement différentiel. Travaille la capacité pulmonaire et le calme profond par micro-apnée FRC.</p>
+                    <div class="exercise-meta">
+                        <span>10 min</span>
+                        <span>•</span>
+                        <span>Capacité &amp; Calme</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="square-flow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- 4-7-8 Relaxation -->
                 <div class="exercise-card" data-exercise="relaxation">
                     <div class="exercise-badge">Sommeil</div>
@@ -4589,6 +4610,37 @@
                             </div>
                         </div>
                         <p class="settings-note">Les phases 2, 3 et 4 réduisent automatiquement les durées pour créer la progression.</p>
+                    </div>
+
+                    <!-- Square Flow -->
+                    <div class="exercise-settings" data-exercise="square-flow">
+                        <h4>Square Flow <span class="ratio-badge">Cohérence Plus</span></h4>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="5" max="30" value="10" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Suspension poumons pleins</label>
+                            <select data-param="holdDuration" style="background:#1a2a3a;color:#e0e8f0;border:1px solid #2a3a4a;border-radius:6px;padding:6px 10px;width:100%">
+                                <option value="5">5 s — Débutant</option>
+                                <option value="10" selected>10 s — Intermédiaire ✓</option>
+                                <option value="15">15 s — Avancé</option>
+                                <option value="20">20 s — Expert</option>
+                            </select>
+                        </div>
+                        <div class="settings-row">
+                            <label>Nombre de cycles</label>
+                            <select data-param="cycles" style="background:#1a2a3a;color:#e0e8f0;border:1px solid #2a3a4a;border-radius:6px;padding:6px 10px;width:100%">
+                                <option value="10">10 cycles (~5 min)</option>
+                                <option value="15" selected>15 cycles (~10 min)</option>
+                                <option value="20">20 cycles (~15 min)</option>
+                                <option value="0">Continu</option>
+                            </select>
+                        </div>
+                        <p class="settings-note">Le bouton de confort en fin de séance ajuste automatiquement la prochaine suspension (+2s / −2s).</p>
                     </div>
 
                     <!-- 4-7-8 -->

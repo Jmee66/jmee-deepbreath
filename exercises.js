@@ -299,6 +299,35 @@ const EXERCISES = {
         warning: 'Si vous ressentez des étourdissements, revenez à une respiration normale. Ne pratiquez pas en conduisant.'
     },
 
+    'square-flow': {
+        name: 'Square Flow — Cohérence Plus',
+        category: 'respiration',
+        description: 'Inspir contrôlé (5s) + Suspension poumons pleins (10s) + Expir fluide (5s) + Micro-apnée FRC (2s) — travail de capacité pulmonaire et de relâchement différentiel',
+        science: 'La suspension prolongée poumons pleins (kumbhaka) étire le diaphragme au maximum et stimule les mécanorécepteurs pulmonaires (réflexe de Hering-Breuer), amplifiant l\'activation vagale parasympathique. La micro-apnée FRC post-expiration (2s) stabilise le CO2 résiduel et ancre le rythme. L\'ouverture latérale des côtes pendant l\'inspir active les muscles intercostaux externes, augmentant le volume courant de 15-20% sans tension cervicale.',
+        isSquareFlow: true,
+        duration: 10,
+        cycles: 15,
+        holdDuration: 10,
+        phases: [
+            { name: 'Inspirez', duration: 5, action: 'inhale',
+              subText: 'Ouverture latérale des côtes — pas seulement le ventre.' },
+            { name: 'Suspension', duration: 10, action: 'hold',
+              subText: 'Relâchez les trapèzes et la mâchoire. Sentez la pression interne comme un massage.' },
+            { name: 'Expirez', duration: 5, action: 'exhale',
+              subText: 'Expulsez la tension avec l\'air. Vidage fluide et constant.' },
+            { name: 'Immobilité', duration: 2, action: 'holdEmpty',
+              subText: 'Immobilité totale.' }
+        ],
+        instructions: {
+            start: 'Square Flow — Cohérence Plus. Installez-vous confortablement. Nous allons pratiquer la suspension poumons pleins avec relâchement différentiel.',
+            'Inspirez': 'Inspirez par le nez. Ouvrez les côtes latéralement — pas seulement le ventre. Remplissage contrôlé.',
+            'Suspension': 'Suspension poumons pleins. Relâchez les trapèzes et la mâchoire. Glotte ouverte. Sentez la pression interne comme un massage.',
+            'Expirez': 'Expirez de façon fluide et constante. Ne lâchez pas l\'air d\'un coup — contrôlez. Expulsez la tension avec l\'air.',
+            'Immobilité': 'Micro-apnée poumons vides. Immobilité totale. Préparez le prochain cycle.'
+        },
+        cyclesPerMinute: 2.73
+    },
+
     'relaxation': {
         name: 'Respiration 4-7-8',
         category: 'respiration',

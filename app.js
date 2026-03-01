@@ -91,6 +91,11 @@ class JmeeDeepBreathApp {
                     exhale: 6,
                     hold: 3
                 },
+                'square-flow': {
+                    duration: 10,
+                    holdDuration: 10,
+                    cycles: 15
+                },
                 'relaxation': {
                     cycles: 4,
                     inhale: 4,
@@ -858,12 +863,26 @@ class JmeeDeepBreathApp {
                 const voices = window.voiceGuide.getAvailableVoices();
                 // Clear all options except the first "Auto" option
                 while (voiceSelect.options.length > 1) voiceSelect.remove(1);
+
+                let separatorAdded = false;
                 voices.forEach(v => {
+                    // Add a visual separator before non-French voices
+                    if (!separatorAdded && !v.lang.startsWith('fr')) {
+                        separatorAdded = true;
+                        const sep = document.createElement('option');
+                        sep.disabled = true;
+                        sep.textContent = '── Autres langues ──';
+                        voiceSelect.appendChild(sep);
+                    }
                     const opt = document.createElement('option');
                     opt.value = v.name;
-                    opt.textContent = v.name + (v.localService ? '' : ' ☁️');
+                    const quality = v.name.toLowerCase().includes('premium') || v.name.toLowerCase().includes('enhanced') ? ' ⭐' : '';
+                    const cloud = v.localService ? '' : ' ☁️';
+                    const lang = v.lang.startsWith('fr') ? '' : ` [${v.lang}]`;
+                    opt.textContent = v.name + quality + cloud + lang;
                     voiceSelect.appendChild(opt);
                 });
+
                 // Restore saved selection
                 const saved = this.settings.voiceSelectedName || '';
                 voiceSelect.value = saved;
@@ -1761,6 +1780,19 @@ class JmeeDeepBreathApp {
                     }
                 }
                 break;
+
+            case 'square-flow': {
+                exercise.duration = userSettings.duration || exercise.duration;
+                const sfHold = parseInt(userSettings.holdDuration) || 10;
+                // cycles=0 signifie "Continu" → on laisse cycles à 0 pour que startBreathingExercise utilise la durée
+                const sfCyclesRaw = userSettings.cycles !== undefined ? parseInt(userSettings.cycles) : 15;
+                const sfCycles = isNaN(sfCyclesRaw) ? 15 : sfCyclesRaw;
+                exercise.holdDuration = sfHold;
+                exercise.cycles = sfCycles || undefined; // 0 → undefined → mode durée
+                // Mettre à jour la phase de suspension (index 1) avec la durée choisie
+                exercise.phases[1].duration = sfHold;
+                break;
+            }
 
             case 'relaxation':
                 exercise.cycles = userSettings.cycles || exercise.cycles;
@@ -5054,6 +5086,15 @@ class JmeeDeepBreathApp {
         const circle = document.getElementById('breathCircle');
         circle.classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
 
+        // Square Flow — Seuil de confort (ajustement automatique de la suspension)
+        if (this.currentExercise && this.currentExercise.id === 'square-flow') {
+            setTimeout(() => {
+                if (this.isRunning) return;
+                this._showSquareFlowComfortButtons();
+            }, 1800);
+            return;
+        }
+
         // Show feedback modal or auto-close
         if (window.coach) {
             // Calculate total exercise duration (excluding pauses)
@@ -5073,6 +5114,76 @@ class JmeeDeepBreathApp {
                 }
             }, 5000);
         }
+    }
+
+    _showSquareFlowComfortButtons() {
+        // Overlay de seuil de confort pour Square Flow
+        const existing = document.getElementById('squareFlowComfort');
+        if (existing) existing.remove();
+
+        const currentHold = (this.settings.exercises['square-flow'] && this.settings.exercises['square-flow'].holdDuration) || 10;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'squareFlowComfort';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(10,10,26,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3000;gap:20px;padding:30px;text-align:center;';
+
+        overlay.innerHTML = `
+            <p style="color:#4a9eff;font-size:1.1rem;font-weight:600;margin:0;">Seuil de confort — Suspension</p>
+            <p style="color:#e0e8f0;font-size:0.95rem;margin:0;">Suspension actuelle : <strong>${currentHold}s</strong>. Comment était-ce ?</p>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+                <button id="sfTooShort" style="padding:12px 24px;border-radius:10px;border:none;background:#4ade80;color:#0a1a0a;font-weight:700;font-size:1rem;cursor:pointer;">Trop court ↑ +2s</button>
+                <button id="sfJustRight" style="padding:12px 24px;border-radius:10px;border:none;background:#4a9eff;color:#fff;font-weight:700;font-size:1rem;cursor:pointer;">Parfait ✓</button>
+                <button id="sfTooLong" style="padding:12px 24px;border-radius:10px;border:none;background:#f87171;color:#fff;font-weight:700;font-size:1rem;cursor:pointer;">Trop long ↓ −2s</button>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        const applyAndClose = (delta) => {
+            overlay.remove();
+            if (delta !== 0) {
+                if (!this.settings.exercises['square-flow']) this.settings.exercises['square-flow'] = {};
+                const newHold = Math.max(3, Math.min(30, currentHold + delta));
+                this.settings.exercises['square-flow'].holdDuration = newHold;
+
+                // Mettre à jour le select dans la modale de réglages
+                const sel = document.querySelector('.exercise-settings[data-exercise="square-flow"] select[data-param="holdDuration"]');
+                if (sel) {
+                    // Cherche l'option la plus proche ou ajoute une option dynamique
+                    let found = false;
+                    for (const opt of sel.options) {
+                        if (parseInt(opt.value) === newHold) { opt.selected = true; found = true; break; }
+                    }
+                    if (!found) {
+                        const opt = document.createElement('option');
+                        opt.value = newHold;
+                        opt.textContent = `${newHold} s — Personnalisé`;
+                        opt.selected = true;
+                        sel.appendChild(opt);
+                    }
+                }
+
+                this.saveSettings(true);
+                this.showToast(`Suspension ajustée à ${newHold}s pour la prochaine séance`);
+            }
+
+            // Passer au feedback coach standard
+            if (window.coach) {
+                const pauseNow = this._exercisePauseStart ? (Date.now() - this._exercisePauseStart) : 0;
+                const totalDuration = this.exerciseStartTime
+                    ? (Date.now() - this.exerciseStartTime - this.exercisePausedTotal - pauseNow) / 1000
+                    : this.elapsedTime;
+                if (!this.isRunning) {
+                    window.coach.showFeedbackModal(this.currentExercise, totalDuration);
+                }
+            } else {
+                setTimeout(() => { if (!this.isRunning) this.closeExercise(); }, 3000);
+            }
+        };
+
+        document.getElementById('sfTooShort').addEventListener('click', () => applyAndClose(+2));
+        document.getElementById('sfJustRight').addEventListener('click', () => applyAndClose(0));
+        document.getElementById('sfTooLong').addEventListener('click', () => applyAndClose(-2));
     }
 
     closeExercise() {
