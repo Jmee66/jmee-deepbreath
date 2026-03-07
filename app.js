@@ -1526,13 +1526,15 @@ class JmeeDeepBreathApp {
     refreshExerciseSettingsUI() {
         const isOptimal = this.settings.mode === 'optimal';
         const RATIO_LOCKS = {
-            'coherent':       { ref: 'inhale', locked: { exhale: 1 } },
-            'ujjayi':         { ref: 'inhale', locked: { exhale: 1 } },
-            'bhramari':       { ref: 'inhale', locked: { exhale: 2 } },
-            'co2-tolerance':  { ref: 'inhale', locked: { exhale: 2 } },
-            'pranayama-142':  { ref: 'inhale', locked: { hold: 4, exhale: 2 } },
-            'relaxation':     { ref: 'inhale', locked: { hold: 1.75, exhale: 2 } },
-            'surya-bhedana':  { ref: 'inhale', locked: { hold: 2, exhale: 1.5 } },
+            'coherent':         { ref: 'inhale', locked: { exhale: 1 } },
+            'ujjayi':           { ref: 'inhale', locked: { exhale: 1 } },
+            'bhramari':         { ref: 'inhale', locked: { exhale: 2 } },
+            'co2-tolerance':    { ref: 'inhale', locked: { exhale: 2 } },
+            'breath-light-co2': { ref: 'inhale', locked: { exhale: 1.5, hold: 0.75 } },
+            'pranayama-142':    { ref: 'inhale', locked: { hold: 4, exhale: 2 } },
+            'relaxation':       { ref: 'inhale', locked: { hold: 1.75, exhale: 2 } },
+            'surya-bhedana':    { ref: 'inhale', locked: { hold: 2, exhale: 1.5 } },
+            'ocean-breath-co2': { ref: 'inhale', locked: { hold: 2, exhale: 4, holdEmpty: 1 } },
         };
 
         document.querySelectorAll('.exercise-settings').forEach(section => {
@@ -1664,14 +1666,15 @@ class JmeeDeepBreathApp {
 
         // Appliquer les ratios liés (identique à RATIO_LOCKS)
         const RATIO_LOCKED = {
-            'coherent':       { exhale: 1 },
-            'ujjayi':         { exhale: 1 },
-            'bhramari':       { exhale: 2 },
-            'co2-tolerance':  { exhale: 2 },
+            'coherent':         { exhale: 1 },
+            'ujjayi':           { exhale: 1 },
+            'bhramari':         { exhale: 2 },
+            'co2-tolerance':    { exhale: 2 },
             'breath-light-co2': { exhale: 1.5, hold: 0.75 },
-            'pranayama-142':  { hold: 4, exhale: 2 },
-            'relaxation':     { hold: 1.75, exhale: 2 },
-            'surya-bhedana':  { hold: 2, exhale: 1.5 },
+            'pranayama-142':    { hold: 4, exhale: 2 },
+            'relaxation':       { hold: 1.75, exhale: 2 },
+            'surya-bhedana':    { hold: 2, exhale: 1.5 },
+            'ocean-breath-co2': { hold: 2, exhale: 4, holdEmpty: 1 },
         };
         const ratios = RATIO_LOCKED[exerciseId];
         if (ratios) {
@@ -1692,6 +1695,12 @@ class JmeeDeepBreathApp {
         return result;
     }
 
+    // Helper : retourne userVal si non-null/undefined, sinon fallback
+    // Corrige le pattern `userVal || fallback` qui traite 0 comme falsy
+    _v(userVal, fallback) {
+        return (userVal != null && userVal !== '') ? userVal : fallback;
+    }
+
     getExerciseParams(exerciseId) {
         const baseExercise = EXERCISES[exerciseId];
         if (!baseExercise) {
@@ -1710,78 +1719,78 @@ class JmeeDeepBreathApp {
 
         // Comfort zone (and FRC)
         if (exercise.isComfortZone) {
-            exercise.cycles = userSettings.cycles || exercise.cycles;
-            exercise.restDuration = userSettings.restDuration || exercise.restDuration;
-            exercise.breatheUpDuration = userSettings.breatheUpDuration || exercise.breatheUpDuration;
+            exercise.cycles = this._v(userSettings.cycles, exercise.cycles);
+            exercise.restDuration = this._v(userSettings.restDuration, exercise.restDuration);
+            exercise.breatheUpDuration = this._v(userSettings.breatheUpDuration, exercise.breatheUpDuration);
             this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
         // Contraction tolerance
         if (exercise.isContractionTable) {
-            exercise.cycles = userSettings.cycles || exercise.cycles;
-            exercise.weekLevel = userSettings.weekLevel || exercise.weekLevel;
-            exercise.restDuration = userSettings.restDuration || exercise.restDuration;
+            exercise.cycles = this._v(userSettings.cycles, exercise.cycles);
+            exercise.weekLevel = this._v(userSettings.weekLevel, exercise.weekLevel);
+            exercise.restDuration = this._v(userSettings.restDuration, exercise.restDuration);
             this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
         // Body scan apnea
         if (exercise.isApneaWithGuidance) {
-            exercise.cycles = userSettings.cycles || exercise.cycles;
-            exercise.breatheUpDuration = userSettings.breatheUpDuration || exercise.breatheUpDuration;
-            exercise.restDuration = userSettings.restDuration || exercise.restDuration;
+            exercise.cycles = this._v(userSettings.cycles, exercise.cycles);
+            exercise.breatheUpDuration = this._v(userSettings.breatheUpDuration, exercise.breatheUpDuration);
+            exercise.restDuration = this._v(userSettings.restDuration, exercise.restDuration);
             this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
         // Passive Breath Hanger
         if (exercise.isPassiveBreathHanger) {
-            exercise.cycles = userSettings.cycles || exercise.cycles;
-            exercise.prepDuration = userSettings.prepDuration || exercise.prepDuration;
-            exercise.restDuration = userSettings.restDuration || exercise.restDuration;
-            exercise.maxHoldDuration = userSettings.maxHoldDuration || exercise.maxHoldDuration;
+            exercise.cycles = this._v(userSettings.cycles, exercise.cycles);
+            exercise.prepDuration = this._v(userSettings.prepDuration, exercise.prepDuration);
+            exercise.restDuration = this._v(userSettings.restDuration, exercise.restDuration);
+            exercise.maxHoldDuration = this._v(userSettings.maxHoldDuration, exercise.maxHoldDuration);
             this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
         // VHL Statique (Woorons — pause longue FRC)
         if (exercise.isVHLStatic) {
-            exercise.cycles       = userSettings.cycles       || exercise.cycles;
-            exercise.holdDuration = userSettings.holdDuration || exercise.holdDuration;
-            exercise.restBreaths  = userSettings.restBreaths  || exercise.restBreaths;
-            exercise.prepDuration = userSettings.prepDuration || exercise.prepDuration;
-            exercise.volumeMode   = userSettings.volumeMode   || exercise.volumeMode;
+            exercise.cycles       = this._v(userSettings.cycles, exercise.cycles);
+            exercise.holdDuration = this._v(userSettings.holdDuration, exercise.holdDuration);
+            exercise.restBreaths  = this._v(userSettings.restBreaths, exercise.restBreaths);
+            exercise.prepDuration = this._v(userSettings.prepDuration, exercise.prepDuration);
+            exercise.volumeMode   = this._v(userSettings.volumeMode, exercise.volumeMode);
             this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
         // VHL (Hypoventilation à bas volume)
         if (exercise.isVHL) {
-            exercise.cycles       = userSettings.cycles       || exercise.cycles;
-            exercise.breathsPerCycle = userSettings.breathsPerCycle || exercise.breathsPerCycle;
-            exercise.holdDuration = userSettings.holdDuration || exercise.holdDuration;
-            exercise.restBreaths  = userSettings.restBreaths  || exercise.restBreaths;
-            exercise.duration     = userSettings.duration     || exercise.duration;
+            exercise.cycles       = this._v(userSettings.cycles, exercise.cycles);
+            exercise.breathsPerCycle = this._v(userSettings.breathsPerCycle, exercise.breathsPerCycle);
+            exercise.holdDuration = this._v(userSettings.holdDuration, exercise.holdDuration);
+            exercise.restBreaths  = this._v(userSettings.restBreaths, exercise.restBreaths);
+            exercise.duration     = this._v(userSettings.duration, exercise.duration);
             this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
         // IMST (Inspiratory Muscle Strength Training)
         if (exercise.isIMST) {
-            exercise.sets           = userSettings.sets           || exercise.sets;
-            exercise.repsPerSet     = userSettings.repsPerSet     || exercise.repsPerSet;
-            exercise.inhaleDuration = userSettings.inhaleDuration || exercise.inhaleDuration;
-            exercise.exhaleDuration = userSettings.exhaleDuration || exercise.exhaleDuration;
-            exercise.restDuration   = userSettings.restDuration   || exercise.restDuration;
-            exercise.mode           = userSettings.mode           || exercise.mode;
+            exercise.sets           = this._v(userSettings.sets, exercise.sets);
+            exercise.repsPerSet     = this._v(userSettings.repsPerSet, exercise.repsPerSet);
+            exercise.inhaleDuration = this._v(userSettings.inhaleDuration, exercise.inhaleDuration);
+            exercise.exhaleDuration = this._v(userSettings.exhaleDuration, exercise.exhaleDuration);
+            exercise.restDuration   = this._v(userSettings.restDuration, exercise.restDuration);
+            exercise.mode           = this._v(userSettings.mode, exercise.mode);
             this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
         // Deep Sleep 4-7-8 — body scan scalable, blocs 4-7-8 fixes
         if (exercise.isDeepSleep) {
-            exercise.duration = userSettings.duration || exercise.duration;
+            exercise.duration = this._v(userSettings.duration, exercise.duration);
             const totalSec = exercise.duration * 60;
             const FIXED = 30 + 76 * 2;  // installation + 2 blocs 4-7-8 (4 × 19s chacun)
             const budget = totalSec - FIXED;
@@ -1809,20 +1818,20 @@ class JmeeDeepBreathApp {
         // Standard breathing exercises
         switch (exerciseId) {
             case 'cyclic-sighing':
-                exercise.duration = userSettings.duration || exercise.duration;
-                exercise.phases[0].duration = userSettings.inhale1 || exercise.phases[0].duration;
-                exercise.phases[1].duration = userSettings.inhale2 || exercise.phases[1].duration;
-                exercise.phases[2].duration = userSettings.exhale || exercise.phases[2].duration;
+                exercise.duration = this._v(userSettings.duration, exercise.duration);
+                exercise.phases[0].duration = this._v(userSettings.inhale1, exercise.phases[0].duration);
+                exercise.phases[1].duration = this._v(userSettings.inhale2, exercise.phases[1].duration);
+                exercise.phases[2].duration = this._v(userSettings.exhale, exercise.phases[2].duration);
                 break;
 
             case 'coherent':
-                exercise.duration = userSettings.duration || exercise.duration;
-                exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
-                exercise.phases[1].duration = userSettings.exhale || exercise.phases[1].duration;
+                exercise.duration = this._v(userSettings.duration, exercise.duration);
+                exercise.phases[0].duration = this._v(userSettings.inhale, exercise.phases[0].duration);
+                exercise.phases[1].duration = this._v(userSettings.exhale, exercise.phases[1].duration);
                 break;
 
             case 'cardiac-coherence': {
-                exercise.duration = userSettings.duration || exercise.duration;
+                exercise.duration = this._v(userSettings.duration, exercise.duration);
 
                 // Fréquence → durée totale du cycle
                 const ccFreqMap = {
@@ -1833,11 +1842,12 @@ class JmeeDeepBreathApp {
                     '6.5': 60 / 6.5,
                     '7.0': 60 / 7
                 };
-                const ccFreq = userSettings.frequency || '5.5';
+                const ccFreq = this._v(userSettings.frequency, '5.5');
                 const ccTotalCycle = ccFreqMap[ccFreq] || (60 / 5.5);
 
                 // Rétention poumons pleins (secondes)
-                const ccHold = parseFloat(userSettings.hold) || 0;
+                const ccHoldRaw = userSettings.hold != null ? parseFloat(userSettings.hold) : 0;
+                const ccHold = isNaN(ccHoldRaw) ? 0 : ccHoldRaw;
                 const ccBreathTime = ccTotalCycle - ccHold;
 
                 // Ratio → répartition inhale / exhale
@@ -1846,7 +1856,7 @@ class JmeeDeepBreathApp {
                     '1:1.5': [0.4,     0.6],
                     '1:2':   [1 / 3,   2 / 3]
                 };
-                const ccRatio = userSettings.ratio || '1:1';
+                const ccRatio = this._v(userSettings.ratio, '1:1');
                 const [ccInFrac, ccExFrac] = ccRatioMap[ccRatio] || [0.5, 0.5];
 
                 const ccInhale = Math.round(ccBreathTime * ccInFrac * 10) / 10;
@@ -1864,29 +1874,29 @@ class JmeeDeepBreathApp {
             }
 
             case 'box':
-                exercise.duration = userSettings.duration || exercise.duration;
-                const boxTime = userSettings.boxTime || 4;
+                exercise.duration = this._v(userSettings.duration, exercise.duration);
+                const boxTime = this._v(userSettings.boxTime, 4);
                 exercise.phases.forEach(p => p.duration = boxTime);
                 break;
 
             case 'wimhof':
-                exercise.rounds = userSettings.rounds || exercise.rounds;
-                exercise.breathsPerRound = userSettings.breaths || exercise.breathsPerRound;
-                exercise.recoveryPhase.duration = userSettings.recovery || exercise.recoveryPhase.duration;
+                exercise.rounds = this._v(userSettings.rounds, exercise.rounds);
+                exercise.breathsPerRound = this._v(userSettings.breaths, exercise.breathsPerRound);
+                exercise.recoveryPhase.duration = this._v(userSettings.recovery, exercise.recoveryPhase.duration);
                 break;
 
             case 'co2-tolerance':
-                exercise.duration = userSettings.duration || exercise.duration;
-                exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
-                exercise.phases[1].duration = userSettings.exhale || exercise.phases[1].duration;
+                exercise.duration = this._v(userSettings.duration, exercise.duration);
+                exercise.phases[0].duration = this._v(userSettings.inhale, exercise.phases[0].duration);
+                exercise.phases[1].duration = this._v(userSettings.exhale, exercise.phases[1].duration);
                 break;
 
             case 'breath-light-co2':
-                exercise.duration = userSettings.duration || exercise.duration;
+                exercise.duration = this._v(userSettings.duration, exercise.duration);
                 // Recalcule les rounds selon les paramètres base
-                const blInhale = userSettings.inhale || 4;
-                const blExhale = userSettings.exhale || 6;
-                const blHold   = userSettings.hold   || 3;
+                const blInhale = this._v(userSettings.inhale, 4);
+                const blExhale = this._v(userSettings.exhale, 6);
+                const blHold   = this._v(userSettings.hold, 3);
                 exercise.rounds = [
                     { label: 'Phase 1 — Mise en place',       durationSec: 90,  instruction: 'Respirez normalement par le nez. Prenez conscience de votre amplitude.',                                              inhale: blInhale,        exhale: blExhale,        hold: 0 },
                     { label: 'Phase 2 — Réduction inspiration', durationSec: 90,  instruction: 'Réduisez légèrement l\'inspiration — à peine moins d\'air qu\'à l\'habitude. Inconfort léger.',                      inhale: Math.max(1.5, blInhale - 1),   exhale: blExhale,        hold: 0 },
@@ -1905,8 +1915,8 @@ class JmeeDeepBreathApp {
                 break;
 
             case 'square-flow': {
-                exercise.duration = userSettings.duration || exercise.duration;
-                const sfHold = parseInt(userSettings.holdDuration) || 10;
+                exercise.duration = this._v(userSettings.duration, exercise.duration);
+                const sfHold = this._v(parseInt(userSettings.holdDuration), 10);
                 // cycles=0 signifie "Continu" → on laisse cycles à 0 pour que startBreathingExercise utilise la durée
                 const sfCyclesRaw = userSettings.cycles !== undefined ? parseInt(userSettings.cycles) : 15;
                 const sfCycles = isNaN(sfCyclesRaw) ? 15 : sfCyclesRaw;
@@ -1918,36 +1928,36 @@ class JmeeDeepBreathApp {
             }
 
             case 'relaxation':
-                exercise.cycles = userSettings.cycles || exercise.cycles;
-                exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
-                exercise.phases[1].duration = userSettings.hold || exercise.phases[1].duration;
-                exercise.phases[2].duration = userSettings.exhale || exercise.phases[2].duration;
+                exercise.cycles = this._v(userSettings.cycles, exercise.cycles);
+                exercise.phases[0].duration = this._v(userSettings.inhale, exercise.phases[0].duration);
+                exercise.phases[1].duration = this._v(userSettings.hold, exercise.phases[1].duration);
+                exercise.phases[2].duration = this._v(userSettings.exhale, exercise.phases[2].duration);
                 break;
 
             case 'ocean-breath-co2':
-                exercise.duration = userSettings.duration || exercise.duration;
-                exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
-                exercise.phases[1].duration = userSettings.hold || exercise.phases[1].duration;
-                exercise.phases[2].duration = userSettings.exhale || exercise.phases[2].duration;
-                exercise.phases[3].duration = userSettings.holdEmpty != null ? userSettings.holdEmpty : exercise.phases[3].duration;
+                exercise.duration = this._v(userSettings.duration, exercise.duration);
+                exercise.phases[0].duration = this._v(userSettings.inhale, exercise.phases[0].duration);
+                exercise.phases[1].duration = this._v(userSettings.hold, exercise.phases[1].duration);
+                exercise.phases[2].duration = this._v(userSettings.exhale, exercise.phases[2].duration);
+                exercise.phases[3].duration = this._v(userSettings.holdEmpty, exercise.phases[3].duration);
                 break;
 
             case 'pranayama-142':
-                exercise.duration = userSettings.duration || exercise.duration;
-                exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
-                exercise.phases[1].duration = userSettings.hold || exercise.phases[1].duration;
-                exercise.phases[2].duration = userSettings.exhale || exercise.phases[2].duration;
+                exercise.duration = this._v(userSettings.duration, exercise.duration);
+                exercise.phases[0].duration = this._v(userSettings.inhale, exercise.phases[0].duration);
+                exercise.phases[1].duration = this._v(userSettings.hold, exercise.phases[1].duration);
+                exercise.phases[2].duration = this._v(userSettings.exhale, exercise.phases[2].duration);
                 break;
 
             case 'nadi-shodhana':
-                exercise.duration = userSettings.duration || exercise.duration;
+                exercise.duration = this._v(userSettings.duration, exercise.duration);
                 if (userSettings.phaseTime) {
                     exercise.phases.forEach(p => p.duration = userSettings.phaseTime);
                 }
                 break;
 
             case 'kapalabhati':
-                exercise.cycles = userSettings.cycles || exercise.cycles;
+                exercise.cycles = this._v(userSettings.cycles, exercise.cycles);
                 if (userSettings.speed) {
                     const half = userSettings.speed / 2;
                     exercise.phases[0].duration = half;
@@ -1956,26 +1966,26 @@ class JmeeDeepBreathApp {
                 break;
 
             case 'ujjayi':
-                exercise.duration = userSettings.duration || exercise.duration;
-                exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
-                exercise.phases[1].duration = userSettings.exhale || exercise.phases[1].duration;
+                exercise.duration = this._v(userSettings.duration, exercise.duration);
+                exercise.phases[0].duration = this._v(userSettings.inhale, exercise.phases[0].duration);
+                exercise.phases[1].duration = this._v(userSettings.exhale, exercise.phases[1].duration);
                 break;
 
             case 'bhramari':
-                exercise.duration = userSettings.duration || exercise.duration;
-                exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
-                exercise.phases[1].duration = userSettings.exhale || exercise.phases[1].duration;
+                exercise.duration = this._v(userSettings.duration, exercise.duration);
+                exercise.phases[0].duration = this._v(userSettings.inhale, exercise.phases[0].duration);
+                exercise.phases[1].duration = this._v(userSettings.exhale, exercise.phases[1].duration);
                 break;
 
             case 'surya-bhedana':
-                exercise.duration = userSettings.duration || exercise.duration;
-                exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
-                exercise.phases[1].duration = userSettings.hold || exercise.phases[1].duration;
-                exercise.phases[2].duration = userSettings.exhale || exercise.phases[2].duration;
+                exercise.duration = this._v(userSettings.duration, exercise.duration);
+                exercise.phases[0].duration = this._v(userSettings.inhale, exercise.phases[0].duration);
+                exercise.phases[1].duration = this._v(userSettings.hold, exercise.phases[1].duration);
+                exercise.phases[2].duration = this._v(userSettings.exhale, exercise.phases[2].duration);
                 break;
 
             case 'diaphragm':
-                exercise.duration = userSettings.duration || exercise.duration;
+                exercise.duration = this._v(userSettings.duration, exercise.duration);
                 break;
         }
 
