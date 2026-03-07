@@ -1272,7 +1272,8 @@ class JmeeDeepBreathApp {
             'breath-light-co2': { ref: 'inhale', locked: { exhale: 1.5, hold: 0.75 } },
             'pranayama-142':    { ref: 'inhale', locked: { hold: 4, exhale: 2 } },
             'relaxation':       { ref: 'inhale', locked: { hold: 1.75, exhale: 2 } },
-            'surya-bhedana':  { ref: 'inhale', locked: { hold: 2, exhale: 1.5 } },
+            'surya-bhedana':    { ref: 'inhale', locked: { hold: 2, exhale: 1.5 } },
+            'ocean-breath-co2': { ref: 'inhale', locked: { hold: 2, exhale: 4, holdEmpty: 1 } },
         };
 
         document.querySelectorAll('.exercise-settings').forEach(section => {
@@ -1323,6 +1324,19 @@ class JmeeDeepBreathApp {
                             }
                         }
                     }
+                    // Si modification manuelle d'Ocean Breath, désélectionner le preset actif
+                    if (exerciseId === 'ocean-breath-co2') {
+                        document.querySelectorAll('.ocean-preset').forEach(b => {
+                            b.classList.remove('active');
+                            b.style.background = '#1a2a3a';
+                            b.style.border = '1px solid #2a3a4a';
+                            b.style.color = '#e0e8f0';
+                        });
+                        if (this.settings.exercises['ocean-breath-co2']) {
+                            this.settings.exercises['ocean-breath-co2'].preset = null;
+                        }
+                    }
+
                     clearTimeout(saveTimeout);
                     saveTimeout = setTimeout(() => this.saveSettings(true), 300);
                 };
