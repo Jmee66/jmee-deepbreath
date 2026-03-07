@@ -666,6 +666,27 @@
                     </div>
                 </div>
 
+                <!-- Ocean Breath CO2 -->
+                <div class="exercise-card" data-exercise="ocean-breath-co2">
+                    <div class="exercise-badge">CO2 Tolérance</div>
+                    <h3>Ocean Breath CO2</h3>
+                    <p>Expiration longue freinée (Ujjayi) — le freinage glottique ralentit l'évacuation du CO2 et crée une hypercapnie progressive sûre.</p>
+                    <div class="exercise-meta">
+                        <span class="exercise-duration" data-show="duration">10 min</span>
+                        <span>•</span>
+                        <span>4-4-16-2</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn-start">Commencer</button>
+                        <button class="btn-config" title="Configurer" data-exercise="ocean-breath-co2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Hypoventilation VHL CO2 -->
                 <div class="exercise-card" data-exercise="co2-vhl">
                     <div class="exercise-badge">Woorons</div>
@@ -4417,6 +4438,55 @@
                                 <span>sec</span>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Ocean Breath CO2 -->
+                    <div class="exercise-settings" data-exercise="ocean-breath-co2">
+                        <h4>Ocean Breath CO2 <span class="ratio-badge">ratio 1:2:4:1</span></h4>
+                        <div class="settings-row">
+                            <label>Preset</label>
+                            <div class="ocean-breath-presets" style="display:flex;gap:8px;flex-wrap:wrap">
+                                <button type="button" class="preset-btn ocean-preset" data-preset="detente" style="padding:6px 12px;border-radius:8px;border:1px solid #2a3a4a;background:#1a2a3a;color:#e0e8f0;cursor:pointer;font-size:0.85rem">Détente 5-5-10-2</button>
+                                <button type="button" class="preset-btn ocean-preset active" data-preset="endurance" style="padding:6px 12px;border-radius:8px;border:1px solid var(--primary);background:var(--primary);color:#fff;cursor:pointer;font-size:0.85rem">Endurance 4-4-12-2</button>
+                                <button type="button" class="preset-btn ocean-preset" data-preset="performance" style="padding:6px 12px;border-radius:8px;border:1px solid #2a3a4a;background:#1a2a3a;color:#e0e8f0;cursor:pointer;font-size:0.85rem">Performance 4-8-16-4</button>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Durée totale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="1" max="30" value="10" data-param="duration">
+                                <span>min</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Inspir Nasale</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="2" max="8" value="4" data-param="inhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Pause Plein</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="0" max="16" value="4" data-param="hold">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Expir Ocean Breath</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="4" max="30" value="16" data-param="exhale">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Pause Vide</label>
+                            <div class="input-with-unit">
+                                <input type="number" min="0" max="8" value="2" data-param="holdEmpty">
+                                <span>sec</span>
+                            </div>
+                        </div>
+                        <p class="settings-note">Ratio recommandé : 1:2:4:1. Les presets appliquent des valeurs testées. Tu peux aussi ajuster manuellement chaque phase.</p>
                     </div>
 
                     <!-- Hypoventilation VHL CO2 -->

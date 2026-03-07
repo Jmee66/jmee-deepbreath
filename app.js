@@ -85,6 +85,14 @@ class JmeeDeepBreathApp {
                     inhale: 4,
                     exhale: 8
                 },
+                'ocean-breath-co2': {
+                    duration: 10,
+                    inhale: 4,
+                    hold: 4,
+                    exhale: 16,
+                    holdEmpty: 2,
+                    preset: 'endurance'
+                },
                 'breath-light-co2': {
                     duration: 7,
                     inhale: 4,
@@ -1334,6 +1342,66 @@ class JmeeDeepBreathApp {
             });
         }
 
+        // Ocean Breath CO2 — presets Détente / Endurance / Performance
+        const oceanPresets = {
+            detente:     { inhale: 5, hold: 5,  exhale: 10, holdEmpty: 2 },
+            endurance:   { inhale: 4, hold: 4,  exhale: 12, holdEmpty: 2 },
+            performance: { inhale: 4, hold: 8,  exhale: 16, holdEmpty: 4 }
+        };
+        document.querySelectorAll('.ocean-preset').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const preset = btn.dataset.preset;
+                const values = oceanPresets[preset];
+                if (!values) return;
+
+                // Mettre à jour le style des boutons
+                document.querySelectorAll('.ocean-preset').forEach(b => {
+                    b.classList.remove('active');
+                    b.style.background = '#1a2a3a';
+                    b.style.border = '1px solid #2a3a4a';
+                    b.style.color = '#e0e8f0';
+                });
+                btn.classList.add('active');
+                btn.style.background = 'var(--primary)';
+                btn.style.border = '1px solid var(--primary)';
+                btn.style.color = '#fff';
+
+                // Appliquer les valeurs dans les inputs
+                const section = document.querySelector('.exercise-settings[data-exercise="ocean-breath-co2"]');
+                if (!section) return;
+                for (const [param, val] of Object.entries(values)) {
+                    const input = section.querySelector(`input[data-param="${param}"]`);
+                    if (input) input.value = val;
+                }
+
+                // Sauvegarder
+                if (!this.settings.exercises['ocean-breath-co2']) {
+                    this.settings.exercises['ocean-breath-co2'] = {};
+                }
+                Object.assign(this.settings.exercises['ocean-breath-co2'], values);
+                this.settings.exercises['ocean-breath-co2'].preset = preset;
+                this.saveSettings(true);
+            });
+        });
+
+        // Restaurer le preset actif au chargement
+        const savedPreset = this.settings.exercises?.['ocean-breath-co2']?.preset;
+        if (savedPreset) {
+            const activeBtn = document.querySelector(`.ocean-preset[data-preset="${savedPreset}"]`);
+            if (activeBtn) {
+                document.querySelectorAll('.ocean-preset').forEach(b => {
+                    b.classList.remove('active');
+                    b.style.background = '#1a2a3a';
+                    b.style.border = '1px solid #2a3a4a';
+                    b.style.color = '#e0e8f0';
+                });
+                activeBtn.classList.add('active');
+                activeBtn.style.background = 'var(--primary)';
+                activeBtn.style.border = '1px solid var(--primary)';
+                activeBtn.style.color = '#fff';
+            }
+        }
+
         // En mode optimal : quand apneaMax change, recalculer tous les inputs exercices en temps réel
         const apneaMinutes = document.getElementById('apneaMinutes');
         const apneaSeconds = document.getElementById('apneaSeconds');
@@ -1842,6 +1910,14 @@ class JmeeDeepBreathApp {
                 exercise.phases[2].duration = userSettings.exhale || exercise.phases[2].duration;
                 break;
 
+            case 'ocean-breath-co2':
+                exercise.duration = userSettings.duration || exercise.duration;
+                exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
+                exercise.phases[1].duration = userSettings.hold || exercise.phases[1].duration;
+                exercise.phases[2].duration = userSettings.exhale || exercise.phases[2].duration;
+                exercise.phases[3].duration = userSettings.holdEmpty != null ? userSettings.holdEmpty : exercise.phases[3].duration;
+                break;
+
             case 'pranayama-142':
                 exercise.duration = userSettings.duration || exercise.duration;
                 exercise.phases[0].duration = userSettings.inhale || exercise.phases[0].duration;
@@ -1978,6 +2054,10 @@ class JmeeDeepBreathApp {
             case 'pranayama-142':
                 exercise.instructions.start =
                     `Pranayama ${exercise.phases[0].duration}-${exercise.phases[1].duration}-${exercise.phases[2].duration}. Inspirez, retenez, expirez au rythme indiqué.`;
+                break;
+            case 'ocean-breath-co2':
+                exercise.instructions.start =
+                    `Ocean Breath CO2 — ${exercise.phases[0].duration}-${exercise.phases[1].duration}-${exercise.phases[2].duration}-${exercise.phases[3].duration}. Expiration longue freinée pour tolérance CO2.`;
                 break;
             case 'cardiac-coherence': {
                 const freq = exercise.cyclesPerMinute ? exercise.cyclesPerMinute.toFixed(1) : '5.5';

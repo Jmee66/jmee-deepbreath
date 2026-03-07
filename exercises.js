@@ -131,6 +131,32 @@ const EXERCISES = {
         cyclesPerMinute: 5
     },
 
+    'ocean-breath-co2': {
+        name: 'Ocean Breath CO2',
+        category: 'respiration',
+        description: 'Expiration longue freinée (Ujjayi) pour tolérance CO2 — le freinage glottique crée une contre-pression qui ralentit l\'évacuation du CO2 et entraîne l\'hypercapnie progressive',
+        science: 'L\'expiration freinée (ratio 1:2:4:1) maintient une pression positive résiduelle dans les voies aériennes, ralentissant l\'élimination du CO2. La PCO2 alvéolaire monte progressivement, stimulant les chémorécepteurs centraux. Le son Ujjayi (contraction partielle de la glotte) active le nerf vague via les mécanorécepteurs laryngés. Combiné avec un remplissage limité à 70% VC, ce protocole évite l\'hyperventilation tout en créant une hypercapnie modérée et sûre.',
+        duration: 10,
+        phases: [
+            { name: 'Inspir Nasale', duration: 4, action: 'inhale',
+              subText: 'Remplissage à 70% — pas au max.' },
+            { name: 'Pause Plein', duration: 4, action: 'hold',
+              subText: 'Épaules relâchées. Gorge ouverte.' },
+            { name: 'Expir Ocean', duration: 16, action: 'exhale',
+              subText: 'Freinage glottique maximum. Fil de soie constant.' },
+            { name: 'Pause Vide', duration: 2, action: 'holdEmpty',
+              subText: 'Immobilité. Relâche le ventre.' }
+        ],
+        instructions: {
+            start: 'Ocean Breath CO2 — Endurance 4-4-16-2. Expiration longue freinée pour tolérance CO2.',
+            'Inspir Nasale': 'Inspiration nasale fluide. Remplissage à 70% seulement — pas au maximum.',
+            'Pause Plein': 'Suspension poumons pleins. Relâchement total des épaules. Gorge ouverte.',
+            'Expir Ocean': 'Freinage maximum au fond de la gorge. Le son doit être un fil de soie constant. Régulier du début à la fin.',
+            'Pause Vide': 'Immobilité poumons vides. Relâche le ventre. Prépare le prochain cycle.'
+        },
+        cyclesPerMinute: 2.31
+    },
+
     'co2-vhl': {
         name: 'Hypoventilation VHL CO2',
         category: 'respiration',
