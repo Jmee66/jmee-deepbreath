@@ -602,17 +602,19 @@ class DataSync {
             }
         }
 
-        // Coach settings — merge but ALWAYS preserve local API key
+        // Coach settings — deep merge, local wins on conflicts, ALWAYS preserve local API key
         // (apiKey is stripped before push for security, so remote never has it)
         {
             const localCoach = this._getLocal('deepbreath_coach_settings', {});
             if (remoteData.deepbreath_coach_settings) {
-                // Remote has coach settings: merge, re-inject local API key
-                remoteData.deepbreath_coach_settings = {
-                    ...remoteData.deepbreath_coach_settings,
-                    apiKey: localCoach.apiKey || ''
-                };
-                changed = true;
+                // Deep merge: remote is base, local overrides (same strategy as deepbreath_settings)
+                const remoteCoach = remoteData.deepbreath_coach_settings;
+                const merged = this._deepMergeSettings(remoteCoach, localCoach);
+                merged.apiKey = localCoach.apiKey || '';
+                if (JSON.stringify(merged) !== JSON.stringify(localCoach)) {
+                    changed = true;
+                }
+                remoteData.deepbreath_coach_settings = merged;
             } else if (localCoach && Object.keys(localCoach).length > 0) {
                 // Remote has no coach settings: preserve local entirely (including apiKey)
                 remoteData.deepbreath_coach_settings = localCoach;

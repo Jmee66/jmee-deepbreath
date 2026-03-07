@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '1.13';
+const APP_VERSION = '1.14';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -202,6 +202,39 @@ class JmeeDeepBreathApp {
                     cycles: 5,
                     restDuration: 120,
                     breatheUpDuration: 60
+                },
+                'co2-vhl': {
+                    cycles: 5,
+                    breathsPerCycle: 3,
+                    holdDuration: 5,
+                    restBreaths: 4
+                },
+                'co2-vhl-classic': {
+                    cycles: 8,
+                    breathsPerCycle: 2,
+                    holdDuration: 6,
+                    restBreaths: 4
+                },
+                'co2-vhl-static': {
+                    cycles: 6,
+                    holdDuration: 20,
+                    restBreaths: 3,
+                    prepDuration: 180,
+                    volumeMode: 'frc'
+                },
+                'imst': {
+                    sets: 5,
+                    repsPerSet: 30,
+                    inhaleDuration: 2,
+                    exhaleDuration: 3,
+                    restDuration: 60,
+                    mode: 'device'
+                },
+                'passive-breath-hanger': {
+                    cycles: 4,
+                    prepDuration: 180,
+                    restDuration: 90,
+                    maxHoldDuration: 300
                 }
             }
         };
@@ -1598,6 +1631,7 @@ class JmeeDeepBreathApp {
             exercise.cycles = userSettings.cycles || exercise.cycles;
             exercise.restDuration = userSettings.restDuration || exercise.restDuration;
             exercise.breatheUpDuration = userSettings.breatheUpDuration || exercise.breatheUpDuration;
+            this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
@@ -1606,6 +1640,7 @@ class JmeeDeepBreathApp {
             exercise.cycles = userSettings.cycles || exercise.cycles;
             exercise.weekLevel = userSettings.weekLevel || exercise.weekLevel;
             exercise.restDuration = userSettings.restDuration || exercise.restDuration;
+            this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
@@ -1614,6 +1649,7 @@ class JmeeDeepBreathApp {
             exercise.cycles = userSettings.cycles || exercise.cycles;
             exercise.breatheUpDuration = userSettings.breatheUpDuration || exercise.breatheUpDuration;
             exercise.restDuration = userSettings.restDuration || exercise.restDuration;
+            this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
@@ -1623,6 +1659,7 @@ class JmeeDeepBreathApp {
             exercise.prepDuration = userSettings.prepDuration || exercise.prepDuration;
             exercise.restDuration = userSettings.restDuration || exercise.restDuration;
             exercise.maxHoldDuration = userSettings.maxHoldDuration || exercise.maxHoldDuration;
+            this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
@@ -1633,6 +1670,7 @@ class JmeeDeepBreathApp {
             exercise.restBreaths  = userSettings.restBreaths  || exercise.restBreaths;
             exercise.prepDuration = userSettings.prepDuration || exercise.prepDuration;
             exercise.volumeMode   = userSettings.volumeMode   || exercise.volumeMode;
+            this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
@@ -1643,6 +1681,7 @@ class JmeeDeepBreathApp {
             exercise.holdDuration = userSettings.holdDuration || exercise.holdDuration;
             exercise.restBreaths  = userSettings.restBreaths  || exercise.restBreaths;
             exercise.duration     = userSettings.duration     || exercise.duration;
+            this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
@@ -1654,6 +1693,7 @@ class JmeeDeepBreathApp {
             exercise.exhaleDuration = userSettings.exhaleDuration || exercise.exhaleDuration;
             exercise.restDuration   = userSettings.restDuration   || exercise.restDuration;
             exercise.mode           = userSettings.mode           || exercise.mode;
+            this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
@@ -1670,6 +1710,7 @@ class JmeeDeepBreathApp {
                     s.duration = Math.max(10, Math.round(s.duration * ratio));
                 });
             }
+            this._updateDynamicInstructions(exercise, exerciseId);
             return exercise;
         }
 
@@ -1892,7 +1933,63 @@ class JmeeDeepBreathApp {
             }
         }
 
+        this._updateDynamicInstructions(exercise, exerciseId);
         return exercise;
+    }
+
+    _updateDynamicInstructions(exercise, exerciseId) {
+        if (!exercise.instructions) return;
+
+        switch (exerciseId) {
+            case 'box':
+                exercise.instructions.start =
+                    `Box breathing : inspirez, retenez, expirez, retenez - chaque phase dure ${exercise.phases[0].duration} secondes.`;
+                break;
+            case 'co2-vhl':
+                exercise.instructions.start =
+                    `Hypoventilation VHL. Respirez normalement ${exercise.breathsPerCycle} cycles, puis expirez et faites une pause poumons bas ${exercise.holdDuration}s. ${exercise.cycles} séries.`;
+                exercise.instructions.hold =
+                    `Expirez normalement — ne videz pas à fond. Pause ${exercise.holdDuration}s. Poumons à mi-vide.`;
+                break;
+            case 'co2-vhl-classic':
+                exercise.instructions.start =
+                    `VHL Classique Woorons. ${exercise.breathsPerCycle} respirations normales, puis expirez normalement et faites une pause poumons bas ${exercise.holdDuration} secondes. ${exercise.cycles} cycles.`;
+                exercise.instructions.hold =
+                    `Expirez normalement — pas à fond. Pause ${exercise.holdDuration} secondes. Poumons à mi-vide.`;
+                break;
+            case 'co2-vhl-static':
+                exercise.instructions.start =
+                    `VHL Statique. Préparation cyclic sighing : double inspirez (snif sonore), expirez lentement. ${Math.round(exercise.prepDuration / 60)} minutes.`;
+                break;
+            case 'imst':
+                exercise.instructions.start =
+                    `IMST — ${exercise.repsPerSet} inspirations forcées par série. Inspirez le plus fort et vite possible contre la résistance. ${exercise.sets} séries au total.`;
+                exercise.instructions.complete =
+                    `Session IMST terminée. ${exercise.sets} séries complètes. Pratique régulière 6 jours/semaine = résultats en 6 semaines.`;
+                break;
+            case 'wimhof':
+                exercise.instructions.start =
+                    `Méthode Wim Hof : ${exercise.breathsPerRound} respirations profondes, puis rétention maximale.`;
+                break;
+            case 'relaxation':
+                exercise.instructions.start =
+                    `Technique ${exercise.phases[0].duration}-${exercise.phases[1].duration}-${exercise.phases[2].duration} : placez la langue derrière les dents du haut.`;
+                break;
+            case 'pranayama-142':
+                exercise.instructions.start =
+                    `Pranayama ${exercise.phases[0].duration}-${exercise.phases[1].duration}-${exercise.phases[2].duration}. Inspirez, retenez, expirez au rythme indiqué.`;
+                break;
+            case 'cardiac-coherence': {
+                const freq = exercise.cyclesPerMinute ? exercise.cyclesPerMinute.toFixed(1) : '5.5';
+                exercise.instructions.start =
+                    `Cohérence cardiaque à ${freq} cycles/min. Respirez au rythme indiqué. Laissez votre cœur se synchroniser.`;
+                break;
+            }
+            case 'square-flow':
+                exercise.instructions.start =
+                    `Square Flow — Cohérence Plus. Suspension poumons pleins ${exercise.phases[1]?.duration || 10}s avec relâchement différentiel.`;
+                break;
+        }
     }
 
     getApneaTableParams(exerciseId, exercise, userSettings) {
