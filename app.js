@@ -2192,54 +2192,108 @@ class JmeeDeepBreathApp {
         grid.style.display = '';
         if (empty) empty.style.display = 'none';
 
+        // Labels français pour chaque catégorie
+        const categoryLabels = {
+            'respiration': 'Respiration',
+            'apnee': 'Entraînement Apnée',
+            'visualisation': 'Visualisation',
+            'urgence': 'Urgence',
+            'preperformance': 'Pré-Performance',
+            'autohypnose': 'Auto-Hypnose',
+            'chasse': 'Warm & Breath Up'
+        };
+
+        // Ordre d'affichage des groupes
+        const categoryOrder = [
+            'respiration', 'apnee', 'visualisation', 'urgence',
+            'preperformance', 'autohypnose', 'chasse'
+        ];
+
+        // Grouper les favoris par catégorie
+        const groups = {};
         favs.forEach(exerciseId => {
-            // Clone the original card from its source section
-            const original = document.querySelector(`section:not(#favoris) .exercise-card[data-exercise="${exerciseId}"]`);
-            if (!original) return;
-
-            const clone = original.cloneNode(true);
-            clone.setAttribute('data-exercise', exerciseId);
-
-            // Re-wire the start button
-            const startBtn = clone.querySelector('.btn-start');
-            if (startBtn) {
-                startBtn.addEventListener('click', async () => {
-                    if (window.breathSounds) {
-                        if (!window.breathSounds.audioContext) {
-                            window.breathSounds.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                        }
-                        if (window.breathSounds.audioContext.state === 'suspended') {
-                            await window.breathSounds.audioContext.resume();
-                        }
-                        window.breathSounds.enabled = true;
-                    }
-                    this.startExercise(exerciseId);
-                });
-            }
-
-            // Re-wire config button
-            const configBtn = clone.querySelector('.btn-config');
-            if (configBtn) {
-                configBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.navigateToExerciseSettings(exerciseId);
-                });
-            }
-
-            // Re-wire favorite button (already cloned as is-favorite)
-            const favBtn = clone.querySelector('.btn-favorite');
-            if (favBtn) {
-                favBtn.classList.add('is-favorite');
-                favBtn.title = 'Retirer des favoris';
-                favBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
-                favBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.toggleFavorite(exerciseId);
-                });
-            }
-
-            grid.appendChild(clone);
+            const ex = typeof EXERCISES !== 'undefined' ? EXERCISES[exerciseId] : null;
+            let cat = ex?.category || 'autre';
+            // Fusionner statique/dynamique/profondeur dans chasse
+            if (['statique', 'dynamique', 'profondeur'].includes(cat)) cat = 'chasse';
+            if (!groups[cat]) groups[cat] = [];
+            groups[cat].push(exerciseId);
         });
+
+        // Afficher chaque groupe dans l'ordre défini
+        const allCategories = [...categoryOrder];
+        // Ajouter les catégories non listées en fin
+        Object.keys(groups).forEach(cat => {
+            if (!allCategories.includes(cat)) allCategories.push(cat);
+        });
+
+        allCategories.forEach(cat => {
+            if (!groups[cat] || groups[cat].length === 0) return;
+
+            // Titre du groupe
+            const header = document.createElement('div');
+            header.className = 'favoris-group-header';
+            header.textContent = categoryLabels[cat] || cat;
+            grid.appendChild(header);
+
+            // Sous-grille pour les cartes du groupe
+            const subGrid = document.createElement('div');
+            subGrid.className = 'favoris-group-grid';
+            grid.appendChild(subGrid);
+
+            groups[cat].forEach(exerciseId => {
+                const clone = this._cloneFavCard(exerciseId);
+                if (clone) subGrid.appendChild(clone);
+            });
+        });
+    }
+
+    _cloneFavCard(exerciseId) {
+        const original = document.querySelector(`section:not(#favoris) .exercise-card[data-exercise="${exerciseId}"]`);
+        if (!original) return null;
+
+        const clone = original.cloneNode(true);
+        clone.setAttribute('data-exercise', exerciseId);
+
+        // Re-wire the start button
+        const startBtn = clone.querySelector('.btn-start');
+        if (startBtn) {
+            startBtn.addEventListener('click', async () => {
+                if (window.breathSounds) {
+                    if (!window.breathSounds.audioContext) {
+                        window.breathSounds.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    if (window.breathSounds.audioContext.state === 'suspended') {
+                        await window.breathSounds.audioContext.resume();
+                    }
+                    window.breathSounds.enabled = true;
+                }
+                this.startExercise(exerciseId);
+            });
+        }
+
+        // Re-wire config button
+        const configBtn = clone.querySelector('.btn-config');
+        if (configBtn) {
+            configBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.navigateToExerciseSettings(exerciseId);
+            });
+        }
+
+        // Re-wire favorite button (already cloned as is-favorite)
+        const favBtn = clone.querySelector('.btn-favorite');
+        if (favBtn) {
+            favBtn.classList.add('is-favorite');
+            favBtn.title = 'Retirer des favoris';
+            favBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+            favBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleFavorite(exerciseId);
+            });
+        }
+
+        return clone;
     }
 
     setupFavoris() {

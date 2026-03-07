@@ -6667,6 +6667,34 @@ body.optimal-mode #apneaHint {
     color: rgba(255,255,255,0.25);
 }
 
+/* Favoris groupés par catégorie */
+.favoris-grouped {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.favoris-group-header {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    padding: 0.6rem 0 0.4rem;
+    margin-top: 1.2rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    letter-spacing: 0.02em;
+}
+
+.favoris-group-header:first-child {
+    margin-top: 0;
+}
+
+.favoris-group-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-lg);
+    margin-top: var(--space-md);
+}
+
 /* ==========================================
    Plan — Directive coach & bouton supprimer
    ========================================== */
