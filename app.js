@@ -2587,10 +2587,21 @@ class JmeeDeepBreathApp {
 
     startBreathingExercise() {
         const exercise = this.currentExercise;
+
+        // Guard: exercise must have phases array to use the engine
+        if (!exercise.phases || exercise.phases.length === 0) {
+            console.warn('startBreathingExercise: no phases, showing info only');
+            document.getElementById('exerciseInstruction').textContent =
+                exercise.description || 'Suivez les instructions de cet exercice.';
+            document.getElementById('cycleCounter').textContent = '';
+            return;
+        }
+
         const totalCycles = exercise.cycles || Math.floor(exercise.duration * 60 / this.getCycleDuration());
 
         document.getElementById('cycleCounter').textContent = `Cycle ${this.currentCycle} / ${totalCycles}`;
-        document.getElementById('exerciseInstruction').textContent = exercise.instructions.start;
+        document.getElementById('exerciseInstruction').textContent =
+            (exercise.instructions && exercise.instructions.start) || exercise.description || '';
 
         // Create the breathing engine (Canvas 2D + RAF timer)
         const canvas = document.getElementById('breathCanvas');
@@ -2612,13 +2623,14 @@ class JmeeDeepBreathApp {
             totalCycles: totalCycles,
             duration: exercise.duration,
             soundTheme: this.settings.soundTheme || 'zen',
-            instructions: exercise.instructions,
+            instructions: exercise.instructions || {},
             countdownDuration: 2,
 
             onPhaseStart: (phase, idx, cycle) => {
-                // Update instruction text
+                // Update instruction text (support both top-level instructions and per-phase instruction)
+                const instr = exercise.instructions || {};
                 document.getElementById('exerciseInstruction').textContent =
-                    exercise.instructions[phase.name] || phase.instruction || '';
+                    instr[phase.name] || phase.instruction || '';
                 document.getElementById('cycleCounter').textContent =
                     `Cycle ${cycle} / ${totalCycles}`;
 
@@ -2650,7 +2662,9 @@ class JmeeDeepBreathApp {
     }
 
     getCycleDuration() {
-        return this.currentExercise.phases.reduce((sum, p) => sum + p.duration, 0);
+        const phases = this.currentExercise?.phases;
+        if (!phases || phases.length === 0) return 1; // guard division by zero
+        return phases.reduce((sum, p) => sum + p.duration, 0) || 1;
     }
 
     // ==========================================

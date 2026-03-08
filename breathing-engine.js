@@ -311,6 +311,12 @@ class BreathingEngine {
 
         // Previous phase action (pour distinguer hold full vs hold empty)
         this._prevAction = null;
+
+        // Countdown state
+        this._countdownDurationMs = 2000;
+        this._countdownStartTime = 0;
+        this._countdownPausedAccum = 0;
+        this._stateBeforePause = null;
     }
 
     // ============================================================
@@ -321,10 +327,17 @@ class BreathingEngine {
      * Configure le moteur pour un exercice
      */
     configure(config) {
+        // Guard: stop if engine is currently running
+        if (this.state !== 'idle' && this.state !== 'completed') {
+            this.stop();
+        }
+
         Object.assign(this.config, config);
 
         this.phases = config.phases || [];
-        this.totalCycles = config.totalCycles || this._calcCyclesFromDuration();
+        this.totalCycles = (config.totalCycles != null && config.totalCycles > 0)
+            ? config.totalCycles
+            : this._calcCyclesFromDuration();
 
         // Callbacks
         if (config.onPhaseStart) this.onPhaseStart = config.onPhaseStart;
@@ -354,11 +367,12 @@ class BreathingEngine {
      * Lance l'exercice (avec countdown optionnel)
      */
     start() {
-        if (this.state === 'running') return;
-        if (this.phases.length === 0) return;
+        if (this.state === 'running' || this.state === 'countdown') return;
+        if (this.phases.length === 0) { this.state = 'idle'; return; }
 
         this.state = 'countdown';
         this.exerciseStartTime = performance.now();
+        this._countdownDurationMs = (this.config.countdownDuration || 2) * 1000;
 
         // Voice: annonce de départ
         if (this.voiceEngine && this.config.instructions?.start) {
@@ -366,35 +380,43 @@ class BreathingEngine {
         }
 
         // Countdown
-        const countdownMs = (this.config.countdownDuration || 2) * 1000;
-        const countdownStart = performance.now();
+        this._countdownStartTime = performance.now();
+        this._countdownPausedAccum = 0;
 
-        const countdownTick = (timestamp) => {
-            if (this.state === 'completed' || this.state === 'idle') return;
+        this.rafId = requestAnimationFrame((t) => this._countdownTick(t));
+    }
 
-            const elapsed = timestamp - countdownStart;
-            const remaining = Math.max(0, (countdownMs - elapsed) / 1000);
+    /**
+     * Countdown animation loop (extracted as named method for pause/resume)
+     */
+    _countdownTick(timestamp) {
+        if (this.state === 'completed' || this.state === 'idle') return;
+        if (this.state === 'paused') return; // paused during countdown
 
-            // Dessiner countdown sur le canvas
-            this._renderCountdown(remaining);
+        const countdownMs = this._countdownDurationMs;
+        const elapsed = timestamp - this._countdownStartTime - this._countdownPausedAccum;
+        const remaining = Math.max(0, (countdownMs - elapsed) / 1000);
 
-            if (this.onCountdownTick) this.onCountdownTick(remaining);
+        // Dessiner countdown sur le canvas
+        this._renderCountdown(remaining);
 
-            if (elapsed >= countdownMs) {
-                this._startPhase();
-                return;
-            }
-            this.rafId = requestAnimationFrame(countdownTick);
-        };
+        if (this.onCountdownTick) this.onCountdownTick(remaining);
 
-        this.rafId = requestAnimationFrame(countdownTick);
+        if (elapsed >= countdownMs) {
+            // Adjust exerciseStartTime so totalElapsed starts from NOW (not from countdown start)
+            this.exerciseStartTime = performance.now();
+            this._startPhase();
+            return;
+        }
+        this.rafId = requestAnimationFrame((t) => this._countdownTick(t));
     }
 
     /**
      * Pause
      */
     pause() {
-        if (this.state !== 'running') return;
+        if (this.state !== 'running' && this.state !== 'countdown') return;
+        this._stateBeforePause = this.state; // remember if we were in countdown or running
         this.state = 'paused';
         this.pauseStartTime = performance.now();
 
@@ -416,23 +438,39 @@ class BreathingEngine {
      */
     resume() {
         if (this.state !== 'paused') return;
-        this.state = 'running';
 
         // Accumulate paused time (both phase and exercise level)
         const pauseDelta = performance.now() - this.pauseStartTime;
         this.phasePausedTime += pauseDelta;
         this.exercisePausedTime += pauseDelta;
+        this.pauseStartTime = 0; // reset to avoid stale reference
+
+        // Restore state to what it was before pause (countdown or running)
+        const wasCountdown = this._stateBeforePause === 'countdown';
 
         // Resume voice
         if (this.voiceEngine) this.voiceEngine.resume();
 
+        if (wasCountdown) {
+            // Re-enter countdown — the countdown RAF loop checks state, so just
+            // set state back and restart the loop. countdownStartTime is adjusted.
+            this.state = 'countdown';
+            this._countdownPausedAccum = (this._countdownPausedAccum || 0) + pauseDelta;
+            this.rafId = requestAnimationFrame((t) => this._countdownTick(t));
+            return;
+        }
+
+        this.state = 'running';
+
         // Re-play sound for remaining duration
         const phase = this.phases[this.currentPhaseIndex];
-        const elapsed = (performance.now() - this.phaseStartTime - this.phasePausedTime) / 1000;
-        const remaining = phase.duration - elapsed;
-        if (remaining > 0.5 && this.soundEngine) {
-            const soundAction = this._getSoundAction(phase);
-            this.soundEngine.playPhase(soundAction, remaining);
+        if (phase) {
+            const elapsed = (performance.now() - this.phaseStartTime - this.phasePausedTime) / 1000;
+            const remaining = phase.duration - elapsed;
+            if (remaining > 0.5 && this.soundEngine) {
+                const soundAction = this._getSoundAction(phase);
+                this.soundEngine.playPhase(soundAction, remaining);
+            }
         }
 
         // Restart animation loop
@@ -567,6 +605,12 @@ class BreathingEngine {
         const phase = this.phases[this.currentPhaseIndex];
         if (!phase) { this._complete(); return; }
 
+        // Skip phases with duration <= 0 (avoid NaN progress)
+        if (!phase.duration || phase.duration <= 0) {
+            this._nextPhase();
+            return;
+        }
+
         // Calcul précis du temps écoulé dans la phase
         const elapsedMs = timestamp - this.phaseStartTime - this.phasePausedTime;
         const elapsedSec = elapsedMs / 1000;
@@ -677,6 +721,8 @@ class BreathingEngine {
         this.phasePausedTime = 0; // reset pour la nouvelle phase (exercisePausedTime persiste)
 
         const nextPhase = this.phases[this.currentPhaseIndex];
+        if (!nextPhase) { this._complete(); return; } // safety guard
+
         this.renderer.setPhaseTarget(nextPhase.action);
 
         // Callback — return false to skip engine's default sound
@@ -697,6 +743,7 @@ class BreathingEngine {
     }
 
     _complete() {
+        if (this.state === 'completed') return; // guard double-call
         this.state = 'completed';
 
         if (this.rafId) {
@@ -779,6 +826,19 @@ class BreathingEngine {
     destroy() {
         this.stop();
         this.renderer.destroy();
+
+        // Clear all callbacks to prevent memory leaks
+        this.onPhaseStart = null;
+        this.onPhaseEnd = null;
+        this.onCycleEnd = null;
+        this.onComplete = null;
+        this.onTick = null;
+        this.onCountdownTick = null;
+
+        // Clear references
+        this.soundEngine = null;
+        this.voiceEngine = null;
+        this.phases = [];
     }
 }
 

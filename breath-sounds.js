@@ -221,6 +221,7 @@ class BreathSounds {
      */
     _doPlayPhaseHarp(phase, duration) {
         this.stopCurrent();
+        if (!this.audioContext) return;
 
         const now = this.audioContext.currentTime;
         const allNodes = [];
@@ -358,6 +359,7 @@ class BreathSounds {
      */
     _doPlayPhaseZen(phase, duration) {
         this.stopCurrent();
+        if (!this.audioContext) return;
 
         const settings = this.getPhaseSettings(phase);
         const now = this.audioContext.currentTime;
@@ -615,6 +617,7 @@ class BreathSounds {
     }
 
     _doPlaySecondInhale() {
+        if (!this.audioContext) return;
         const now = this.audioContext.currentTime;
         // Higher freq (E4 = 330 Hz), very short decay — a quick "top-off" tap
         [1, 2, 3].forEach((mult, i) => {

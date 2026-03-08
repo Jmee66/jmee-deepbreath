@@ -427,6 +427,7 @@ const EXERCISES = {
     'kapalabhati': {
         name: 'Kapalabhati',
         category: 'respiration',
+        isKapalabhati: true,
         description: 'Respiration du crâne brillant — 30 expirations forcées rapides par round, purification et énergie',
         science: 'Les expirations forcées rapides augmentent le flux sanguin cérébral de 20% (IRM fonctionnelle, 2020). Active le cortex préfrontal, améliore la vigilance et stimule le métabolisme via l\'action répétée du diaphragme.',
         duration: 5,
@@ -2237,6 +2238,10 @@ const CHASSE_PROTOCOLS = {
             'Objectif : FC < 75 bpm avant l\'entrée dans l\'eau',
             'Respiration diaphragmatique calme — ventre qui gonfle à l\'inspire'
         ],
+        instructions: {
+            start: 'Asseyez-vous ou allongez-vous après l\'habillage. Respiration calme et naturelle.',
+            'Normoventilation': 'Inspire 3s par le nez, expire 5s par la bouche. Ne forcez rien.'
+        },
         breathDetails: {
             type: 'Normoventilation',
             rhythm: 'Inspire 3s (nez) / Expire 5s (bouche)',
@@ -2271,6 +2276,12 @@ const CHASSE_PROTOCOLS = {
             'En eau froide < 18°C : acclimatation 2-3 min minimum avant la première apnée',
             'Les 3-4 premières plongées d\'une session sont toujours moins efficaces (rate froide) — c\'est normal'
         ],
+        instructions: {
+            start: 'Entrez lentement dans l\'eau. Activez le réflexe de plongée.',
+            'Entrée progressive': 'Immergez le visage 2-3 secondes. Respirez normalement.',
+            'Flottaison calme': 'Allongez-vous sur le ventre. Respirez au tuba.',
+            'Respiration diaphragmatique': 'Inspire 4s → pause 1s → expire 6-8s. Relâchement.'
+        },
         breathDetails: {
             type: 'Respiration diaphragmatique calme',
             rhythm: 'Inspire 4s (nez) / Pause 1s / Expire 6-8s (bouche, passive)',
@@ -2305,6 +2316,12 @@ const CHASSE_PROTOCOLS = {
             'Le corps doit "tomber" dans l\'eau par son propre poids — pas forcer avec les bras',
             'Palmage lent et ample : 1 palme toutes les 1,5-2 secondes en surface'
         ],
+        instructions: {
+            start: '90 secondes de préparation optimale avant la descente.',
+            'Centrage': 'Position stationnaire. Ferme les yeux. Relâchement progressif.',
+            'Breathe-up diaphragmatique': 'Inspire 5s → pause 1-2s → expire 10s. Corps relâché.',
+            'Cycle final': 'UNE SEULE grande inspiration en 3 phases. Duck-dive immédiatement.'
+        },
         breathDetails: {
             type: 'Breathe-up diaphragmatique lent + Last breath en 3 phases',
             rhythm: 'Breathe-up : Inspire 5s / Expire 10s. Last breath : Abdo → Costal → Apical',
@@ -2363,6 +2380,11 @@ const CHASSE_PROTOCOLS = {
             'Aucun sifflement, oppression thoracique ou tête lourde',
             'Délai minimum respecté selon la profondeur'
         ],
+        instructions: {
+            start: 'Récupération entre chaque apnée. Le temps de récup est aussi important que la plongée.',
+            'Expirations actives': '4-5 expirations forcées puis inspirations normales. Stabilise-toi en surface.',
+            'Normoventilation horizontale': 'RESTE HORIZONTAL. Respiration normale au tuba.'
+        },
         breathDetails: {
             type: 'Expirations actives → Normoventilation',
             rhythm: 'Phase 1 : Expire fort 2s / Inspire 3s (×4-5). Phase 2 : Inspire 3s / Expire 5s',
@@ -2402,6 +2424,12 @@ const CHASSE_PROTOCOLS = {
             phase2: 'Breathe-up : Inspire 5s / Expire 10s (max 2 min)',
             phase3: 'Last breath : Abdo → Costal → Apical — TLC 100%',
             recovery: '6 cleansing breaths après l\'arrêt (expirations/inspirations actives rapides)'
+        },
+        instructions: {
+            start: 'Protocole complet avant apnée statique. Cohérence → breathe-up → last breath.',
+            'Cohérence cardiaque': 'Inspire 5s → expire 5s. Diaphragmatique, yeux fermés. FC cible < 65 bpm.',
+            'Breathe-up (PFI)': 'Inspire 2-5s → pause 1-2s → expire 8-10s. Corps relâché. Maximum 2 min.',
+            'Last breath complet': 'Ventre → côtes → épaules. Fluide, 4-5s. TLC 100%. Glotte fermée.'
         }
     },
 
@@ -2437,6 +2465,12 @@ const CHASSE_PROTOCOLS = {
             phase2: 'Breathe-up : Inspire 5s / Expire 10s (2-3 min)',
             phase3: 'Last breath : Abdo → Costal → Apical — 90-95% TLC',
             recovery: '6 cleansing breaths après la nage'
+        },
+        instructions: {
+            start: 'Protocole adapté pour la dynamique. Breathe-up plus long, last breath à 90-95% TLC.',
+            'Cohérence cardiaque': 'Inspire 5s → expire 5s. Au mur, au repos. FC cible < 65 bpm.',
+            'Breathe-up (3 min)': 'Inspire 5s → pause 1-2s → expire 10s. Plus long qu\'en statique.',
+            'Last breath 90-95%': 'Ventre → côtes → épaules. STOP à 90-95% du max.'
         }
     },
 
@@ -2485,6 +2519,12 @@ const CHASSE_PROTOCOLS = {
             phase2: 'Breathe-up : Inspire 5s / Expire 10s (2-5 min)',
             phase3: 'Last breath : Abdo → Costal → Apical — TLC 100%',
             recovery: '3 HOOK BREATHS + 3 cleansing breaths'
+        },
+        instructions: {
+            start: 'Protocole complet pour l\'apnée en profondeur. Breathe-up méditatif + last breath TLC 100%.',
+            'Cohérence + méditation': 'Inspire 5s → expire 5s. Yeux fermés. État semi-méditatif. FC cible < 60 bpm.',
+            'Breathe-up profond': 'Inspire 5s → pause 1-2s → expire 10s. Le plus lent des 3 disciplines.',
+            'Last breath TLC 100%': 'Ventre → côtes → épaules, gorge grande ouverte. MAXIMUM physiologique.'
         }
     }
 };
