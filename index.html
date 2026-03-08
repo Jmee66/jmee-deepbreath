@@ -5515,8 +5515,12 @@
                 <h2 class="exercise-title" id="exerciseTitle">Exercise</h2>
                 <p class="exercise-instruction" id="exerciseInstruction">Instructions will appear here</p>
 
-                <!-- Breathing Circle Animation -->
-                <div class="breath-circle-container">
+                <!-- Breathing Animation — Canvas 2D (new engine) + legacy circle (fallback) -->
+                <div class="breath-canvas-container" id="breathCanvasContainer">
+                    <canvas id="breathCanvas"></canvas>
+                </div>
+                <!-- Legacy circle (gardé pour exercices spéciaux non migrés — Phase 2) -->
+                <div class="breath-circle-container" id="breathCircleContainer" style="display:none;">
                     <div class="breath-circle" id="breathCircle">
                         <div class="breath-inner">
                             <span class="breath-phase" id="breathPhase">Prêt</span>
@@ -5929,6 +5933,7 @@
     <script src="exercises.js" defer></script>
     <script src="voice-guide.js" defer></script>
     <script src="breath-sounds.js" defer></script>
+    <script src="breathing-engine.js" defer></script>
     <!-- Chasse Guided Timer Modal -->
     <div id="chasseTimerModal" class="chasse-timer-modal">
         <div class="chasse-timer-inner">

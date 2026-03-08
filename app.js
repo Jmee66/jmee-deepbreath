@@ -20,6 +20,9 @@ class JmeeDeepBreathApp {
         this.displayTimer = null;
         this.elapsedTime = 0;
 
+        // BreathingEngine v2 (Canvas 2D + RAF timer)
+        this.engine = null;
+
         // Wake Lock to prevent screen from sleeping during exercises
         this.wakeLock = null;
 
@@ -2530,6 +2533,24 @@ class JmeeDeepBreathApp {
         // Update title
         document.getElementById('exerciseTitle').textContent = exercise.name;
 
+        // Switch between Canvas (new engine) and Legacy circle containers
+        const canvasContainer = document.getElementById('breathCanvasContainer');
+        const circleContainer = document.getElementById('breathCircleContainer');
+        const isLegacyExercise = exercise.isComfortZone || exercise.isApneaWithGuidance ||
+            exercise.isContractionTable || exercise.isApneaTable || exercise.isDeepSleep ||
+            exercise.isGuided || exercise.isWimHof || exercise.isBreathLight ||
+            exercise.isPassiveBreathHanger || exercise.isVHLStatic || exercise.isVHL || exercise.isIMST;
+
+        if (isLegacyExercise) {
+            // Phase 2 exercises: use legacy CSS circle
+            if (canvasContainer) canvasContainer.style.display = 'none';
+            if (circleContainer) circleContainer.style.display = '';
+        } else {
+            // Standard breathing exercises: use new Canvas engine
+            if (canvasContainer) canvasContainer.style.display = '';
+            if (circleContainer) circleContainer.style.display = 'none';
+        }
+
         // Determine exercise type and start
         if (exercise.isComfortZone) {
             this.startComfortZone();
@@ -2571,15 +2592,70 @@ class JmeeDeepBreathApp {
         document.getElementById('cycleCounter').textContent = `Cycle ${this.currentCycle} / ${totalCycles}`;
         document.getElementById('exerciseInstruction').textContent = exercise.instructions.start;
 
-        // Start after brief delay
-        setTimeout(() => {
-            this.runBreathingPhase(totalCycles);
-        }, 2000);
+        // Create the breathing engine (Canvas 2D + RAF timer)
+        const canvas = document.getElementById('breathCanvas');
+        if (!canvas) {
+            console.error('BreathingEngine: canvas #breathCanvas not found');
+            return;
+        }
+
+        // Disable sound in engine for kapalabhati (phases too short, sounds would stack)
+        const soundEng = exercise.isKapalabhati ? null : (window.breathSounds || null);
+
+        this.engine = new BreathingEngine(canvas, {
+            soundEngine: soundEng,
+            voiceEngine: window.voiceGuide || null
+        });
+
+        this.engine.configure({
+            phases: exercise.phases,
+            totalCycles: totalCycles,
+            duration: exercise.duration,
+            soundTheme: this.settings.soundTheme || 'zen',
+            instructions: exercise.instructions,
+            countdownDuration: 2,
+
+            onPhaseStart: (phase, idx, cycle) => {
+                // Update instruction text
+                document.getElementById('exerciseInstruction').textContent =
+                    exercise.instructions[phase.name] || phase.instruction || '';
+                document.getElementById('cycleCounter').textContent =
+                    `Cycle ${cycle} / ${totalCycles}`;
+
+                // Cyclic Sighing special: second inhale sound
+                // Return false to tell engine to skip its default sound for this phase
+                if (phase.name === 'Inspirez +' && window.breathSounds && !exercise.isKapalabhati) {
+                    window.breathSounds.stop();
+                    window.breathSounds.playSecondInhale();
+                    return false; // skip engine default sound
+                }
+            },
+
+            onTick: (data) => {
+                // Track total elapsed for completeExercise stats
+                this.elapsedTime = data.totalElapsed;
+            },
+
+            onCycleEnd: (cycle) => {
+                // Cycle tracking
+                this.currentCycle = cycle + 1;
+            },
+
+            onComplete: () => {
+                this.completeExercise();
+            }
+        });
+
+        this.engine.start();
     }
 
     getCycleDuration() {
         return this.currentExercise.phases.reduce((sum, p) => sum + p.duration, 0);
     }
+
+    // ==========================================
+    // Legacy Phase Engine (kept for Phase 2 special exercises)
+    // ==========================================
 
     runBreathingPhase(totalCycles) {
         if (!this.isRunning) return;
@@ -5226,6 +5302,11 @@ class JmeeDeepBreathApp {
         // Temporarily stop running to halt any ongoing loops
         this.isRunning = false;
 
+        // Stop BreathingEngine if active
+        if (this.engine) {
+            this.engine.reset();
+        }
+
         // Stop all current timers
         if (this.phaseTimer) {
             clearInterval(this.phaseTimer);
@@ -5275,13 +5356,16 @@ class JmeeDeepBreathApp {
             </svg>
         `;
 
-        // Reset circle and timer display
+        // Reset legacy circle and timer display
         const circle = document.getElementById('breathCircle');
-        circle.classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
-        circle.style.removeProperty('--phase-duration');
+        if (circle) {
+            circle.classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
+            circle.style.removeProperty('--phase-duration');
+        }
 
         document.getElementById('breathTimer').textContent = '0.0';
-        document.getElementById('progressBar').style.strokeDashoffset = 2 * Math.PI * 90;
+        const progressBar = document.getElementById('progressBar');
+        if (progressBar) progressBar.style.strokeDashoffset = 2 * Math.PI * 90;
 
         // Re-initialize breath sounds
         if (window.breathSounds) {
@@ -5316,20 +5400,28 @@ class JmeeDeepBreathApp {
 
     completeExercise() {
         this.isRunning = false;
+
+        // Stop BreathingEngine (if it hasn't already called _complete)
+        if (this.engine && this.engine.state !== 'completed' && this.engine.state !== 'idle') {
+            this.engine.stop();
+        }
+
         clearInterval(this.phaseTimer);
         this.phaseTimer = null;
 
         // Allow screen to sleep again
         this.releaseWakeLock();
 
-        // Stop sounds
+        // Stop sounds (engine.stop already stops sounds, but guard for legacy exercises)
         if (window.voiceGuide) window.voiceGuide.stop();
         if (window.breathSounds) {
             window.breathSounds.stop();
             window.breathSounds.playComplete(); // Play completion chime
         }
 
-        document.getElementById('breathPhase').textContent = 'Terminé';
+        // Update legacy text elements
+        const breathPhase = document.getElementById('breathPhase');
+        if (breathPhase) breathPhase.textContent = 'Terminé';
         const completionMessage = 'Excellent travail ! Prenez un moment pour ressentir les effets de cet exercice.';
         document.getElementById('exerciseInstruction').textContent = completionMessage;
 
@@ -5338,8 +5430,9 @@ class JmeeDeepBreathApp {
             window.voiceGuide.speak(completionMessage);
         }
 
+        // Reset legacy circle
         const circle = document.getElementById('breathCircle');
-        circle.classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
+        if (circle) circle.classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
 
         // Square Flow — Seuil de confort (ajustement automatique de la suspension)
         if (this.currentExercise && this.currentExercise.id === 'square-flow') {
@@ -5444,6 +5537,13 @@ class JmeeDeepBreathApp {
     closeExercise() {
         this.isRunning = false;
         this.isPaused = false;
+
+        // Stop BreathingEngine if active
+        if (this.engine) {
+            this.engine.destroy();
+            this.engine = null;
+        }
+
         clearInterval(this.phaseTimer);
         this.phaseTimer = null;
         clearInterval(this.displayTimer);
@@ -5464,9 +5564,9 @@ class JmeeDeepBreathApp {
 
         document.getElementById('exerciseModal').classList.remove('active');
 
-        // Reset circle
+        // Reset legacy circle
         const circle = document.getElementById('breathCircle');
-        circle.classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
+        if (circle) circle.classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
 
         // Hide contraction UI
         const btnContraction = document.getElementById('btnMarkContraction');
@@ -5486,21 +5586,34 @@ class JmeeDeepBreathApp {
             this._exercisePauseStart = null;
         }
 
+        // Delegate to BreathingEngine if active (standard exercises)
+        if (this.engine && this.engine.state !== 'idle' && this.engine.state !== 'completed') {
+            if (this.isPaused) {
+                this.engine.pause();
+            } else {
+                this.engine.resume();
+            }
+        } else {
+            // Legacy exercises: manual voice pause/resume
+            if (this.isPaused) {
+                if (window.voiceGuide) window.voiceGuide.pause();
+            } else {
+                if (window.voiceGuide) window.voiceGuide.resume();
+            }
+        }
+
         const pauseBtn = document.getElementById('btnPause');
         if (this.isPaused) {
-            // Pause voice
-            if (window.voiceGuide) window.voiceGuide.pause();
-
             pauseBtn.innerHTML = `
                 <svg viewBox="0 0 24 24" fill="currentColor">
                     <polygon points="5,3 19,12 5,21"/>
                 </svg>
             `;
-            document.getElementById('breathPhase').textContent = 'Pause';
+            // Show pause text (legacy circle only; canvas handles its own display)
+            if (!this.engine || this.engine.state === 'idle') {
+                document.getElementById('breathPhase').textContent = 'Pause';
+            }
         } else {
-            // Resume voice
-            if (window.voiceGuide) window.voiceGuide.resume();
-
             pauseBtn.innerHTML = `
                 <svg viewBox="0 0 24 24" fill="currentColor">
                     <rect x="6" y="4" width="4" height="16"/>

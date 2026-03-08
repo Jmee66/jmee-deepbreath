@@ -9,6 +9,7 @@ class BreathSounds {
         this.audioContext = null;
         this.enabled = true;
         this.volume = 0.5; // Lower default for zen feel
+        this.theme = 'zen'; // 'zen' | 'harp'
 
         // Zen-style phase settings — deep, warm, harmonic-rich
         // Inspired by tibetan singing bowls and meditation drones
@@ -187,9 +188,175 @@ class BreathSounds {
     }
 
     /**
+     * Set sound theme
+     * @param {string} theme - 'zen' | 'harp'
+     */
+    setTheme(theme) {
+        if (theme === 'zen' || theme === 'harp') {
+            this.theme = theme;
+        }
+    }
+
+    /**
+     * Get current theme
+     */
+    getTheme() {
+        return this.theme;
+    }
+
+    /**
      * Internal method — zen drone with harmonics for phase sound
      */
     _doPlayPhase(phase, duration) {
+        // Route to the active theme
+        if (this.theme === 'harp') {
+            this._doPlayPhaseHarp(phase, duration);
+            return;
+        }
+        this._doPlayPhaseZen(phase, duration);
+    }
+
+    /**
+     * Harp theme — glissando arpeggios for inhale/exhale, soft pads for hold
+     */
+    _doPlayPhaseHarp(phase, duration) {
+        this.stopCurrent();
+
+        const now = this.audioContext.currentTime;
+        const allNodes = [];
+        const peakVol = this.volume * 0.45;
+
+        // Note definitions per phase
+        const harpConfig = {
+            inhale: {
+                notes: [261.6, 329.6, 392.0, 523.3, 659.3], // C4-E4-G4-C5-E5 ascending
+                direction: 'up'
+            },
+            exhale: {
+                notes: [659.3, 523.3, 392.0, 329.6, 261.6], // E5-C5-G4-E4-C4 descending
+                direction: 'down'
+            },
+            hold: {
+                notes: [261.6, 329.6, 392.0], // C major chord sustained
+                sustained: true
+            },
+            holdEmpty: {
+                notes: [130.8, 196.0], // C3 + G3 — very gentle low pad
+                sustained: true,
+                quiet: true
+            }
+        };
+
+        const config = harpConfig[phase] || harpConfig.hold;
+
+        if (config.sustained) {
+            // Sustained pad — soft chord
+            const padVol = config.quiet ? peakVol * 0.3 : peakVol * 0.5;
+            config.notes.forEach((freq, i) => {
+                const osc = this.audioContext.createOscillator();
+                const gain = this.audioContext.createGain();
+                const filter = this.audioContext.createBiquadFilter();
+
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+
+                filter.type = 'lowpass';
+                filter.frequency.value = freq * 3;
+                filter.Q.value = 0.2;
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.audioContext.destination);
+
+                const noteVol = padVol / config.notes.length;
+                const attack = Math.min(1.5, duration * 0.3);
+                const release = Math.min(1.5, duration * 0.3);
+
+                gain.gain.setValueAtTime(0.0001, now);
+                gain.gain.exponentialRampToValueAtTime(noteVol, now + attack);
+                gain.gain.exponentialRampToValueAtTime(noteVol * 0.7, now + duration - release);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+                osc.start(now);
+                osc.stop(now + duration + 0.5);
+                allNodes.push(osc, gain, filter);
+
+                // Store first gain for stop()
+                if (i === 0) this.currentGain = gain;
+            });
+        } else {
+            // Arpeggio — plucked notes spread across the phase duration
+            const noteCount = config.notes.length;
+            const totalSpread = Math.min(duration * 0.7, noteCount * 0.4);
+            const spacing = totalSpread / noteCount;
+            const noteDur = Math.max(1.0, duration * 0.6);
+
+            config.notes.forEach((freq, i) => {
+                const noteStart = now + i * spacing;
+                const osc = this.audioContext.createOscillator();
+                const gain = this.audioContext.createGain();
+                const filter = this.audioContext.createBiquadFilter();
+
+                // Triangle wave — softer, more harp-like than sine
+                osc.type = 'triangle';
+                osc.frequency.value = freq;
+
+                filter.type = 'lowpass';
+                filter.frequency.value = freq * 4;
+                filter.Q.value = 0.5;
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.audioContext.destination);
+
+                // Plucked envelope: very fast attack, natural decay
+                const noteVol = peakVol * (0.6 - i * 0.05); // slightly quieter each note
+                gain.gain.setValueAtTime(0.0001, noteStart);
+                gain.gain.exponentialRampToValueAtTime(noteVol, noteStart + 0.015);
+                gain.gain.exponentialRampToValueAtTime(noteVol * 0.4, noteStart + noteDur * 0.3);
+                gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + noteDur);
+
+                osc.start(noteStart);
+                osc.stop(noteStart + noteDur + 0.1);
+                allNodes.push(osc, gain, filter);
+
+                // 2nd harmonic for richness (octave, quieter)
+                const osc2 = this.audioContext.createOscillator();
+                const gain2 = this.audioContext.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.value = freq * 2;
+                osc2.connect(gain2);
+                gain2.connect(this.audioContext.destination);
+
+                gain2.gain.setValueAtTime(0.0001, noteStart);
+                gain2.gain.exponentialRampToValueAtTime(noteVol * 0.15, noteStart + 0.01);
+                gain2.gain.exponentialRampToValueAtTime(0.0001, noteStart + noteDur * 0.5);
+
+                osc2.start(noteStart);
+                osc2.stop(noteStart + noteDur + 0.1);
+                allNodes.push(osc2, gain2);
+
+                // Store first gain for stop()
+                if (i === 0) this.currentGain = gain;
+            });
+        }
+
+        this.currentNodes = allNodes;
+
+        // Cleanup on last node end
+        const lastNode = allNodes.find(n => n instanceof OscillatorNode);
+        if (lastNode) {
+            lastNode.onended = () => {
+                this.currentNodes = [];
+                this.currentGain = null;
+            };
+        }
+    }
+
+    /**
+     * Internal method — zen drone with harmonics for phase sound (original)
+     */
+    _doPlayPhaseZen(phase, duration) {
         this.stopCurrent();
 
         const settings = this.getPhaseSettings(phase);
