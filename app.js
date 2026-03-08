@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '1.14';
+const APP_VERSION = '2.0';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -286,6 +286,9 @@ class JmeeDeepBreathApp {
         // Clean up old localStorage PIN (now hardcoded)
         localStorage.removeItem('deepbreath_pin_hash');
 
+        // Inject version on lock screen + badge (before PIN check)
+        this.injectVersion();
+
         // Check PIN lock before anything else
         if (this.checkPINLock()) {
             // App is locked — wait for PIN verification
@@ -322,7 +325,7 @@ class JmeeDeepBreathApp {
 
     injectVersion() {
         const badge = document.getElementById('appVersionBadge');
-        if (badge) badge.textContent = `BETA v${APP_VERSION} — Expérimentale, non vérifiée. Ne pas utiliser en conditions réelles.`;
+        if (badge) badge.textContent = `BETA v${APP_VERSION}`;
         const pin = document.getElementById('appVersionPin');
         if (pin) pin.textContent = `v${APP_VERSION}`;
     }
