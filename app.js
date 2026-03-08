@@ -2664,6 +2664,108 @@ class JmeeDeepBreathApp {
         this.engine.start();
     }
 
+    // ==========================================
+    // Custom Breathing Exercise (from Multi Timer)
+    // ==========================================
+
+    /**
+     * Start a custom breathing exercise from Multi Timer.
+     * Receives a pre-built exercise object (not from EXERCISES constant).
+     * Uses the main exercise modal with BreathingEngine v2.0.
+     */
+    async startCustomBreathingExercise(exerciseObj) {
+        if (this.isRunning) return;
+
+        // Clean up any lingering timers
+        if (this.phaseTimer) { clearInterval(this.phaseTimer); this.phaseTimer = null; }
+        if (this.displayTimer) { clearInterval(this.displayTimer); this.displayTimer = null; }
+        if (window.breathSounds) window.breathSounds.stop();
+
+        // Set state
+        this.currentExercise = exerciseObj;
+        this.isRunning = true;
+        this.isPaused = false;
+        this.currentPhaseIndex = 0;
+        this.currentCycle = 1;
+        this.elapsedTime = 0;
+        this.exerciseStartTime = Date.now();
+        this.exercisePausedTotal = 0;
+        this._exercisePauseStart = null;
+
+        // Prevent screen sleep
+        this.requestWakeLock();
+
+        // Initialize breath sounds
+        if (window.breathSounds) {
+            if (!window.breathSounds.audioContext) {
+                window.breathSounds.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (window.breathSounds.audioContext.state === 'suspended') {
+                try { await window.breathSounds.audioContext.resume(); } catch(e) {}
+            }
+            window.breathSounds.enabled = true;
+        }
+
+        // Show exercise modal
+        const modal = document.getElementById('exerciseModal');
+        modal.classList.add('active');
+
+        // Title + Canvas container
+        document.getElementById('exerciseTitle').textContent = exerciseObj.name;
+        const canvasContainer = document.getElementById('breathCanvasContainer');
+        const circleContainer = document.getElementById('breathCircleContainer');
+        if (canvasContainer) canvasContainer.style.display = '';
+        if (circleContainer) circleContainer.style.display = 'none';
+
+        // Hide special exercise UI elements
+        const specialEls = ['btnMarkContraction', 'contractionCounter', 'btnComfortStop', 'hangerControls'];
+        specialEls.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+
+        // Configure BreathingEngine
+        const totalCycles = exerciseObj.cycles || 10;
+        document.getElementById('cycleCounter').textContent = `Cycle 1 / ${totalCycles}`;
+        document.getElementById('exerciseInstruction').textContent =
+            exerciseObj.instructions?.start || exerciseObj.description || '';
+
+        const canvas = document.getElementById('breathCanvas');
+        if (!canvas) return;
+
+        this.engine = new BreathingEngine(canvas, {
+            soundEngine: window.breathSounds || null,
+            voiceEngine: window.voiceGuide || null
+        });
+
+        this.engine.configure({
+            phases: exerciseObj.phases,
+            totalCycles: totalCycles,
+            soundTheme: exerciseObj.soundTheme || this.settings.soundTheme || 'zen',
+            instructions: exerciseObj.instructions || {},
+            countdownDuration: 2,
+
+            onPhaseStart: (phase, idx, cycle) => {
+                const instr = exerciseObj.instructions || {};
+                document.getElementById('exerciseInstruction').textContent =
+                    instr[phase.name] || '';
+                document.getElementById('cycleCounter').textContent =
+                    `Cycle ${cycle} / ${totalCycles}`;
+            },
+
+            onTick: (data) => {
+                this.elapsedTime = data.totalElapsed;
+            },
+
+            onCycleEnd: (cycle) => {
+                this.currentCycle = cycle + 1;
+            },
+
+            onComplete: () => {
+                this.completeExercise();
+            }
+        });
+
+        this.engine.start();
+    }
+
     getCycleDuration() {
         const phases = this.currentExercise?.phases;
         if (!phases || phases.length === 0) return 1; // guard division by zero

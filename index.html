@@ -5755,6 +5755,13 @@
                                 </svg>
                                 <span>Personnalisé</span>
                             </button>
+                            <button class="type-btn" data-type="breathing">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 22c-4-4-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-4 8-8 12z"/>
+                                    <circle cx="12" cy="10" r="3"/>
+                                </svg>
+                                <span>Respiration</span>
+                            </button>
                         </div>
                     </div>
 
@@ -5824,6 +5831,67 @@
                             </svg>
                             Ajouter une phase
                         </button>
+                    </div>
+
+                    <!-- Breathing Mode Settings -->
+                    <div class="breathing-settings" id="breathingSettings" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Inspirez</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="breathInhale" min="0" max="60" step="0.5" value="4">
+                                    <span>sec</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Pause (pleins)</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="breathHoldFull" min="0" max="60" step="0.5" value="4">
+                                    <span>sec</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Expirez</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="breathExhale" min="0" max="60" step="0.5" value="6">
+                                    <span>sec</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Pause (vides)</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="breathHoldEmpty" min="0" max="60" step="0.5" value="2">
+                                    <span>sec</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Cycles</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="breathCycles" min="1" max="100" value="10">
+                                    <span>x</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Sons</label>
+                                <select id="breathSoundTheme" class="form-input form-input-sm">
+                                    <option value="zen">Zen (bols)</option>
+                                    <option value="harp">Harpe</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Instructions vocales (optionnel)</label>
+                            <div class="breath-instructions-grid">
+                                <input type="text" id="breathInstrInhale" placeholder="Inspirez par le nez..." class="form-input form-input-sm">
+                                <input type="text" id="breathInstrHoldFull" placeholder="Retenez poumons pleins..." class="form-input form-input-sm">
+                                <input type="text" id="breathInstrExhale" placeholder="Expirez lentement..." class="form-input form-input-sm">
+                                <input type="text" id="breathInstrHoldEmpty" placeholder="Poumons vides..." class="form-input form-input-sm">
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Preview -->

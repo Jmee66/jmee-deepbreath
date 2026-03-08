@@ -436,9 +436,16 @@ class MultiTimer {
             <h4>${this.escapeHtml(sequence.name)}</h4>
             <p>${this.escapeHtml(sequence.description)}</p>
             <div class="sequence-meta">
-                <span>${stats.phases} phases</span>
-                <span>•</span>
-                <span>${this.formatTime(stats.totalDuration)}</span>
+                ${sequence.type === 'breathing'
+                    ? `<span>${[sequence.settings.inhale, sequence.settings.holdFull, sequence.settings.exhale, sequence.settings.holdEmpty].join('-')}</span>
+                       <span>•</span>
+                       <span>${sequence.settings.cycles} cycles</span>
+                       <span>•</span>
+                       <span>${this.formatTime(stats.totalDuration)}</span>`
+                    : `<span>${stats.phases} phases</span>
+                       <span>•</span>
+                       <span>${this.formatTime(stats.totalDuration)}</span>`
+                }
             </div>
             <div class="sequence-actions">
                 <button class="btn-start-sequence">Démarrer</button>
@@ -470,6 +477,12 @@ class MultiTimer {
                 <polyline points="12,6 12,12 16,14"/>
             </svg>`;
         }
+        if (sequence.type === 'breathing') {
+            return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22c-4-4-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-4 8-8 12z"/>
+                <circle cx="12" cy="10" r="3"/>
+            </svg>`;
+        }
         return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="4" y1="21" x2="4" y2="14"/>
             <line x1="4" y1="10" x2="4" y2="3"/>
@@ -495,6 +508,18 @@ class MultiTimer {
                 phases.push({ label: labelRest || 'Repos', duration: rest, color: 'green' });
             }
             return phases;
+        }
+        if (sequence.type === 'breathing') {
+            const s = sequence.settings;
+            const onePhase = [];
+            if (s.inhale > 0)    onePhase.push({ label: 'Inspirez', duration: s.inhale,    color: 'blue' });
+            if (s.holdFull > 0)  onePhase.push({ label: 'Retenez',  duration: s.holdFull,  color: 'purple' });
+            if (s.exhale > 0)    onePhase.push({ label: 'Expirez',  duration: s.exhale,    color: 'green' });
+            if (s.holdEmpty > 0) onePhase.push({ label: 'Pause',    duration: s.holdEmpty, color: 'orange' });
+            const all = [];
+            const cycles = s.cycles || 1;
+            for (let i = 0; i < cycles; i++) all.push(...onePhase);
+            return all;
         }
         return sequence.phases || [];
     }
@@ -529,6 +554,11 @@ class MultiTimer {
 
         // Live preview updates
         ['intervalWork', 'intervalRest', 'intervalReps'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', () => this.updatePreview());
+        });
+
+        // Breathing live preview updates
+        ['breathInhale', 'breathHoldFull', 'breathExhale', 'breathHoldEmpty', 'breathCycles'].forEach(id => {
             document.getElementById(id)?.addEventListener('input', () => this.updatePreview());
         });
 
@@ -574,6 +604,15 @@ class MultiTimer {
         document.getElementById('labelWork').value = 'Effort';
         document.getElementById('labelRest').value = 'Repos';
 
+        // Reset breathing fields
+        const bIds = ['breathInhale','breathHoldFull','breathExhale','breathHoldEmpty','breathCycles'];
+        const bDefaults = [4, 4, 6, 2, 10];
+        bIds.forEach((id, i) => { const el = document.getElementById(id); if (el) el.value = bDefaults[i]; });
+        const bTheme = document.getElementById('breathSoundTheme'); if (bTheme) bTheme.value = 'zen';
+        ['breathInstrInhale','breathInstrHoldFull','breathInstrExhale','breathInstrHoldEmpty'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.value = '';
+        });
+
         // Reset type to interval
         document.querySelectorAll('.type-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.type === 'interval');
@@ -599,6 +638,19 @@ class MultiTimer {
             document.getElementById('intervalReps').value = sequence.settings.reps;
             document.getElementById('labelWork').value = sequence.settings.labelWork || 'Effort';
             document.getElementById('labelRest').value = sequence.settings.labelRest || 'Repos';
+        } else if (sequence.type === 'breathing') {
+            const s = sequence.settings;
+            document.getElementById('breathInhale').value = s.inhale;
+            document.getElementById('breathHoldFull').value = s.holdFull;
+            document.getElementById('breathExhale').value = s.exhale;
+            document.getElementById('breathHoldEmpty').value = s.holdEmpty;
+            document.getElementById('breathCycles').value = s.cycles;
+            const themeEl = document.getElementById('breathSoundTheme');
+            if (themeEl) themeEl.value = s.soundTheme || 'zen';
+            document.getElementById('breathInstrInhale').value = s.instructions?.inhale || '';
+            document.getElementById('breathInstrHoldFull').value = s.instructions?.holdFull || '';
+            document.getElementById('breathInstrExhale').value = s.instructions?.exhale || '';
+            document.getElementById('breathInstrHoldEmpty').value = s.instructions?.holdEmpty || '';
         } else {
             this.populatePhasesList(sequence.phases);
         }
@@ -607,14 +659,11 @@ class MultiTimer {
     toggleEditorMode(type) {
         const intervalSettings = document.getElementById('intervalSettings');
         const customSettings = document.getElementById('customSettings');
+        const breathingSettings = document.getElementById('breathingSettings');
 
-        if (type === 'interval') {
-            intervalSettings.style.display = 'block';
-            customSettings.style.display = 'none';
-        } else {
-            intervalSettings.style.display = 'none';
-            customSettings.style.display = 'block';
-        }
+        intervalSettings.style.display = type === 'interval' ? 'block' : 'none';
+        customSettings.style.display = type === 'custom' ? 'block' : 'none';
+        if (breathingSettings) breathingSettings.style.display = type === 'breathing' ? 'block' : 'none';
 
         this.updatePreview();
     }
@@ -696,6 +745,29 @@ class MultiTimer {
                     labelRest: document.getElementById('labelRest').value
                 }
             };
+        } else if (type === 'breathing') {
+            const inhale = parseFloat(document.getElementById('breathInhale').value) || 0;
+            const holdFull = parseFloat(document.getElementById('breathHoldFull').value) || 0;
+            const exhale = parseFloat(document.getElementById('breathExhale').value) || 0;
+            const holdEmpty = parseFloat(document.getElementById('breathHoldEmpty').value) || 0;
+            const cycles = parseInt(document.getElementById('breathCycles').value, 10) || 10;
+            const pattern = [inhale, holdFull, exhale, holdEmpty].map(v => v > 0 ? v : '0').join('-');
+
+            return {
+                name,
+                type: 'breathing',
+                description: `Respiration ${pattern}`,
+                settings: {
+                    inhale, holdFull, exhale, holdEmpty, cycles,
+                    soundTheme: document.getElementById('breathSoundTheme')?.value || 'zen',
+                    instructions: {
+                        inhale: document.getElementById('breathInstrInhale')?.value || '',
+                        holdFull: document.getElementById('breathInstrHoldFull')?.value || '',
+                        exhale: document.getElementById('breathInstrExhale')?.value || '',
+                        holdEmpty: document.getElementById('breathInstrHoldEmpty')?.value || ''
+                    }
+                }
+            };
         } else {
             const phases = [];
             document.querySelectorAll('.phase-item').forEach(item => {
@@ -720,10 +792,21 @@ class MultiTimer {
         const phases = this.generatePhases(sequence);
         const stats = this.getSequenceStats(sequence);
 
+        // For breathing with many cycles, show only 1 cycle in timeline
+        let previewPhases = phases;
+        if (sequence.type === 'breathing' && phases.length > 12) {
+            const s = sequence.settings;
+            previewPhases = [];
+            if (s.inhale > 0)    previewPhases.push({ label: 'Inspirez', duration: s.inhale,    color: 'blue' });
+            if (s.holdFull > 0)  previewPhases.push({ label: 'Retenez',  duration: s.holdFull,  color: 'purple' });
+            if (s.exhale > 0)    previewPhases.push({ label: 'Expirez',  duration: s.exhale,    color: 'green' });
+            if (s.holdEmpty > 0) previewPhases.push({ label: 'Pause',    duration: s.holdEmpty, color: 'orange' });
+        }
+
         // Update timeline
         const timeline = document.getElementById('previewTimeline');
         if (timeline) {
-            timeline.innerHTML = phases.map(phase => {
+            timeline.innerHTML = previewPhases.map(phase => {
                 const colorClass = sequence.type === 'interval'
                     ? (phase.label.includes('Repos') || phase.label.includes('Rest') ? 'rest' : 'work')
                     : phase.color;
@@ -733,11 +816,22 @@ class MultiTimer {
 
         // Update stats
         document.getElementById('previewDuration').textContent = this.formatTime(stats.totalDuration);
-        document.getElementById('previewPhases').textContent = stats.phases;
+        document.getElementById('previewPhases').textContent = sequence.type === 'breathing'
+            ? `${(sequence.settings?.cycles || 1)} cycles`
+            : stats.phases;
     }
 
     saveSequence() {
         const sequence = this.getEditorSequence();
+
+        // Validation: breathing must have at least one phase > 0
+        if (sequence.type === 'breathing') {
+            const s = sequence.settings;
+            if ((s.inhale + s.holdFull + s.exhale + s.holdEmpty) <= 0) {
+                window.app?.showToast('Au moins une phase doit avoir une durée > 0');
+                return;
+            }
+        }
 
         if (this.editingSequenceId) {
             // Update existing
@@ -794,6 +888,12 @@ class MultiTimer {
         const sequence = this.sequences[sequenceId];
         if (!sequence) return;
 
+        // Breathing type → delegate to BreathingEngine via app.js exercise modal
+        if (sequence.type === 'breathing') {
+            this.startBreathingSequence(sequence);
+            return;
+        }
+
         this.initAudio();
 
         this.currentSequence = sequence;
@@ -812,6 +912,52 @@ class MultiTimer {
 
         // Start first phase
         this.runPhase();
+    }
+
+    /**
+     * Bridge: convert breathing sequence to BreathingEngine exercise and launch via app.js
+     */
+    startBreathingSequence(sequence) {
+        const s = sequence.settings;
+
+        // Build BreathingEngine-compatible phases (skip 0-duration)
+        const phases = [];
+        if (s.inhale > 0)    phases.push({ name: 'Inspirez', duration: s.inhale,    action: 'inhale' });
+        if (s.holdFull > 0)  phases.push({ name: 'Retenez',  duration: s.holdFull,  action: 'hold' });
+        if (s.exhale > 0)    phases.push({ name: 'Expirez',  duration: s.exhale,    action: 'exhale' });
+        if (s.holdEmpty > 0) phases.push({ name: 'Pause',    duration: s.holdEmpty, action: 'holdEmpty' });
+
+        if (phases.length === 0) {
+            window.app?.showToast('Aucune phase active (toutes les durées sont à 0)');
+            return;
+        }
+
+        // Build instructions map keyed by phase name
+        const instructions = {};
+        if (s.instructions?.inhale)    instructions['Inspirez'] = s.instructions.inhale;
+        if (s.instructions?.holdFull)  instructions['Retenez']  = s.instructions.holdFull;
+        if (s.instructions?.exhale)    instructions['Expirez']  = s.instructions.exhale;
+        if (s.instructions?.holdEmpty) instructions['Pause']    = s.instructions.holdEmpty;
+        instructions.start = s.instructions?.inhale || `${sequence.name}`;
+
+        // Build exercise-like object
+        const exerciseObj = {
+            name: sequence.name,
+            id: sequence.id,
+            description: sequence.description,
+            category: 'respiration',
+            phases: phases,
+            cycles: s.cycles || 10,
+            duration: null,
+            soundTheme: s.soundTheme || 'zen',
+            instructions: instructions,
+            isCustomBreathing: true
+        };
+
+        // Delegate to app.js
+        if (window.app) {
+            window.app.startCustomBreathingExercise(exerciseObj);
+        }
     }
 
     buildRunnerTimeline() {

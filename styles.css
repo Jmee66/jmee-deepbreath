@@ -2450,8 +2450,25 @@ body.optimal-mode #apneaHint {
 
 .sequence-type-selector {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: var(--space-md);
+}
+
+/* Breathing Settings */
+.breathing-settings {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.breath-instructions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+}
+
+.breath-instructions-grid input {
+    font-size: 0.85rem;
 }
 
 .type-btn {
@@ -2799,6 +2816,10 @@ body.optimal-mode #apneaHint {
     }
 
     .sequence-type-selector {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .breath-instructions-grid {
         grid-template-columns: 1fr;
     }
 
