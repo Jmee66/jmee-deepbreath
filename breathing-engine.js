@@ -44,11 +44,6 @@ class CanvasRenderer {
         this.targetHue = 200;
         this.prevHue = 200;
 
-        // Auto-fade texte (style Breathing.app — ne reste que l'orbe)
-        this._textFadeTimer = 0;
-        this._textOpacity = 1.0;
-        this._lastPhaseAction = null;
-
         this.resize();
 
         // Resize listener
@@ -79,11 +74,7 @@ class CanvasRenderer {
 
     /**
      * Appelé à chaque frame par BreathingEngine
-     * @param {Object} phase   - { name, action, duration, subText? }
-     * @param {number} progress - 0.0 → 1.0 dans la phase courante
-     * @param {number} remaining - secondes restantes
-     * @param {number} cycle    - cycle courant (1-based)
-     * @param {number} totalCycles
+     * Rendu pur : orbe + glow + progress arc (pas de texte — géré par le DOM)
      */
     render(phase, progress, remaining, cycle, totalCycles) {
         const ctx = this.ctx;
@@ -107,24 +98,10 @@ class CanvasRenderer {
         // — Interpolation douce de la teinte —
         const hue = this._lerpAngle(this.prevHue, this.targetHue, eased);
 
-        // — Auto-fade texte : visible au début, s'efface après ~4s —
-        if (phase.action !== this._lastPhaseAction) {
-            this._lastPhaseAction = phase.action;
-            this._textFadeTimer = 0;
-            this._textOpacity = 1.0;
-        }
-        this._textFadeTimer++;
-        if (this._textFadeTimer > 240) {  // ~4s à 60fps
-            this._textOpacity = Math.max(0, this._textOpacity - 0.012);
-        }
-
-        // — Layers de rendu (ordre : glow → orbe → progress → texte) —
+        // — Layers de rendu (orbe pur — pas de texte sur le canvas) —
         this._drawGlow(ctx, this.scale, hue);
         this._drawOrb(ctx, this.scale, hue);
         this._drawProgressArc(ctx, progress, hue, this.scale);
-        if (this._textOpacity > 0.01) {
-            this._drawCenterText(ctx, phase, remaining, hue);
-        }
     }
 
     /**
@@ -259,55 +236,6 @@ class CanvasRenderer {
             ctx.lineCap = 'round';
             ctx.stroke();
             ctx.restore();
-        }
-    }
-
-    /**
-     * Texte central — phase + timer + sous-texte
-     * S'efface progressivement (auto-fade) pour ne laisser que l'orbe
-     */
-    _drawCenterText(ctx, phase, remaining, hue) {
-        const alpha = this._textOpacity;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-
-        // Nom de phase — petit, lettres espacées
-        const phaseSize = this.width * 0.038;
-        ctx.font = `500 ${phaseSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-        ctx.fillStyle = `hsla(${hue}, 30%, 85%, ${0.85 * alpha})`;
-        ctx.letterSpacing = '2px';
-        const phaseName = (phase.name || '').toUpperCase();
-        ctx.fillText(phaseName, this.cx, this.cy - this.width * 0.055);
-        ctx.letterSpacing = '0px';
-
-        // Timer — grand, ultra-léger
-        const secs = Math.max(0, remaining);
-        const timerText = secs >= 10 ? Math.ceil(secs).toString() : secs.toFixed(1);
-        const timerSize = this.width * 0.13;
-        ctx.font = `100 ${timerSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-        ctx.fillStyle = `rgba(255, 255, 255, ${0.70 * alpha})`;
-        ctx.fillText(timerText, this.cx, this.cy + this.width * 0.04);
-
-        // SubText (instruction custom si présent)
-        if (phase.subText) {
-            ctx.font = `300 ${this.width * 0.028}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-            ctx.fillStyle = `hsla(${hue}, 20%, 70%, ${0.45 * alpha})`;
-
-            const maxWidth = this.width * 0.50;
-            const words = phase.subText.split(' ');
-            let line = '';
-            let y = this.cy + this.width * 0.13;
-            for (const word of words) {
-                const test = line + (line ? ' ' : '') + word;
-                if (ctx.measureText(test).width > maxWidth && line) {
-                    ctx.fillText(line, this.cx, y);
-                    line = word;
-                    y += this.width * 0.036;
-                } else {
-                    line = test;
-                }
-            }
-            if (line) ctx.fillText(line, this.cx, y);
         }
     }
 
@@ -479,19 +407,20 @@ class BreathingEngine {
 
     /**
      * Affiche un état d'attente sur le canvas pendant la description vocale
+     * Orbe statique calme — pas de texte (l'instruction est dans le DOM)
      */
     _renderWaitingForVoice() {
         if (!this.renderer) return;
-        const ctx = this.renderer.ctx;
-        const w = this.renderer.width;
-        const h = this.renderer.height;
+        const r = this.renderer;
+        const ctx = r.ctx;
+        const w = r.width;
+
         ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, w, h);
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.font = `300 ${w * 0.045}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.fillText('Écoutez...', w / 2, h / 2);
+        ctx.fillRect(0, 0, w, w);
+
+        // Orbe statique calme
+        r._drawGlow(ctx, 1.0, 200);
+        r._drawOrb(ctx, 1.0, 200);
     }
 
     /**
@@ -902,39 +831,26 @@ class BreathingEngine {
     }
 
     _renderCountdown(remaining) {
-        const ctx = this.renderer.ctx;
-        const w = this.renderer.width;
-        const h = this.renderer.height;
+        const r = this.renderer;
+        const ctx = r.ctx;
+        const w = r.width;
 
-        ctx.clearRect(0, 0, w, h);
+        // Fond noir
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, w, w);
 
-        // Dessiner un cercle calme en attendant
+        // Orbe statique calme (même style que le rendu principal)
         const hue = 200;
-        const radius = this.renderer.baseRadius;
-        const grad = ctx.createRadialGradient(
-            this.renderer.cx, this.renderer.cy, radius * 0.3,
-            this.renderer.cx, this.renderer.cy, radius
-        );
-        grad.addColorStop(0, `hsla(${hue}, 55%, 50%, 0.15)`);
-        grad.addColorStop(0.7, `hsla(${hue}, 55%, 50%, 0.25)`);
-        grad.addColorStop(1, `hsla(${hue}, 55%, 50%, 0)`);
+        const radius = r.baseRadius;
+        r._drawGlow(ctx, 1.0, hue);
+        r._drawOrb(ctx, 1.0, hue);
 
-        ctx.beginPath();
-        ctx.arc(this.renderer.cx, this.renderer.cy, radius, 0, Math.PI * 2);
-        ctx.fillStyle = grad;
-        ctx.fill();
-
-        // Texte "Prêt"
+        // Countdown chiffre — centré dans l'orbe
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.font = `600 ${w * 0.06}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.fillText('Prêt', this.renderer.cx, this.renderer.cy - w * 0.03);
-
-        // Countdown
-        ctx.font = `300 ${w * 0.12}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.fillText(Math.ceil(remaining).toString(), this.renderer.cx, this.renderer.cy + w * 0.06);
+        ctx.font = `100 ${w * 0.15}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.fillText(Math.ceil(remaining).toString(), r.cx, r.cy);
     }
 
     /**

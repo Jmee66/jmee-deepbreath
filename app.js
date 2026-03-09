@@ -2630,10 +2630,10 @@ class JmeeDeepBreathApp {
             countdownDuration: 2,
 
             onPhaseStart: (phase, idx, cycle) => {
-                // Update instruction text (support both top-level instructions and per-phase instruction)
+                // Update instruction text (support top-level instructions, per-phase instruction, and subText)
                 const instr = exercise.instructions || {};
                 document.getElementById('exerciseInstruction').textContent =
-                    instr[phase.name] || phase.instruction || '';
+                    instr[phase.name] || phase.instruction || phase.subText || phase.name || '';
                 document.getElementById('cycleCounter').textContent =
                     `Cycle ${cycle} / ${totalCycles}`;
 
@@ -2745,7 +2745,7 @@ class JmeeDeepBreathApp {
             onPhaseStart: (phase, idx, cycle) => {
                 const instr = exerciseObj.instructions || {};
                 document.getElementById('exerciseInstruction').textContent =
-                    instr[phase.name] || '';
+                    instr[phase.name] || phase.instruction || phase.subText || phase.name || '';
                 document.getElementById('cycleCounter').textContent =
                     `Cycle ${cycle} / ${totalCycles}`;
             },
