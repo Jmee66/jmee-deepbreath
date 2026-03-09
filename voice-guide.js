@@ -93,12 +93,26 @@ class VoiceGuide {
 
     /**
      * Speak text with optional callback when done
+     * Callback is ALWAYS called — even if speech fails or is unavailable (iOS safety)
      */
     speak(text, onEnd = null) {
-        if (!this.enabled || !this.synth || !text) return;
+        // Si on ne peut pas parler → callback immédiat (ne jamais bloquer l'appelant)
+        if (!this.enabled || !this.synth || !text) {
+            if (onEnd) setTimeout(onEnd, 50);
+            return;
+        }
 
         // Cancel any ongoing speech
         this.stop();
+
+        let callbackFired = false;
+        const fireCallback = () => {
+            if (callbackFired) return;
+            callbackFired = true;
+            this.speaking = false;
+            if (this._safetyTimeout) { clearTimeout(this._safetyTimeout); this._safetyTimeout = null; }
+            if (onEnd) onEnd();
+        };
 
         const utterance = new SpeechSynthesisUtterance(text);
 
@@ -116,17 +130,26 @@ class VoiceGuide {
         };
 
         utterance.onend = () => {
-            this.speaking = false;
-            if (onEnd) onEnd();
+            fireCallback();
         };
 
         utterance.onerror = (e) => {
             console.warn('Voice Guide error:', e);
-            this.speaking = false;
-            if (onEnd) onEnd();
+            fireCallback();
         };
 
         this.synth.speak(utterance);
+
+        // iOS/iPadOS safety: onend peut ne jamais se déclencher
+        // Timeout basé sur la longueur du texte (~80ms/caractère à rate 0.78) + marge
+        const estimatedMs = Math.max(3000, text.length * 80 + 2000);
+        this._safetyTimeout = setTimeout(() => {
+            if (!callbackFired) {
+                console.warn('Voice Guide: safety timeout fired after', estimatedMs, 'ms');
+                this.stop();
+                fireCallback();
+            }
+        }, estimatedMs);
     }
 
     /**
@@ -142,6 +165,7 @@ class VoiceGuide {
      * Stop current speech
      */
     stop() {
+        if (this._safetyTimeout) { clearTimeout(this._safetyTimeout); this._safetyTimeout = null; }
         if (this.synth) {
             this.synth.cancel();
             this.speaking = false;
