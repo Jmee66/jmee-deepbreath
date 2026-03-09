@@ -2946,10 +2946,15 @@ class JmeeDeepBreathApp {
         document.getElementById('cycleCounter').textContent = '';
 
         if (window.voiceGuide && window.voiceGuide.enabled) {
-            window.voiceGuide.speak(exercise.instructions.start);
+            window.voiceGuide.speak(exercise.instructions.start, () => {
+                setTimeout(() => {
+                    if (!this.isRunning) return;
+                    this.runBreathLightRound();
+                }, 800);
+            });
+        } else {
+            setTimeout(() => this.runBreathLightRound(), 2500);
         }
-
-        setTimeout(() => this.runBreathLightRound(), 2500);
     }
 
     runBreathLightRound() {
@@ -3075,17 +3080,22 @@ class JmeeDeepBreathApp {
             `Cycle 1 / ${exercise.cycles}`;
         document.getElementById('exerciseInstruction').textContent = exercise.instructions.start;
 
-        if (window.voiceGuide && window.voiceGuide.enabled) {
-            window.voiceGuide.speak(exercise.instructions.start);
-        }
-
         // Show "first urge" button (hidden by default in modal, revealed here)
         const btnUrge = document.getElementById('btnHangerUrge');
         const btnStop = document.getElementById('btnHangerStop');
         if (btnUrge) btnUrge.style.display = 'none';
         if (btnStop) btnStop.style.display = 'none';
 
-        setTimeout(() => this._pbhRunPrepPhase(), 2000);
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.start, () => {
+                setTimeout(() => {
+                    if (!this.isRunning) return;
+                    this._pbhRunPrepPhase();
+                }, 800);
+            });
+        } else {
+            setTimeout(() => this._pbhRunPrepPhase(), 2000);
+        }
     }
 
     _pbhRunPrepPhase() {
@@ -3417,10 +3427,15 @@ class JmeeDeepBreathApp {
         document.getElementById('exerciseInstruction').textContent = exercise.instructions.start;
 
         if (window.voiceGuide?.enabled) {
-            window.voiceGuide.speak(exercise.instructions.start);
+            window.voiceGuide.speak(exercise.instructions.start, () => {
+                setTimeout(() => {
+                    if (!this.isRunning) return;
+                    this._vhlRunBreathePhase();
+                }, 800);
+            });
+        } else {
+            setTimeout(() => this._vhlRunBreathePhase(), 3000);
         }
-
-        setTimeout(() => this._vhlRunBreathePhase(), 3000);
     }
 
     _vhlRunBreathePhase() {
@@ -3621,14 +3636,21 @@ class JmeeDeepBreathApp {
             `Cycle 1 / ${this._vhlsSeriesTotal}`;
         document.getElementById('exerciseInstruction').textContent = exercise.instructions.start;
 
-        if (window.voiceGuide?.enabled) window.voiceGuide.speak(exercise.instructions.start);
-
         const btnUrge = document.getElementById('btnHangerUrge');
         const btnStop = document.getElementById('btnHangerStop');
         if (btnUrge) btnUrge.style.display = 'none';
         if (btnStop) btnStop.style.display = 'none';
 
-        setTimeout(() => this._vhlsRunPrepPhase(), 2000);
+        if (window.voiceGuide?.enabled) {
+            window.voiceGuide.speak(exercise.instructions.start, () => {
+                setTimeout(() => {
+                    if (!this.isRunning) return;
+                    this._vhlsRunPrepPhase();
+                }, 800);
+            });
+        } else {
+            setTimeout(() => this._vhlsRunPrepPhase(), 2000);
+        }
     }
 
     _vhlsRunPrepPhase() {
@@ -3804,10 +3826,15 @@ class JmeeDeepBreathApp {
         document.getElementById('exerciseInstruction').textContent = ex.instructions.start;
 
         if (window.voiceGuide?.enabled) {
-            window.voiceGuide.speak(ex.instructions.start);
+            window.voiceGuide.speak(ex.instructions.start, () => {
+                setTimeout(() => {
+                    if (!this.isRunning) return;
+                    this._imstRunRep();
+                }, 800);
+            });
+        } else {
+            setTimeout(() => this._imstRunRep(), 2500);
         }
-
-        setTimeout(() => this._imstRunRep(), 2500);
     }
 
     _imstRunRep() {
@@ -4644,10 +4671,6 @@ class JmeeDeepBreathApp {
             `Round ${this.comfortCycle} / ${exercise.cycles}`;
         document.getElementById('exerciseInstruction').textContent = exercise.instructions.start;
 
-        if (window.voiceGuide && window.voiceGuide.enabled) {
-            window.voiceGuide.speak(exercise.instructions.start);
-        }
-
         // Setup stop button handler
         const btnStop = document.getElementById('btnComfortStop');
         if (btnStop) {
@@ -4659,7 +4682,16 @@ class JmeeDeepBreathApp {
             };
         }
 
-        setTimeout(() => this.runComfortCycle(), 3000);
+        if (window.voiceGuide && window.voiceGuide.enabled) {
+            window.voiceGuide.speak(exercise.instructions.start, () => {
+                setTimeout(() => {
+                    if (!this.isRunning) return;
+                    this.runComfortCycle();
+                }, 800);
+            });
+        } else {
+            setTimeout(() => this.runComfortCycle(), 3000);
+        }
     }
 
     runComfortCycle() {

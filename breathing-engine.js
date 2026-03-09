@@ -450,6 +450,7 @@ class BreathingEngine {
 
     /**
      * Lance l'exercice (avec countdown optionnel)
+     * Si une description vocale est configurée, attend qu'elle finisse AVANT le countdown
      */
     start() {
         if (this.state === 'running' || this.state === 'countdown') return;
@@ -459,15 +460,46 @@ class BreathingEngine {
         this.exerciseStartTime = performance.now();
         this._countdownDurationMs = (this.config.countdownDuration || 2) * 1000;
 
-        // Voice: annonce de départ
+        // Voice: annonce de départ — attend la fin AVANT de lancer le countdown
         if (this.voiceEngine && this.config.instructions?.start) {
-            this.voiceEngine.speak(this.config.instructions.start);
+            // Render un écran d'attente pendant que la voix parle
+            this._renderWaitingForVoice();
+            this.voiceEngine.speak(this.config.instructions.start, () => {
+                // Petit délai après la voix pour laisser respirer
+                setTimeout(() => {
+                    if (this.state === 'completed' || this.state === 'idle') return;
+                    this._beginCountdown();
+                }, 600);
+            });
+        } else {
+            // Pas de voix → countdown immédiat
+            this._beginCountdown();
         }
+    }
 
-        // Countdown
+    /**
+     * Affiche un état d'attente sur le canvas pendant la description vocale
+     */
+    _renderWaitingForVoice() {
+        if (!this.renderer) return;
+        const ctx = this.renderer.ctx;
+        const w = this.renderer.width;
+        const h = this.renderer.height;
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, w, h);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `300 ${w * 0.045}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fillText('Écoutez...', w / 2, h / 2);
+    }
+
+    /**
+     * Démarre le countdown (appelé après la voix ou immédiatement si pas de voix)
+     */
+    _beginCountdown() {
         this._countdownStartTime = performance.now();
         this._countdownPausedAccum = 0;
-
         this.rafId = requestAnimationFrame((t) => this._countdownTick(t));
     }
 
