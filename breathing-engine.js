@@ -1,7 +1,7 @@
 /**
  * BreathingEngine — Moteur de respiration autonome
  * Timer précis (requestAnimationFrame + performance.now)
- * Animation Canvas 2D — Style minimaliste (1 anneau + glow immersif)
+ * Animation Canvas 2D — Orbe lumineux style Breathing.app
  * Synchronisation son + voix
  *
  * Usage:
@@ -11,7 +11,7 @@
  */
 
 // ============================================================
-// CanvasRenderer v2 — rendu minimaliste (1 anneau + glow)
+// CanvasRenderer v3 — orbe solide + glow moonlight
 // ============================================================
 
 class CanvasRenderer {
@@ -44,8 +44,10 @@ class CanvasRenderer {
         this.targetHue = 200;
         this.prevHue = 200;
 
-        // Opacité du texte (fade in/out entre phases)
-        this._textAlpha = 1.0;
+        // Auto-fade texte (style Breathing.app — ne reste que l'orbe)
+        this._textFadeTimer = 0;
+        this._textOpacity = 1.0;
+        this._lastPhaseAction = null;
 
         this.resize();
 
@@ -72,7 +74,7 @@ class CanvasRenderer {
 
         this.cx = size / 2;
         this.cy = size / 2;
-        this.baseRadius = size * 0.25;  // rayon de base — légèrement plus petit pour laisser place au glow
+        this.baseRadius = size * 0.22;  // rayon de base — compact pour laisser le glow respirer
     }
 
     /**
@@ -92,11 +94,11 @@ class CanvasRenderer {
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, w, h);
 
-        // — Easing cubique pour un mouvement plus organique —
+        // — Easing cubique pour un mouvement organique —
         const eased = this._easeInOutCubic(progress);
         this.scale = this.prevScale + (this.targetScale - this.prevScale) * eased;
 
-        // — Pulse plus visible pendant hold —
+        // — Pulse douce pendant hold —
         if (phase.action === 'hold' || phase.action === 'holdEmpty') {
             this.pulsePhase += 0.025;
             this.scale += Math.sin(this.pulsePhase) * 0.02;
@@ -105,11 +107,24 @@ class CanvasRenderer {
         // — Interpolation douce de la teinte —
         const hue = this._lerpAngle(this.prevHue, this.targetHue, eased);
 
-        // — Layers de rendu (ordre : glow → fill → anneau → progress → texte) —
+        // — Auto-fade texte : visible au début, s'efface après ~4s —
+        if (phase.action !== this._lastPhaseAction) {
+            this._lastPhaseAction = phase.action;
+            this._textFadeTimer = 0;
+            this._textOpacity = 1.0;
+        }
+        this._textFadeTimer++;
+        if (this._textFadeTimer > 240) {  // ~4s à 60fps
+            this._textOpacity = Math.max(0, this._textOpacity - 0.012);
+        }
+
+        // — Layers de rendu (ordre : glow → orbe → progress → texte) —
         this._drawGlow(ctx, this.scale, hue);
-        this._drawRing(ctx, this.scale, hue);
-        this._drawProgressArc(ctx, progress, hue);
-        this._drawCenterText(ctx, phase, remaining, hue);
+        this._drawOrb(ctx, this.scale, hue);
+        this._drawProgressArc(ctx, progress, hue, this.scale);
+        if (this._textOpacity > 0.01) {
+            this._drawCenterText(ctx, phase, remaining, hue);
+        }
     }
 
     /**
@@ -131,10 +146,10 @@ class CanvasRenderer {
                 this.targetScale = 0.6;
                 break;
             case 'hold':
-                this.targetScale = this.scale; // reste où on est
+                this.targetScale = this.scale;
                 break;
             case 'holdEmpty':
-                this.targetScale = this.scale; // reste où on est
+                this.targetScale = this.scale;
                 break;
             default:
                 this.targetScale = 1.0;
@@ -147,119 +162,100 @@ class CanvasRenderer {
     // ══════════════════════════════════════════════
 
     /**
-     * Glow immersif — grand halo diffus autour de l'anneau
-     * 3 couches de gradient pour un rendu doux et profond
+     * Glow "moonlight" — 3 couches de halo diffus
+     * Immersif, tons désaturés, rayon jusqu'à 3.5× l'orbe
      */
     _drawGlow(ctx, scale, hue) {
         const radius = this.baseRadius * scale;
 
-        // Couche 1 : halo très large et subtil (ambiance)
+        // Couche 1 : halo très large (ambiance — remplit presque tout le canvas)
         const g1 = ctx.createRadialGradient(
             this.cx, this.cy, 0,
-            this.cx, this.cy, radius * 3.0
+            this.cx, this.cy, radius * 3.5
         );
-        g1.addColorStop(0, `hsla(${hue}, 70%, 45%, 0.10)`);
-        g1.addColorStop(0.3, `hsla(${hue}, 60%, 40%, 0.06)`);
-        g1.addColorStop(0.7, `hsla(${hue}, 50%, 30%, 0.02)`);
+        g1.addColorStop(0, `hsla(${(hue + 20) % 360}, 50%, 45%, 0.14)`);
+        g1.addColorStop(0.25, `hsla(${hue}, 45%, 38%, 0.08)`);
+        g1.addColorStop(0.6, `hsla(${hue}, 40%, 28%, 0.03)`);
         g1.addColorStop(1, 'hsla(0, 0%, 0%, 0)');
         ctx.beginPath();
-        ctx.arc(this.cx, this.cy, radius * 3.0, 0, Math.PI * 2);
+        ctx.arc(this.cx, this.cy, radius * 3.5, 0, Math.PI * 2);
         ctx.fillStyle = g1;
         ctx.fill();
 
         // Couche 2 : halo moyen (corps du glow)
         const g2 = ctx.createRadialGradient(
-            this.cx, this.cy, radius * 0.4,
-            this.cx, this.cy, radius * 2.0
+            this.cx, this.cy, radius * 0.3,
+            this.cx, this.cy, radius * 2.2
         );
-        g2.addColorStop(0, `hsla(${hue}, 65%, 50%, 0.15)`);
-        g2.addColorStop(0.4, `hsla(${hue}, 60%, 45%, 0.08)`);
-        g2.addColorStop(0.8, `hsla(${hue}, 55%, 35%, 0.02)`);
+        g2.addColorStop(0, `hsla(${hue}, 55%, 50%, 0.20)`);
+        g2.addColorStop(0.35, `hsla(${hue}, 50%, 42%, 0.10)`);
+        g2.addColorStop(0.75, `hsla(${hue}, 45%, 32%, 0.03)`);
         g2.addColorStop(1, 'hsla(0, 0%, 0%, 0)');
         ctx.beginPath();
-        ctx.arc(this.cx, this.cy, radius * 2.0, 0, Math.PI * 2);
+        ctx.arc(this.cx, this.cy, radius * 2.2, 0, Math.PI * 2);
         ctx.fillStyle = g2;
         ctx.fill();
 
-        // Couche 3 : halo serré et lumineux (juste autour de l'anneau)
+        // Couche 3 : halo serré et lumineux (juste autour de l'orbe)
         const g3 = ctx.createRadialGradient(
-            this.cx, this.cy, radius * 0.7,
-            this.cx, this.cy, radius * 1.4
+            this.cx, this.cy, radius * 0.6,
+            this.cx, this.cy, radius * 1.5
         );
-        g3.addColorStop(0, `hsla(${hue}, 70%, 55%, 0.18)`);
-        g3.addColorStop(0.5, `hsla(${hue}, 65%, 50%, 0.08)`);
+        g3.addColorStop(0, `hsla(${hue}, 60%, 55%, 0.25)`);
+        g3.addColorStop(0.4, `hsla(${hue}, 55%, 48%, 0.12)`);
         g3.addColorStop(1, 'hsla(0, 0%, 0%, 0)');
         ctx.beginPath();
-        ctx.arc(this.cx, this.cy, radius * 1.4, 0, Math.PI * 2);
+        ctx.arc(this.cx, this.cy, radius * 1.5, 0, Math.PI * 2);
         ctx.fillStyle = g3;
         ctx.fill();
     }
 
     /**
-     * Anneau unique — stroke lumineux + fill intérieur subtil
-     * Remplace les 4 rings concentriques par 1 seul anneau élégant
+     * Orbe solide — sphère lumineuse pleine avec illusion 3D
+     * Remplace l'anneau creux par un vrai disque rempli
      */
-    _drawRing(ctx, scale, hue) {
+    _drawOrb(ctx, scale, hue) {
         const radius = this.baseRadius * scale;
 
-        // Fill intérieur : gradient radial subtil (disque teinté)
-        const fillGrad = ctx.createRadialGradient(
-            this.cx, this.cy, 0,
+        // Gradient radial avec offset pour illusion de profondeur 3D
+        // Le point lumineux est légèrement décalé en haut-gauche
+        const orbGrad = ctx.createRadialGradient(
+            this.cx - radius * 0.15, this.cy - radius * 0.15, radius * 0.05,
             this.cx, this.cy, radius
         );
-        fillGrad.addColorStop(0, `hsla(${hue}, 50%, 50%, 0.08)`);
-        fillGrad.addColorStop(0.6, `hsla(${hue}, 45%, 40%, 0.05)`);
-        fillGrad.addColorStop(1, `hsla(${hue}, 40%, 35%, 0.02)`);
+        orbGrad.addColorStop(0, `hsla(${(hue + 10) % 360}, 55%, 70%, 0.60)`);  // cœur lumineux
+        orbGrad.addColorStop(0.3, `hsla(${hue}, 50%, 55%, 0.45)`);              // corps
+        orbGrad.addColorStop(0.65, `hsla(${(hue - 5 + 360) % 360}, 45%, 40%, 0.25)`);  // transition
+        orbGrad.addColorStop(1, `hsla(${(hue - 10 + 360) % 360}, 40%, 30%, 0.08)`);     // bord fondu
 
         ctx.beginPath();
         ctx.arc(this.cx, this.cy, radius, 0, Math.PI * 2);
-        ctx.fillStyle = fillGrad;
+        ctx.fillStyle = orbGrad;
         ctx.fill();
 
-        // Anneau principal : stroke lumineux avec glow
-        ctx.save();
-        ctx.shadowColor = `hsla(${hue}, 80%, 60%, 0.5)`;
-        ctx.shadowBlur = 15;
+        // Contour très doux — définit la forme sans être agressif
         ctx.beginPath();
         ctx.arc(this.cx, this.cy, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = `hsla(${hue}, 70%, 65%, 0.75)`;
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-        ctx.restore();
-
-        // Second stroke plus fin et plus lumineux (effet néon intérieur)
-        ctx.beginPath();
-        ctx.arc(this.cx, this.cy, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = `hsla(${hue}, 80%, 80%, 0.3)`;
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = `hsla(${hue}, 55%, 65%, 0.20)`;
+        ctx.lineWidth = 1.5;
         ctx.stroke();
     }
 
     /**
-     * Arc de progression — trace fine autour de l'anneau
+     * Arc de progression — intégré sur le bord de l'orbe
+     * Suit le contour de la sphère avec un glow subtil
      */
-    _drawProgressArc(ctx, progress, hue) {
-        const radius = this.baseRadius * 1.75;
-        const lineWidth = 2.5;
-        const startAngle = -Math.PI / 2;
-        const endAngle = startAngle + Math.PI * 2 * progress;
+    _drawProgressArc(ctx, progress, hue, scale) {
+        const radius = this.baseRadius * scale;
 
-        // Track (fond très subtil)
-        ctx.beginPath();
-        ctx.arc(this.cx, this.cy, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = `hsla(${hue}, 20%, 25%, 0.12)`;
-        ctx.lineWidth = lineWidth;
-        ctx.stroke();
-
-        // Progress actif
         if (progress > 0.001) {
             ctx.save();
-            ctx.shadowColor = `hsla(${hue}, 70%, 60%, 0.4)`;
-            ctx.shadowBlur = 8;
+            ctx.shadowColor = `hsla(${hue}, 75%, 70%, 0.6)`;
+            ctx.shadowBlur = 12;
             ctx.beginPath();
-            ctx.arc(this.cx, this.cy, radius, startAngle, endAngle);
-            ctx.strokeStyle = `hsla(${hue}, 65%, 60%, 0.8)`;
-            ctx.lineWidth = lineWidth;
+            ctx.arc(this.cx, this.cy, radius, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress);
+            ctx.strokeStyle = `hsla(${hue}, 70%, 75%, 0.65)`;
+            ctx.lineWidth = 3;
             ctx.lineCap = 'round';
             ctx.stroke();
             ctx.restore();
@@ -268,36 +264,36 @@ class CanvasRenderer {
 
     /**
      * Texte central — phase + timer + sous-texte
-     * Style épuré, espacement aéré
+     * S'efface progressivement (auto-fade) pour ne laisser que l'orbe
      */
     _drawCenterText(ctx, phase, remaining, hue) {
+        const alpha = this._textOpacity;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        // Nom de phase — lettres espacées, semi-bold
-        const phaseSize = this.width * 0.042;
+        // Nom de phase — petit, lettres espacées
+        const phaseSize = this.width * 0.038;
         ctx.font = `500 ${phaseSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-        ctx.fillStyle = `hsla(${hue}, 30%, 85%, 0.85)`;
+        ctx.fillStyle = `hsla(${hue}, 30%, 85%, ${0.85 * alpha})`;
         ctx.letterSpacing = '2px';
         const phaseName = (phase.name || '').toUpperCase();
-        ctx.fillText(phaseName, this.cx, this.cy - this.width * 0.06);
+        ctx.fillText(phaseName, this.cx, this.cy - this.width * 0.055);
         ctx.letterSpacing = '0px';
 
-        // Timer — grand, léger
+        // Timer — grand, ultra-léger
         const secs = Math.max(0, remaining);
         const timerText = secs >= 10 ? Math.ceil(secs).toString() : secs.toFixed(1);
         const timerSize = this.width * 0.13;
-        ctx.font = `200 ${timerSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.font = `100 ${timerSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+        ctx.fillStyle = `rgba(255, 255, 255, ${0.70 * alpha})`;
         ctx.fillText(timerText, this.cx, this.cy + this.width * 0.04);
 
         // SubText (instruction custom si présent)
         if (phase.subText) {
-            ctx.font = `300 ${this.width * 0.030}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-            ctx.fillStyle = `hsla(${hue}, 20%, 70%, 0.50)`;
+            ctx.font = `300 ${this.width * 0.028}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+            ctx.fillStyle = `hsla(${hue}, 20%, 70%, ${0.45 * alpha})`;
 
-            // Word wrap simple
-            const maxWidth = this.width * 0.55;
+            const maxWidth = this.width * 0.50;
             const words = phase.subText.split(' ');
             let line = '';
             let y = this.cy + this.width * 0.13;
@@ -306,7 +302,7 @@ class CanvasRenderer {
                 if (ctx.measureText(test).width > maxWidth && line) {
                     ctx.fillText(line, this.cx, y);
                     line = word;
-                    y += this.width * 0.038;
+                    y += this.width * 0.036;
                 } else {
                     line = test;
                 }
@@ -320,7 +316,7 @@ class CanvasRenderer {
     // ══════════════════════════════════════════════
 
     /**
-     * Easing cubique — plus organique que sine, ralentit davantage aux extrémités
+     * Easing cubique — organique, ralentit aux extrémités
      */
     _easeInOutCubic(t) {
         return t < 0.5
@@ -333,7 +329,6 @@ class CanvasRenderer {
      */
     _lerpAngle(a, b, t) {
         let diff = b - a;
-        // Plus court chemin sur le cercle 360°
         if (diff > 180) diff -= 360;
         if (diff < -180) diff += 360;
         const result = a + diff * t;
