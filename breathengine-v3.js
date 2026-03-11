@@ -663,11 +663,12 @@ class AnimationEngine {
         const wAlpha  = Math.pow(1 - wp, 1.8) * 0.38;
         const wWidth  = 1.5 + (1 - wp) * 2.5;
         const wBlur   = wp * 20;
+        // La wave suit la couleur courante de l'orbe (this._hue/sat/lit)
         ctx.save();
         ctx.filter = `blur(${wBlur.toFixed(1)}px)`;
         ctx.beginPath();
         ctx.arc(this._cx, this._cy, wRadius, 0, Math.PI * 2);
-        ctx.strokeStyle = `hsla(${this._wave.hue},${Math.min(100,this._wave.sat+10)}%,${Math.min(100,this._wave.lit+25)}%,${wAlpha.toFixed(3)})`;
+        ctx.strokeStyle = `hsla(${this._hue},${Math.min(100,this._sat+10)}%,${Math.min(100,this._lit+25)}%,${wAlpha.toFixed(3)})`;
         ctx.lineWidth   = wWidth;
         ctx.stroke();
         ctx.filter = 'none';
