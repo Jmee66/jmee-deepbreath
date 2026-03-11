@@ -708,9 +708,8 @@ class AnimationEngine {
       ctx.textAlign    = 'center';
       ctx.textBaseline = 'top';
       ctx.font         = `400 ${fontSize}px sans-serif`;
-      ctx.letterSpacing = '0.2em';
       ctx.fillStyle    = 'rgba(255,255,255,0.4)';
-      ctx.fillText(this._cycleText.toUpperCase(), this._cx, this._cy + r + 14);
+      ctx.fillText(this._cycleText, this._cx, this._cy + r + 14);
       ctx.restore();
     }
   }
@@ -786,6 +785,7 @@ class PhaseSequencer {
     this._config = null;
     this._enabledPhases = [];
     this._rafId         = null;
+    this._cdRafId       = null;  // RAF dédié au countdown
     this._phaseIndex    = 0;
     this._cycle         = 0;
     this._phaseStartTime    = 0;
@@ -826,6 +826,7 @@ class PhaseSequencer {
 
   stop() {
     this._cancelRaf();
+    this._cancelCdRaf();
     this._audio.stopAll();
     this._state = 'idle';
     this._hideOverlay();
@@ -899,15 +900,14 @@ class PhaseSequencer {
 
     let remaining = cdDur;
 
-    // RAF loop pendant le countdown — redessine à chaque frame
-    // pour s'adapter au redimensionnement du canvas (modal qui s'ouvre, etc.)
+    // RAF loop dédié au countdown — ID séparé de this._rafId
     const rafLoop = () => {
       if (this._state !== 'countdown') return;
       this._anim.setCountdown(remaining);
       this._anim.renderIdle();
-      this._rafId = requestAnimationFrame(rafLoop);
+      this._cdRafId = requestAnimationFrame(rafLoop);
     };
-    this._rafId = requestAnimationFrame(rafLoop);
+    this._cdRafId = requestAnimationFrame(rafLoop);
 
     if (this._config.onCountdownTick) this._config.onCountdownTick(remaining);
 
@@ -916,7 +916,7 @@ class PhaseSequencer {
       remaining -= 1;
       if (this._config.onCountdownTick) this._config.onCountdownTick(remaining);
       if (remaining <= 0) {
-        this._cancelRaf();
+        this._cancelCdRaf();
         this._anim.setCountdown(null);
         this._beginExercise();
         return;
@@ -1010,6 +1010,10 @@ class PhaseSequencer {
     if (this._rafId) { cancelAnimationFrame(this._rafId); this._rafId = null; }
   }
 
+  _cancelCdRaf() {
+    if (this._cdRafId) { cancelAnimationFrame(this._cdRafId); this._cdRafId = null; }
+  }
+
   _showOverlay() {
     ['be-phase-label','be-timer'].forEach(cls => {
       const el = this._q(cls);
@@ -1041,7 +1045,7 @@ class PhaseSequencer {
 
   _updateCycleCounter() {
     const total = this._config.totalCycles;
-    const text  = total > 0 ? `${this._cycle + 1} / ${total}` : `Cycle ${this._cycle + 1}`;
+    const text  = total > 0 ? `${this._cycle + 1} / ${total}` : `cycle ${this._cycle + 1}`;
     this._anim.setCycleText(text);
   }
 
