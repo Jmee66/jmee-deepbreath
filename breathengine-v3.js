@@ -127,7 +127,7 @@ const CONFIG_DEFAULTS = {
   },
 
   phases: {
-    preparation: { enabled: true,  duration: 4, label: 'Préparer', easing: 'cubicInOut', silent: false, audioUrl: null },
+    preparation: { enabled: false, duration: 0, label: 'Préparer', easing: 'cubicInOut', silent: false, audioUrl: null },
     inhale:      { enabled: true,  duration: 4, label: 'Inspirer', easing: 'cubicInOut', silent: false, audioUrl: null },
     holdFull:    { enabled: true,  duration: 4, label: 'Retenir',  easing: 'sineInOut',  silent: false, audioUrl: null },
     exhale:      { enabled: true,  duration: 6, label: 'Expirer',  easing: 'cubicInOut', silent: false, audioUrl: null },
