@@ -481,6 +481,10 @@ class AnimationEngine {
     this._bgColor      = '#000000';
     this._arcMode      = 'draw';   // 'draw' = horaire croissant | 'erase' = anti-horaire décroissant
 
+    // Textes dessinés sur le canvas (pixel-perfect centrage sur l'orbe)
+    this._countdownVal  = null;   // number | null
+    this._cycleText     = '';     // string
+
     this._resize();
     this._ro = new ResizeObserver(() => this._resize());
     this._ro.observe(canvas.parentElement || document.body);
@@ -558,6 +562,15 @@ class AnimationEngine {
 
   triggerWave() {
     this._wave = { progress: 0, hue: this._hue, sat: this._sat, lit: this._lit };
+  }
+
+  setCountdown(val) {
+    // val = number > 0 to display, or null to hide
+    this._countdownVal = (val !== null && val > 0) ? val : null;
+  }
+
+  setCycleText(str) {
+    this._cycleText = str || '';
   }
 
   render(progress, phaseProgress, totalElapsed) {
@@ -675,6 +688,31 @@ class AnimationEngine {
         ctx.restore();
       }
     }
+
+    // --- Countdown centré sur l'orbe ---
+    if (this._countdownVal !== null) {
+      const fontSize = Math.round(this._baseR * 1.1);
+      ctx.save();
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font         = `100 ${fontSize}px sans-serif`;
+      ctx.fillStyle    = 'rgba(255,255,255,0.85)';
+      ctx.fillText(String(this._countdownVal), this._cx, this._cy);
+      ctx.restore();
+    }
+
+    // --- Cycle counter sous l'orbe ---
+    if (this._cycleText) {
+      const fontSize = Math.round(this._baseR * 0.22);
+      ctx.save();
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'top';
+      ctx.font         = `400 ${fontSize}px sans-serif`;
+      ctx.letterSpacing = '0.2em';
+      ctx.fillStyle    = 'rgba(255,255,255,0.4)';
+      ctx.fillText(this._cycleText.toUpperCase(), this._cx, this._cy + r + 14);
+      ctx.restore();
+    }
   }
 
   renderIdle() {
@@ -716,6 +754,18 @@ class AnimationEngine {
     ctx.beginPath();
     ctx.arc(this._cx, this._cy, r, 0, Math.PI * 2);
     ctx.fillStyle = bodyGrad; ctx.fill();
+
+    // Countdown centré sur l'orbe (utilisé pendant le décompte initial)
+    if (this._countdownVal !== null) {
+      const fontSize = Math.round(this._baseR * 1.1);
+      ctx.save();
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font         = `100 ${fontSize}px sans-serif`;
+      ctx.fillStyle    = 'rgba(255,255,255,0.85)';
+      ctx.fillText(String(this._countdownVal), this._cx, this._cy);
+      ctx.restore();
+    }
   }
 
   destroy() {
@@ -780,7 +830,7 @@ class PhaseSequencer {
     this._state = 'idle';
     this._hideOverlay();
     this._anim.renderIdle();
-    this._updateOverlayText('', '', '');
+    this._updateOverlayText('', '');
   }
 
   pause() {
@@ -846,20 +896,23 @@ class PhaseSequencer {
   _startCountdown() {
     this._state = 'countdown';
     const cdDur = this._config.countdownDuration;
-    const cdEl  = this._q('be-countdown');
-    if (cdEl) { cdEl.textContent = cdDur; cdEl.classList.add('be-visible'); }
+
+    // Affiche la valeur initiale sur le canvas
+    this._anim.setCountdown(cdDur);
+    this._anim.renderIdle();
 
     let remaining = cdDur;
     const tick = () => {
       if (this._state !== 'countdown') return;
       remaining -= 1;
       if (this._config.onCountdownTick) this._config.onCountdownTick(remaining);
-      if (cdEl) cdEl.textContent = remaining > 0 ? remaining : '';
       if (remaining <= 0) {
-        if (cdEl) cdEl.classList.remove('be-visible');
+        this._anim.setCountdown(null);
         this._beginExercise();
         return;
       }
+      this._anim.setCountdown(remaining);
+      this._anim.renderIdle();
       setTimeout(tick, 1000);
     };
     setTimeout(tick, 1000);
@@ -950,17 +1003,20 @@ class PhaseSequencer {
   }
 
   _showOverlay() {
-    ['be-phase-label','be-timer','be-cycle-counter'].forEach(cls => {
+    ['be-phase-label','be-timer'].forEach(cls => {
       const el = this._q(cls);
       if (el) el.classList.add('be-visible');
     });
   }
 
   _hideOverlay() {
-    ['be-phase-label','be-timer','be-cycle-counter','be-countdown'].forEach(cls => {
+    ['be-phase-label','be-timer'].forEach(cls => {
       const el = this._q(cls);
       if (el) el.classList.remove('be-visible');
     });
+    // Efface les textes canvas
+    this._anim.setCountdown(null);
+    this._anim.setCycleText('');
   }
 
   _updateOverlayLabel(label) {
@@ -976,19 +1032,16 @@ class PhaseSequencer {
   }
 
   _updateCycleCounter() {
-    const el = this._q('be-cycle-counter');
-    if (!el) return;
     const total = this._config.totalCycles;
-    el.textContent = total > 0 ? `${this._cycle + 1} / ${total}` : `Cycle ${this._cycle + 1}`;
+    const text  = total > 0 ? `${this._cycle + 1} / ${total}` : `Cycle ${this._cycle + 1}`;
+    this._anim.setCycleText(text);
   }
 
-  _updateOverlayText(label, timer, counter) {
+  _updateOverlayText(label, timer) {
     const le = this._q('be-phase-label');
     const te = this._q('be-timer');
-    const ce = this._q('be-cycle-counter');
     if (le) le.textContent = label;
     if (te) te.textContent = timer;
-    if (ce) ce.textContent = counter;
   }
 
   _onVisibilityChange() {
