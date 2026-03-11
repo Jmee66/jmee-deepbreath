@@ -2541,8 +2541,8 @@ class JmeeDeepBreathApp {
         const circleContainer = document.getElementById('breathCircleContainer');
         const isLegacyExercise = exercise.isComfortZone || exercise.isApneaWithGuidance ||
             exercise.isContractionTable || exercise.isApneaTable || exercise.isDeepSleep ||
-            exercise.isGuided || exercise.isWimHof || exercise.isBreathLight ||
-            exercise.isPassiveBreathHanger || exercise.isVHLStatic || exercise.isVHL || exercise.isIMST;
+            exercise.isGuided || exercise.isWimHof ||
+            exercise.isPassiveBreathHanger || exercise.isVHLStatic || exercise.isVHL;
 
         if (isLegacyExercise) {
             // Phase 2 exercises: use legacy CSS circle
@@ -3046,128 +3046,83 @@ class JmeeDeepBreathApp {
     startBreathLightExercise() {
         const exercise = this.currentExercise;
         this._blRoundIndex = 0;
-        this._blCycleInRound = 1;
-        this._blRoundStartTime = null;
 
         document.getElementById('exerciseInstruction').textContent = exercise.instructions.start;
         document.getElementById('cycleCounter').textContent = '';
 
-        if (window.voiceGuide && window.voiceGuide.enabled) {
-            window.voiceGuide.speak(exercise.instructions.start, () => {
-                setTimeout(() => {
+        const canvas  = document.getElementById('breathCanvas');
+        const overlay = document.getElementById('beOverlay');
+        if (!canvas) return;
+        window.BreathEngine.mount(canvas, overlay);
+        this.engine = window.BreathEngine;
+
+        const launchRound = () => {
+            if (!this.isRunning) return;
+            const rounds = exercise.rounds;
+
+            if (this._blRoundIndex >= rounds.length) {
+                this.completeExercise();
+                return;
+            }
+
+            const round = rounds[this._blRoundIndex];
+            const cycleDur = round.inhale + round.exhale + (round.hold || 0);
+            const totalCycles = Math.max(1, Math.round(round.durationSec / cycleDur));
+
+            // Construire les phases v3 selon la config du round
+            const holdEnabled = round.hold > 0;
+            const v3Phases = {
+                preparation: { enabled: false, duration: 0 },
+                inhale:      { enabled: true,  duration: round.inhale, label: 'Inspirez',  easing: 'cubicInOut' },
+                holdFull:    { enabled: false, duration: 0 },
+                exhale:      { enabled: true,  duration: round.exhale, label: 'Expirez',   easing: 'cubicInOut' },
+                holdEmpty:   { enabled: holdEnabled, duration: holdEnabled ? round.hold : 0, label: 'Pause', easing: 'sineInOut' },
+                recovery:    { enabled: false, duration: 0 },
+            };
+
+            document.getElementById('cycleCounter').textContent = round.label;
+            document.getElementById('exerciseInstruction').textContent = round.instruction;
+
+            if (window.voiceGuide?.enabled) {
+                window.voiceGuide.speak(round.label + '. ' + round.instruction);
+            }
+
+            window.BreathEngine.configure({
+                totalCycles,
+                countdownDuration: 0,
+                phases: v3Phases,
+                onPhaseChange: (phaseName) => {
+                    document.getElementById('exerciseInstruction').textContent = round.instruction;
+                },
+                onCycleComplete: (cycleNumber) => {
+                    document.getElementById('cycleCounter').textContent =
+                        `${round.label}  •  Cycle ${cycleNumber + 1} / ${totalCycles}`;
+                },
+                onComplete: () => {
                     if (!this.isRunning) return;
-                    this.runBreathLightRound();
-                }, 800);
-            });
-        } else {
-            setTimeout(() => this.runBreathLightRound(), 2500);
-        }
-    }
-
-    runBreathLightRound() {
-        if (!this.isRunning) return;
-        const exercise = this.currentExercise;
-        const rounds = exercise.rounds;
-
-        if (this._blRoundIndex >= rounds.length) {
-            this.completeExercise();
-            return;
-        }
-
-        const round = rounds[this._blRoundIndex];
-        this._blCycleInRound = 1;
-        this._blRoundStartTime = Date.now();
-
-        // Announce phase transition
-        const phaseLabel = round.label;
-        document.getElementById('cycleCounter').textContent = phaseLabel;
-        document.getElementById('exerciseInstruction').textContent = round.instruction;
-
-        if (window.voiceGuide && window.voiceGuide.enabled) {
-            window.voiceGuide.speak(phaseLabel + '. ' + round.instruction);
-        }
-
-        // Build phases for this round
-        const phases = [
-            { name: 'Inspirez', duration: round.inhale, action: 'inhale' },
-            { name: 'Expirez', duration: round.exhale, action: 'exhale' }
-        ];
-        if (round.hold > 0) {
-            phases.push({ name: 'Pause', duration: round.hold, action: 'hold' });
-        }
-
-        // Calculate nb cycles for this round
-        const cycleDur = phases.reduce((s, p) => s + p.duration, 0);
-        const totalCyclesInRound = Math.max(1, Math.round(round.durationSec / cycleDur));
-
-        // Temporarily override exercise phases for the round
-        exercise.phases = phases;
-        this.currentPhaseIndex = 0;
-
-        // Start cycling
-        this._runBreathLightCycle(totalCyclesInRound, round, phases);
-    }
-
-    _runBreathLightCycle(totalCyclesInRound, round, phases) {
-        if (!this.isRunning) return;
-        if (this.isPaused) {
-            if (window.breathSounds) window.breathSounds.stop();
-            setTimeout(() => this._runBreathLightCycle(totalCyclesInRound, round, phases), 100);
-            return;
-        }
-
-        const exercise = this.currentExercise;
-        const phase = phases[this.currentPhaseIndex];
-        const previousAction = this.currentPhaseIndex > 0
-            ? phases[this.currentPhaseIndex - 1].action
-            : (this._blCycleInRound > 1 ? phases[phases.length - 1].action : null);
-
-        // Update UI
-        document.getElementById('cycleCounter').textContent =
-            `${round.label}  •  Cycle ${this._blCycleInRound} / ${totalCyclesInRound}`;
-        document.getElementById('exerciseInstruction').textContent = round.instruction;
-        this.updateBreathPhase(phase, previousAction);
-
-        // Sound (Bug #5 : stop before play)
-        if (window.breathSounds) {
-            window.breathSounds.stop();
-            let soundPhase = phase.action;
-            if (phase.action === 'hold' && previousAction === 'exhale') soundPhase = 'holdEmpty';
-            window.breathSounds.playPhase(soundPhase, phase.duration);
-        }
-
-        // Voice on first cycle of each phase type (inhale / pause)
-        if (this._blCycleInRound === 1 && window.voiceGuide && window.voiceGuide.enabled) {
-            if (phase.action === 'inhale') window.voiceGuide.speak(phase.name);
-            if (phase.action === 'hold')   window.voiceGuide.speak(phase.name);
-        }
-
-        this.startPhaseTimer(phase.duration, () => {
-            this.currentPhaseIndex++;
-
-            if (this.currentPhaseIndex >= phases.length) {
-                this.currentPhaseIndex = 0;
-                this._blCycleInRound++;
-
-                if (this._blCycleInRound > totalCyclesInRound) {
-                    // Round terminé — passer au suivant
                     this._blRoundIndex++;
-                    if (this._blRoundIndex < exercise.rounds.length) {
-                        const nextRound = exercise.rounds[this._blRoundIndex];
-                        // Announce next phase
-                        if (window.voiceGuide && window.voiceGuide.enabled) {
+                    const nextRound = exercise.rounds[this._blRoundIndex];
+                    if (nextRound) {
+                        if (window.voiceGuide?.enabled) {
                             window.voiceGuide.speak('Prochaine phase : ' + nextRound.label);
                         }
-                        setTimeout(() => this.runBreathLightRound(), 1500);
+                        setTimeout(() => launchRound(), 1500);
                     } else {
                         this.completeExercise();
                     }
-                    return;
-                }
-            }
+                },
+            });
 
-            this._runBreathLightCycle(totalCyclesInRound, round, phases);
-        });
+            window.BreathEngine.start();
+        };
+
+        if (window.voiceGuide?.enabled) {
+            window.voiceGuide.speak(exercise.instructions.start, () => {
+                setTimeout(() => { if (this.isRunning) launchRound(); }, 800);
+            });
+        } else {
+            setTimeout(() => launchRound(), 2500);
+        }
     }
 
     // ==========================================
@@ -3920,100 +3875,88 @@ class JmeeDeepBreathApp {
 
     startIMSTExercise() {
         const ex = this.currentExercise;
-        this._imstSet        = 1;
-        this._imstRep        = 1;
-        this._imstSetsTotal  = ex.sets           || 5;
-        this._imstRepsTotal  = ex.repsPerSet     || 30;
-        this._imstInhale     = ex.inhaleDuration || 2;
-        this._imstExhale     = ex.exhaleDuration || 3;
-        this._imstRest       = ex.restDuration   || 60;
+        this._imstSet       = 1;
+        this._imstSetsTotal = ex.sets           || 5;
+        this._imstRepsTotal = ex.repsPerSet     || 30;
+        this._imstInhale    = ex.inhaleDuration || 2;
+        this._imstExhale    = ex.exhaleDuration || 3;
+        this._imstRest      = ex.restDuration   || 60;
 
-        document.getElementById('cycleCounter').textContent =
-            `Série 1/${this._imstSetsTotal} — Rep 1/${this._imstRepsTotal}`;
         document.getElementById('exerciseInstruction').textContent = ex.instructions.start;
+
+        const canvas  = document.getElementById('breathCanvas');
+        const overlay = document.getElementById('beOverlay');
+        if (!canvas) return;
+        window.BreathEngine.mount(canvas, overlay);
+        this.engine = window.BreathEngine;
+
+        const launchSet = () => {
+            if (!this.isRunning) return;
+            const set = this._imstSet;
+            const setsTotal = this._imstSetsTotal;
+
+            document.getElementById('exerciseInstruction').textContent =
+                ex.mode === 'device' ? ex.instructions.inhale : (ex.instructions.inhale_free || ex.instructions.inhale);
+
+            window.BreathEngine.configure({
+                totalCycles:       this._imstRepsTotal,
+                countdownDuration: 0,
+                phases: {
+                    preparation: { enabled: false, duration: 0 },
+                    inhale:      { enabled: true,  duration: this._imstInhale, label: 'Inspirez fort !', easing: 'cubicInOut', silent: true },
+                    holdFull:    { enabled: false, duration: 0 },
+                    exhale:      { enabled: true,  duration: this._imstExhale, label: 'Relâchez',        easing: 'cubicInOut', silent: true },
+                    holdEmpty:   { enabled: false, duration: 0 },
+                    recovery:    { enabled: false, duration: 0 },
+                },
+                onPhaseChange: (phaseName) => {
+                    if (phaseName === 'inhale') {
+                        document.getElementById('exerciseInstruction').textContent =
+                            ex.mode === 'device' ? 'Inspirez fort contre la résistance !' : 'Inspiration diaphragmatique maximale !';
+                        this._imstPlayBip();
+                    } else if (phaseName === 'exhale') {
+                        document.getElementById('exerciseInstruction').textContent = 'Relâchez passivement.';
+                    }
+                },
+                onCycleComplete: (cycleNumber) => {
+                    document.getElementById('cycleCounter').textContent =
+                        `Série ${set}/${setsTotal} — Rep ${cycleNumber + 1}/${this._imstRepsTotal}`;
+                },
+                onComplete: () => {
+                    if (!this.isRunning) return;
+                    if (this._imstSet >= this._imstSetsTotal) {
+                        this.completeExercise();
+                        return;
+                    }
+                    // Repos entre séries
+                    this._imstSet++;
+                    window.BreathEngine.reset();
+                    const nextSet = this._imstSet;
+                    document.getElementById('cycleCounter').textContent =
+                        `Repos — Série ${nextSet}/${setsTotal} dans…`;
+                    document.getElementById('exerciseInstruction').textContent = ex.instructions.rest;
+                    if (window.voiceGuide?.enabled) {
+                        window.voiceGuide.speak(`Série ${nextSet - 1} terminée. Repos.`);
+                    }
+                    this.startPhaseTimer(this._imstRest, () => {
+                        if (!this.isRunning) return;
+                        launchSet();
+                    });
+                },
+            });
+
+            document.getElementById('cycleCounter').textContent =
+                `Série ${set}/${setsTotal} — Rep 1/${this._imstRepsTotal}`;
+            window.BreathEngine.start();
+        };
 
         if (window.voiceGuide?.enabled) {
             window.voiceGuide.speak(ex.instructions.start, () => {
-                setTimeout(() => {
-                    if (!this.isRunning) return;
-                    this._imstRunRep();
-                }, 800);
+                setTimeout(() => { if (this.isRunning) launchSet(); }, 800);
             });
         } else {
-            setTimeout(() => this._imstRunRep(), 2500);
+            setTimeout(() => launchSet(), 2500);
         }
-    }
-
-    _imstRunRep() {
-        if (!this.isRunning) return;
-        const ex = this.currentExercise;
-
-        // Mise à jour compteur
-        document.getElementById('cycleCounter').textContent =
-            `Série ${this._imstSet}/${this._imstSetsTotal} — Rep ${this._imstRep}/${this._imstRepsTotal}`;
-
-        // ── Phase INHALE ──
-        this.updateBreathPhase({ name: 'Inspirez fort !', duration: this._imstInhale, action: 'inhale' });
-        document.getElementById('exerciseInstruction').textContent =
-            ex.mode === 'device'
-                ? 'Inspirez fort contre la résistance !'
-                : 'Inspiration diaphragmatique maximale !';
-
-        // Bip sonore au début de chaque inspiration
-        this._imstPlayBip();
-
-        this.startPhaseTimer(this._imstInhale, () => {
-            if (!this.isRunning) return;
-
-            // ── Phase EXHALE (passive) ──
-            this.updateBreathPhase({ name: 'Relâchez', duration: this._imstExhale, action: 'exhale' });
-            document.getElementById('exerciseInstruction').textContent = 'Relâchez passivement.';
-
-            this.startPhaseTimer(this._imstExhale, () => {
-                if (!this.isRunning) return;
-
-                if (this._imstRep < this._imstRepsTotal) {
-                    this._imstRep++;
-                    this._imstRunRep();
-                } else {
-                    this._imstEndSet();
-                }
-            });
-        });
-    }
-
-    _imstEndSet() {
-        const ex = this.currentExercise;
-
-        // Toutes les séries terminées ?
-        if (this._imstSet >= this._imstSetsTotal) {
-            this.completeExercise();
-            return;
-        }
-
-        // Prépare la série suivante
-        this._imstSet++;
-        this._imstRep = 1;
-
-        // Cercle neutre pendant le repos
-        const circle = document.getElementById('breathCircle');
-        circle.classList.remove('inhale', 'exhale', 'hold', 'holdEmpty', 'active');
-
-        document.getElementById('breathPhase').textContent = 'Repos';
-        document.getElementById('cycleCounter').textContent =
-            `Repos — Série ${this._imstSet}/${this._imstSetsTotal} dans…`;
-        document.getElementById('exerciseInstruction').textContent = ex.instructions.rest;
-
-        if (window.voiceGuide?.enabled) {
-            window.voiceGuide.speak(`Série ${this._imstSet - 1} terminée. Repos.`);
-        }
-
-        this.startPhaseTimer(this._imstRest, () => {
-            if (!this.isRunning) return;
-            document.getElementById('exerciseInstruction').textContent =
-                ex.mode === 'device' ? ex.instructions.inhale : ex.instructions.inhale_free || ex.instructions.inhale;
-            this._imstRunRep();
-        });
     }
 
     _imstPlayBip() {
@@ -4025,7 +3968,7 @@ class JmeeDeepBreathApp {
             osc.connect(gain);
             gain.connect(ctx.destination);
             osc.type = 'sine';
-            osc.frequency.value = 520; // Hz — ton léger et distinct
+            osc.frequency.value = 520;
             gain.gain.setValueAtTime(0.15, ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
             osc.start(ctx.currentTime);
