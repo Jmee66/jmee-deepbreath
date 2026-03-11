@@ -117,8 +117,8 @@ const CONFIG_DEFAULTS = {
   backgroundColor: '#000000',
 
   colors: {
-    preparation: { hue: 210, saturation: 60, lightness: 42 },
-    inhale:      { hue: 210, saturation: 60, lightness: 42 },
+    preparation: { hue: 215, saturation: 45, lightness: 32 },
+    inhale:      { hue: 215, saturation: 45, lightness: 32 },
     holdFull:    { hue: 220, saturation: 50, lightness: 35 },
     exhale:      { hue: 270, saturation: 50, lightness: 48 },
     holdEmpty:   { hue: 270, saturation: 40, lightness: 30 },
@@ -460,24 +460,25 @@ class AnimationEngine {
     this._baseR   = 0;
 
     this._scale        = 1.15;
-    this._hue          = 210;
-    this._sat          = 60;
-    this._lit          = 42;
+    this._hue          = 215;
+    this._sat          = 45;
+    this._lit          = 32;
     this._startScale   = 1.15;
     this._targetScale  = 1.15;
     this._previousPhase = null;
-    this._startHue     = 200;
-    this._targetHue    = 200;
+    this._startHue     = 215;
+    this._targetHue    = 215;
     this._startSat     = 45;
     this._targetSat    = 45;
-    this._startLit     = 40;
-    this._targetLit    = 40;
+    this._startLit     = 32;
+    this._targetLit    = 32;
     this._phaseEasing  = 'cubicInOut';
     this._pulsePhase   = 0;
     this._pulseAmp     = 0;
     this._pulseFreq    = 0;
     this._wave         = null;
     this._bgColor      = '#000000';
+    this._arcMode      = 'draw';   // 'draw' = horaire croissant | 'erase' = anti-horaire décroissant
 
     this._resize();
     this._ro = new ResizeObserver(() => this._resize());
@@ -500,7 +501,7 @@ class AnimationEngine {
 
   setBackground(color) { this._bgColor = color; }
 
-  setPhaseTarget(phaseName, phaseConfig, colorConfig) {
+  setPhaseTarget(phaseName, phaseConfig, colorConfig, phaseIndexInCycle) {
     const c = (colorConfig && colorConfig[phaseName]) || {};
 
     this._startScale = this._scale;
@@ -541,6 +542,14 @@ class AnimationEngine {
     this._phaseEasing = (phaseConfig && phaseConfig.easing) || 'cubicInOut';
     this._previousPhase = phaseName;
 
+    // Pas d'arc pendant la preparation
+    // arcIndex est déjà calculé sans la preparation par le sequencer
+    if (phaseName === 'preparation') {
+      this._arcMode = 'none';
+    } else {
+      this._arcMode = (phaseIndexInCycle % 2 === 0) ? 'draw' : 'erase';
+    }
+
     if (phaseName !== 'preparation') {
       this._wave = { progress: 0, hue: this._targetHue, sat: this._targetSat, lit: this._targetLit };
     }
@@ -555,13 +564,15 @@ class AnimationEngine {
     const w   = this._canvas.width  / this._dpr;
     const h   = this._canvas.height / this._dpr;
 
+    const p      = EasingLib.clamp(progress, 0, 1);
     const easeFn = EasingLib.get(this._phaseEasing);
-    const ep     = easeFn(EasingLib.clamp(progress, 0, 1));
+    const ep     = easeFn(p);                        // pour la scale (suit l'easing de la phase)
+    const cp     = EasingLib.sineInOut(p);           // pour les couleurs : toujours doux, toute la durée
 
     this._scale = EasingLib.lerp(this._startScale, this._targetScale, ep);
-    this._hue   = EasingLib.lerpAngle(this._startHue, this._targetHue, EasingLib.sineInOut(ep));
-    this._sat   = EasingLib.lerp(this._startSat, this._targetSat, ep);
-    this._lit   = EasingLib.lerp(this._startLit, this._targetLit, ep);
+    this._hue   = EasingLib.lerpAngle(this._startHue, this._targetHue, cp);
+    this._sat   = EasingLib.lerp(this._startSat, this._targetSat, cp);
+    this._lit   = EasingLib.lerp(this._startLit, this._targetLit, cp);
 
     if (this._pulseAmp > 0) {
       this._pulsePhase += (Math.PI * 2 * this._pulseFreq) / 60;
@@ -575,6 +586,9 @@ class AnimationEngine {
     ctx.fillRect(0, 0, w, h);
 
     const hsl0 = `hsla(${this._hue},${this._sat}%,${this._lit + 10}%,0)`;
+
+    ctx.save();
+    ctx.filter = 'blur(18px)';
 
     const glow1 = ctx.createRadialGradient(this._cx, this._cy, r * 0.5, this._cx, this._cy, r * 3.8);
     glow1.addColorStop(0, `hsla(${this._hue},${this._sat}%,${this._lit}%,0.10)`);
@@ -591,6 +605,8 @@ class AnimationEngine {
     glow3.addColorStop(1, hsl0);
     ctx.fillStyle = glow3; ctx.fillRect(0, 0, w, h);
 
+    ctx.restore();
+
     const bodyGrad = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r);
     bodyGrad.addColorStop(0,    `hsla(${this._hue},${Math.min(100,this._sat+15)}%,${Math.min(100,this._lit+18)}%,0.92)`);
     bodyGrad.addColorStop(0.55, `hsla(${this._hue},${this._sat}%,${this._lit}%,0.85)`);
@@ -599,16 +615,40 @@ class AnimationEngine {
     ctx.arc(this._cx, this._cy, r, 0, Math.PI * 2);
     ctx.fillStyle = bodyGrad; ctx.fill();
 
-    if (phaseProgress > 0 && phaseProgress < 1) {
-      const arcStart = -Math.PI / 2;
-      const arcEnd   = arcStart + Math.PI * 2 * phaseProgress;
-      ctx.beginPath();
-      ctx.arc(this._cx, this._cy, r - 4, arcStart, arcEnd);
-      ctx.strokeStyle = `hsla(${this._hue},100%,88%,0.75)`;
-      ctx.lineWidth   = 11;
-      ctx.lineCap     = 'round';
-      ctx.stroke();
+    // Arc de progression
+    // Mode 'draw'  : arc grandit dans le sens horaire  (0 → complet)
+    // Mode 'erase' : arc rétrécit dans le sens anti-horaire (complet → 0)
+    //   → on garde le segment restant en dessinant de arcStart courant jusqu'à 12h + 2π
+    const arcR = r - 4;
+    const TWO_PI = Math.PI * 2;
+    const TOP    = -Math.PI / 2;          // 12 heures
+
+    if (this._arcMode === 'draw') {
+      // phaseProgress 0→1 : arc de TOP jusqu'à TOP + progress*2π
+      if (phaseProgress > 0) {
+        const arcEnd = TOP + TWO_PI * phaseProgress;
+        ctx.beginPath();
+        ctx.arc(this._cx, this._cy, arcR, TOP, arcEnd);
+        ctx.strokeStyle = `hsla(${this._hue},100%,88%,0.75)`;
+        ctx.lineWidth   = 11;
+        ctx.lineCap     = 'round';
+        ctx.stroke();
+      }
+    } else if (this._arcMode === 'erase') {
+      // Mode 'erase' : phaseProgress 0→1 : arc de (TOP + progress*2π) jusqu'à TOP+2π
+      // quand progress=0 → arc complet ; quand progress=1 → arc vide
+      if (phaseProgress < 1) {
+        const arcStart = TOP + TWO_PI * phaseProgress;
+        const arcEnd   = TOP + TWO_PI;
+        ctx.beginPath();
+        ctx.arc(this._cx, this._cy, arcR, arcStart, arcEnd);
+        ctx.strokeStyle = `hsla(${this._hue},100%,88%,0.75)`;
+        ctx.lineWidth   = 11;
+        ctx.lineCap     = 'round';
+        ctx.stroke();
+      }
     }
+    // Mode 'none' (preparation) : pas d'arc
 
     if (this._wave) {
       this._wave.progress += 0.012;
@@ -644,8 +684,11 @@ class AnimationEngine {
     ctx.fillRect(0, 0, w, h);
 
     const r = this._baseR * 1.15;
-    const hue = 210, sat = 60, lit = 42;
+    const hue = 215, sat = 45, lit = 32;
     const hsl0 = `hsla(${hue},${sat}%,${lit+10}%,0)`;
+
+    ctx.save();
+    ctx.filter = 'blur(18px)';
 
     const glow1 = ctx.createRadialGradient(this._cx, this._cy, r * 0.5, this._cx, this._cy, r * 3.8);
     glow1.addColorStop(0, `hsla(${hue},${sat}%,${lit}%,0.10)`);
@@ -661,6 +704,8 @@ class AnimationEngine {
     glow3.addColorStop(0, `hsla(${hue},${Math.min(100,sat+20)}%,${lit+22}%,0.18)`);
     glow3.addColorStop(1, hsl0);
     ctx.fillStyle = glow3; ctx.fillRect(0, 0, w, h);
+
+    ctx.restore();
 
     const bodyGrad = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r);
     bodyGrad.addColorStop(0,    `hsla(${hue},${Math.min(100,sat+15)}%,${Math.min(100,lit+18)}%,0.92)`);
@@ -837,7 +882,10 @@ class PhaseSequencer {
     const phConfig  = this._config.phases[phaseName];
     const colorCfg  = this._config.colors;
 
-    this._anim.setPhaseTarget(phaseName, phConfig, colorCfg);
+    // arcIndex : index sans compter la preparation, pour que phase1=0(draw), phase2=1(erase)…
+    const prepOffset = this._enabledPhases[0] === 'preparation' ? 1 : 0;
+    const arcIndex = index - prepOffset;
+    this._anim.setPhaseTarget(phaseName, phConfig, colorCfg, arcIndex);
     this._audio.playPhase(phaseName, phConfig.duration, phConfig);
     this._updateOverlayLabel(phConfig.label || phaseName);
     this._updateCycleCounter();
