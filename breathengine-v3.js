@@ -81,7 +81,7 @@
    ----------------
    {
      totalCycles: 6,            // 0 = infini jusqu'à stop()
-     countdownDuration: 5,      // 0 = pas de countdown
+     countdownDuration: 0,      // 0 = pas de countdown
      backgroundColor: '#000000',
      colors: {
        preparation: { hue: 210, saturation: 60, lightness: 42 },
@@ -114,7 +114,7 @@
    ============================================================ */
 const CONFIG_DEFAULTS = {
   totalCycles: 6,
-  countdownDuration: 5,
+  countdownDuration: 0,
   backgroundColor: '#000000',
 
   colors: {

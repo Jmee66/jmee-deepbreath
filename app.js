@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '2.12';
+const APP_VERSION = '2.13';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -2850,7 +2850,7 @@ class JmeeDeepBreathApp {
 
         return {
             totalCycles,
-            countdownDuration: 2,
+            countdownDuration: 0,
             phases: v3Phases,
             volume: this.settings.soundVolume !== undefined ? this.settings.soundVolume : 0.5,
             muted: !(this.settings.soundEnabled !== false),
