@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '2.7';
+const APP_VERSION = '2.8';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -799,6 +799,9 @@ class JmeeDeepBreathApp {
                 // Attach sync button listeners the first time settings section opens
                 if (targetSection === 'settings') {
                     this._attachSyncListeners();
+                    // Navigation manuelle → cacher le bouton retour
+                    const backBtn = document.getElementById('btnBackToSection');
+                    if (backBtn) backBtn.style.display = 'none';
                 }
             });
         });
@@ -2214,9 +2217,12 @@ class JmeeDeepBreathApp {
     }
 
     navigateToExerciseSettings(exerciseId) {
-        // Navigate to settings section
         const navLinks = document.querySelectorAll('.nav-link');
         const sections = document.querySelectorAll('.section');
+
+        // Mémoriser la section active avant de quitter
+        const currentActive = document.querySelector('.section.active');
+        const originSectionId = currentActive ? currentActive.id : null;
 
         navLinks.forEach(l => l.classList.remove('active'));
         document.querySelector('[data-section="settings"]').classList.add('active');
@@ -2224,18 +2230,33 @@ class JmeeDeepBreathApp {
         sections.forEach(s => s.classList.remove('active'));
         document.getElementById('settings').classList.add('active');
 
+        // Afficher le bouton retour si on vient d'une autre section
+        const backBtn = document.getElementById('btnBackToSection');
+        if (backBtn && originSectionId && originSectionId !== 'settings') {
+            backBtn.style.display = '';
+            // Libeller le bouton avec le nom de la section d'origine
+            const originLink = document.querySelector(`[data-section="${originSectionId}"]`);
+            const originLabel = originLink ? (originLink.textContent.trim() || originSectionId) : originSectionId;
+            backBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 12H5M12 5l-7 7 7 7"/></svg> ${originLabel}`;
+            backBtn.onclick = () => {
+                // Retourner à la section d'origine
+                navLinks.forEach(l => l.classList.remove('active'));
+                if (originLink) originLink.classList.add('active');
+                sections.forEach(s => s.classList.remove('active'));
+                document.getElementById(originSectionId).classList.add('active');
+                backBtn.style.display = 'none';
+            };
+        }
+
         // Find the exercise settings section and scroll to it
         const exerciseSettings = document.querySelector(`.exercise-settings[data-exercise="${exerciseId}"]`);
         if (exerciseSettings) {
-            // Make sure the parent settings-card-body is visible
             const cardBody = exerciseSettings.closest('.settings-card-body');
             if (cardBody && cardBody.classList.contains('collapsed')) {
                 cardBody.classList.remove('collapsed');
                 const expandBtn = cardBody.previousElementSibling?.querySelector('.btn-expand');
                 if (expandBtn) expandBtn.classList.add('expanded');
             }
-
-            // Scroll to and highlight the exercise settings
             setTimeout(() => {
                 exerciseSettings.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 exerciseSettings.classList.add('highlight');
