@@ -36,7 +36,8 @@
          <div ref={overlayRef} style={{
            position: 'absolute', inset: 0,
            display: 'flex', flexDirection: 'column',
-           alignItems: 'center', justifyContent: 'center',
+           alignItems: 'center', justifyContent: 'flex-start',
+           paddingTop: '8%',
            pointerEvents: 'none', userSelect: 'none',
          }}>
            <div className="be-phase-label" />
