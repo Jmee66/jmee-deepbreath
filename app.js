@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '2.3';
+const APP_VERSION = '2.4';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -2602,66 +2602,64 @@ class JmeeDeepBreathApp {
 
         const totalCycles = exercise.cycles || Math.floor(exercise.duration * 60 / this.getCycleDuration());
 
-        document.getElementById('cycleCounter').textContent = `Cycle ${this.currentCycle} / ${totalCycles}`;
         document.getElementById('exerciseInstruction').textContent =
             (exercise.instructions && exercise.instructions.start) || exercise.description || '';
 
-        // Create the breathing engine (Canvas 2D + RAF timer)
         const canvas = document.getElementById('breathCanvas');
+        const overlay = document.getElementById('beOverlay');
         if (!canvas) {
-            console.error('BreathingEngine: canvas #breathCanvas not found');
+            console.error('BreathEngine v3: canvas #breathCanvas not found');
             return;
         }
 
-        // Disable sound in engine for kapalabhati (phases too short, sounds would stack)
-        const soundEng = exercise.isKapalabhati ? null : (window.breathSounds || null);
-
-        this.engine = new BreathingEngine(canvas, {
-            soundEngine: soundEng,
-            voiceEngine: window.voiceGuide || null
-        });
-
-        this.engine.configure({
-            phases: exercise.phases,
-            totalCycles: totalCycles,
-            duration: exercise.duration,
-            soundTheme: this.settings.soundTheme || 'zen',
-            instructions: exercise.instructions || {},
-            countdownDuration: 2,
-
-            onPhaseStart: (phase, idx, cycle) => {
-                // Update instruction text (support top-level instructions, per-phase instruction, and subText)
+        window.BreathEngine.mount(canvas, overlay);
+        window.BreathEngine.configure(this._buildV3Config(exercise, totalCycles, {
+            onPhaseChange: (phaseName, duration) => {
+                // Trouver la phase v2 correspondante pour l'instruction texte
+                const v2Phase = this._v3PhaseToV2(exercise, phaseName);
                 const instr = exercise.instructions || {};
-                document.getElementById('exerciseInstruction').textContent =
-                    instr[phase.name] || phase.instruction || phase.subText || phase.name || '';
-                document.getElementById('cycleCounter').textContent =
-                    `Cycle ${cycle} / ${totalCycles}`;
+                const label = v2Phase
+                    ? (instr[v2Phase.name] || v2Phase.instruction || v2Phase.subText || v2Phase.name || '')
+                    : '';
+                document.getElementById('exerciseInstruction').textContent = label;
 
-                // Cyclic Sighing special: second inhale sound
-                // Return false to tell engine to skip its default sound for this phase
-                if (phase.name === 'Inspirez +' && window.breathSounds && !exercise.isKapalabhati) {
+                // Voix guide — 2 premiers cycles seulement
+                if (window.voiceGuide && label && this.currentCycle <= 2) {
+                    window.voiceGuide.speakWithDelay(label, 300);
+                }
+
+                // Cyclic Sighing : deuxième inspire → son spécial
+                if (v2Phase && v2Phase.name === 'Inspirez +' && window.breathSounds && !exercise.isKapalabhati) {
                     window.breathSounds.stop();
                     window.breathSounds.playSecondInhale();
-                    return false; // skip engine default sound
                 }
             },
-
-            onTick: (data) => {
-                // Track total elapsed for completeExercise stats
-                this.elapsedTime = data.totalElapsed;
+            onCycleComplete: (cycleNumber) => {
+                this.currentCycle = cycleNumber + 1;
+                document.getElementById('cycleCounter').textContent =
+                    `Cycle ${this.currentCycle} / ${totalCycles}`;
             },
-
-            onCycleEnd: (cycle) => {
-                // Cycle tracking
-                this.currentCycle = cycle + 1;
+            onTick: (state) => {
+                this.elapsedTime = state.totalElapsed;
             },
-
             onComplete: () => {
                 this.completeExercise();
             }
-        });
+        }));
 
-        this.engine.start();
+        // Stocker une référence pour les appels pause/resume/stop
+        this.engine = window.BreathEngine;
+
+        // Voix de départ : parler avant le countdown (reprend le comportement v2)
+        const startInstruction = exercise.instructions?.start;
+        if (window.voiceGuide && startInstruction) {
+            window.voiceGuide.speak(startInstruction, () => {
+                if (!this.isRunning) return; // exercice fermé pendant la voix
+                setTimeout(() => window.BreathEngine.start(), 600);
+            });
+        } else {
+            window.BreathEngine.start();
+        }
     }
 
     // ==========================================
@@ -2728,48 +2726,157 @@ class JmeeDeepBreathApp {
             exerciseObj.instructions?.start || exerciseObj.description || '';
 
         const canvas = document.getElementById('breathCanvas');
+        const overlay = document.getElementById('beOverlay');
         if (!canvas) return;
 
-        this.engine = new BreathingEngine(canvas, {
-            soundEngine: window.breathSounds || null,
-            voiceEngine: window.voiceGuide || null
-        });
-
-        this.engine.configure({
-            phases: exerciseObj.phases,
-            totalCycles: totalCycles,
-            soundTheme: exerciseObj.soundTheme || this.settings.soundTheme || 'zen',
-            instructions: exerciseObj.instructions || {},
-            countdownDuration: 2,
-
-            onPhaseStart: (phase, idx, cycle) => {
+        window.BreathEngine.mount(canvas, overlay);
+        window.BreathEngine.configure(this._buildV3Config(exerciseObj, totalCycles, {
+            onPhaseChange: (phaseName, duration) => {
+                const v2Phase = this._v3PhaseToV2(exerciseObj, phaseName);
                 const instr = exerciseObj.instructions || {};
-                document.getElementById('exerciseInstruction').textContent =
-                    instr[phase.name] || phase.instruction || phase.subText || phase.name || '';
+                const label = v2Phase
+                    ? (instr[v2Phase.name] || v2Phase.instruction || v2Phase.subText || v2Phase.name || '')
+                    : '';
+                document.getElementById('exerciseInstruction').textContent = label;
+                if (window.voiceGuide && label && this.currentCycle <= 2) {
+                    window.voiceGuide.speakWithDelay(label, 300);
+                }
+            },
+            onCycleComplete: (cycleNumber) => {
+                this.currentCycle = cycleNumber + 1;
                 document.getElementById('cycleCounter').textContent =
-                    `Cycle ${cycle} / ${totalCycles}`;
+                    `Cycle ${this.currentCycle} / ${totalCycles}`;
             },
-
-            onTick: (data) => {
-                this.elapsedTime = data.totalElapsed;
+            onTick: (state) => {
+                this.elapsedTime = state.totalElapsed;
             },
-
-            onCycleEnd: (cycle) => {
-                this.currentCycle = cycle + 1;
-            },
-
             onComplete: () => {
                 this.completeExercise();
             }
-        });
+        }));
 
-        this.engine.start();
+        this.engine = window.BreathEngine;
+
+        const startInstruction = exerciseObj.instructions?.start;
+        if (window.voiceGuide && startInstruction) {
+            window.voiceGuide.speak(startInstruction, () => {
+                if (!this.isRunning) return;
+                setTimeout(() => window.BreathEngine.start(), 600);
+            });
+        } else {
+            window.BreathEngine.start();
+        }
     }
 
     getCycleDuration() {
         const phases = this.currentExercise?.phases;
         if (!phases || phases.length === 0) return 1; // guard division by zero
         return phases.reduce((sum, p) => sum + p.duration, 0) || 1;
+    }
+
+    // ==========================================
+    // BreathEngine v3 — helpers de conversion
+    // ==========================================
+
+    /**
+     * Convertit un exercice v2 {phases:[{name,action,duration}]} en config v3
+     * Le format v3 utilise un dict indexé par phase-type (inhale/holdFull/exhale/holdEmpty/recovery)
+     */
+    _buildV3Config(exercise, totalCycles, callbacks) {
+        const phases = exercise.phases || [];
+        const v3Phases = {
+            preparation: { enabled: false, duration: 0 },
+            inhale:      { enabled: false, duration: 0, label: 'Inspirer' },
+            holdFull:    { enabled: false, duration: 0, label: 'Retenir' },
+            exhale:      { enabled: false, duration: 0, label: 'Expirer' },
+            holdEmpty:   { enabled: false, duration: 0, label: 'Retenir' },
+            recovery:    { enabled: false, duration: 0, label: 'Repos' },
+        };
+
+        // Déterminer quelles phases v3 activer depuis le tableau v2
+        let prevAction = null;
+        for (const p of phases) {
+            const action = p.action;
+            let v3Key = null;
+
+            if (action === 'inhale') {
+                // Si déjà une inhale mappée, ignorer les suivantes (ex: Cyclic Sighing double inhale)
+                if (!v3Phases.inhale.enabled) {
+                    v3Key = 'inhale';
+                }
+            } else if (action === 'hold' || action === 'holdFull') {
+                // hold après inhale = holdFull, hold après exhale = holdEmpty
+                v3Key = (prevAction === 'exhale' || prevAction === 'holdEmpty') ? 'holdEmpty' : 'holdFull';
+            } else if (action === 'holdEmpty') {
+                v3Key = 'holdEmpty';
+            } else if (action === 'exhale') {
+                v3Key = 'exhale';
+            } else if (action === 'recovery') {
+                v3Key = 'recovery';
+            }
+
+            if (v3Key) {
+                v3Phases[v3Key] = {
+                    enabled: true,
+                    duration: p.duration,
+                    label: p.name || v3Phases[v3Key].label,
+                    easing: 'cubicInOut',
+                    silent: !!exercise.isKapalabhati,
+                };
+            }
+            prevAction = action;
+        }
+
+        return {
+            totalCycles,
+            countdownDuration: 2,
+            phases: v3Phases,
+            volume: this.settings.soundVolume !== undefined ? this.settings.soundVolume : 0.5,
+            muted: !(this.settings.soundEnabled !== false),
+            onPhaseChange:   callbacks.onPhaseChange   || null,
+            onCycleComplete: callbacks.onCycleComplete || null,
+            onComplete:      callbacks.onComplete      || null,
+            onTick:          callbacks.onTick          || null,
+        };
+    }
+
+    /**
+     * Trouve la phase v2 qui correspond à un nom de phase v3
+     * Utilisé pour récupérer l'instruction texte et la voix
+     */
+    _v3PhaseToV2(exercise, v3PhaseName) {
+        const phases = exercise.phases || [];
+        // Mapping v3 key → action(s) v2 attendus
+        const actionMap = {
+            inhale:    ['inhale'],
+            holdFull:  ['hold', 'holdFull'],
+            exhale:    ['exhale'],
+            holdEmpty: ['holdEmpty', 'hold'],
+            recovery:  ['recovery'],
+        };
+        const targets = actionMap[v3PhaseName] || [];
+
+        // Trouver la première phase v2 dont l'action correspond
+        // Pour holdEmpty, on veut le hold qui suit un exhale
+        if (v3PhaseName === 'holdEmpty') {
+            for (let i = 1; i < phases.length; i++) {
+                if ((phases[i].action === 'hold' || phases[i].action === 'holdEmpty') &&
+                    phases[i - 1].action === 'exhale') {
+                    return phases[i];
+                }
+            }
+        }
+        if (v3PhaseName === 'holdFull') {
+            for (let i = 1; i < phases.length; i++) {
+                if ((phases[i].action === 'hold' || phases[i].action === 'holdFull') &&
+                    phases[i - 1].action === 'inhale') {
+                    return phases[i];
+                }
+            }
+            // fallback : premier hold
+            return phases.find(p => p.action === 'hold' || p.action === 'holdFull') || null;
+        }
+        return phases.find(p => targets.includes(p.action)) || null;
     }
 
     // ==========================================
@@ -5453,9 +5560,10 @@ class JmeeDeepBreathApp {
         // Temporarily stop running to halt any ongoing loops
         this.isRunning = false;
 
-        // Stop BreathingEngine if active
+        // Stop BreathingEngine v3 if active
         if (this.engine) {
             this.engine.reset();
+            this.engine = null;
         }
 
         // Stop all current timers
@@ -5552,9 +5660,13 @@ class JmeeDeepBreathApp {
     completeExercise() {
         this.isRunning = false;
 
-        // Stop BreathingEngine (if it hasn't already called _complete)
-        if (this.engine && this.engine.state !== 'completed' && this.engine.state !== 'idle') {
-            this.engine.stop();
+        // Stop BreathingEngine v3 (if it hasn't already completed)
+        if (this.engine) {
+            const st = this.engine.getCurrentState();
+            if (st && st.state !== 'completed' && st.state !== 'idle') {
+                this.engine.stop();
+            }
+            this.engine = null;
         }
 
         clearInterval(this.phaseTimer);
@@ -5689,9 +5801,9 @@ class JmeeDeepBreathApp {
         this.isRunning = false;
         this.isPaused = false;
 
-        // Stop BreathingEngine if active
+        // Stop BreathingEngine v3 if active
         if (this.engine) {
-            this.engine.destroy();
+            this.engine.stop();
             this.engine = null;
         }
 
@@ -5737,15 +5849,25 @@ class JmeeDeepBreathApp {
             this._exercisePauseStart = null;
         }
 
-        // Delegate to BreathingEngine if active (standard exercises)
-        if (this.engine && this.engine.state !== 'idle' && this.engine.state !== 'completed') {
-            if (this.isPaused) {
-                this.engine.pause();
+        // Delegate to BreathingEngine v3 if active (standard exercises)
+        if (this.engine) {
+            const st = this.engine.getCurrentState();
+            if (st && st.state !== 'idle' && st.state !== 'completed') {
+                if (this.isPaused) {
+                    this.engine.pause();
+                } else {
+                    this.engine.resume();
+                }
             } else {
-                this.engine.resume();
+                // Legacy exercises: manual voice pause/resume
+                if (this.isPaused) {
+                    if (window.voiceGuide) window.voiceGuide.pause();
+                } else {
+                    if (window.voiceGuide) window.voiceGuide.resume();
+                }
             }
         } else {
-            // Legacy exercises: manual voice pause/resume
+            // No engine — legacy voice pause/resume
             if (this.isPaused) {
                 if (window.voiceGuide) window.voiceGuide.pause();
             } else {
@@ -5761,7 +5883,7 @@ class JmeeDeepBreathApp {
                 </svg>
             `;
             // Show pause text (legacy circle only; canvas handles its own display)
-            if (!this.engine || this.engine.state === 'idle') {
+            if (!this.engine) {
                 document.getElementById('breathPhase').textContent = 'Pause';
             }
         } else {

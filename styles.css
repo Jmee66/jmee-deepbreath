@@ -896,7 +896,7 @@ body::before {
     min-height: 48px;
 }
 
-/* Breathing Canvas (new engine v2) */
+/* Breathing Canvas — BreathEngine v3 */
 .breath-canvas-container {
     position: relative;
     width: 100%;
@@ -913,6 +913,53 @@ body::before {
     height: 100%;
     display: block;
     border-radius: var(--radius-lg);
+}
+
+/* BreathEngine v3 — overlay texte sur le canvas */
+#beOverlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    user-select: none;
+}
+
+.be-phase-label,
+.be-timer,
+.be-cycle-counter,
+.be-countdown { opacity: 0; transition: opacity 0.6s ease; }
+.be-visible   { opacity: 1 !important; }
+
+.be-phase-label {
+    font-size: clamp(1.1rem, 3.5vmin, 1.8rem);
+    font-weight: 300;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 0.4em;
+}
+.be-timer {
+    font-size: clamp(2.4rem, 8vmin, 5rem);
+    font-weight: 100;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 0.05em;
+    line-height: 1;
+}
+.be-cycle-counter {
+    font-size: clamp(0.75rem, 2.2vmin, 1rem);
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.4);
+    margin-top: 0.8em;
+}
+.be-countdown {
+    font-size: clamp(5rem, 18vmin, 12rem);
+    font-weight: 100;
+    color: rgba(255,255,255,0.8);
+    position: absolute;
 }
 
 /* Legacy Breathing Circle (kept for Phase 2 special exercises) */
