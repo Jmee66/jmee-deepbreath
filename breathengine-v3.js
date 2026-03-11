@@ -897,22 +897,30 @@ class PhaseSequencer {
     this._state = 'countdown';
     const cdDur = this._config.countdownDuration;
 
-    // Affiche la valeur initiale sur le canvas
-    this._anim.setCountdown(cdDur);
-    this._anim.renderIdle();
-
     let remaining = cdDur;
+
+    // RAF loop pendant le countdown — redessine à chaque frame
+    // pour s'adapter au redimensionnement du canvas (modal qui s'ouvre, etc.)
+    const rafLoop = () => {
+      if (this._state !== 'countdown') return;
+      this._anim.setCountdown(remaining);
+      this._anim.renderIdle();
+      this._rafId = requestAnimationFrame(rafLoop);
+    };
+    this._rafId = requestAnimationFrame(rafLoop);
+
+    if (this._config.onCountdownTick) this._config.onCountdownTick(remaining);
+
     const tick = () => {
       if (this._state !== 'countdown') return;
       remaining -= 1;
       if (this._config.onCountdownTick) this._config.onCountdownTick(remaining);
       if (remaining <= 0) {
+        this._cancelRaf();
         this._anim.setCountdown(null);
         this._beginExercise();
         return;
       }
-      this._anim.setCountdown(remaining);
-      this._anim.renderIdle();
       setTimeout(tick, 1000);
     };
     setTimeout(tick, 1000);
