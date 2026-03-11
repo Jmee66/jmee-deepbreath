@@ -41,9 +41,6 @@
            pointerEvents: 'none', userSelect: 'none',
          }}>
            <div className="be-phase-label" />
-           <div className="be-timer" />
-           <div className="be-cycle-counter" />
-           <div className="be-countdown" />
          </div>
        </div>
      )
@@ -52,12 +49,9 @@
 
    CSS minimal à inclure dans ton projet (ou Tailwind équivalent) :
    ```css
-   .be-phase-label, .be-timer, .be-cycle-counter, .be-countdown { opacity: 0; transition: opacity 0.6s ease; }
+   .be-phase-label { opacity: 0; transition: opacity 0.6s ease; }
    .be-visible { opacity: 1 !important; }
-   .be-phase-label  { font-size: clamp(1.1rem,3.5vmin,1.8rem); font-weight:300; letter-spacing:.25em; text-transform:uppercase; color:rgba(255,255,255,.75); margin-bottom:.4em; }
-   .be-timer        { font-size: clamp(2.4rem,8vmin,5rem);     font-weight:100; color:rgba(255,255,255,.9); letter-spacing:.05em; line-height:1; }
-   .be-cycle-counter{ font-size: clamp(.75rem,2.2vmin,1rem);   font-weight:400; letter-spacing:.2em;  color:rgba(255,255,255,.4); margin-top:.8em; }
-   .be-countdown    { font-size: clamp(5rem,18vmin,12rem);      font-weight:100; color:rgba(255,255,255,.8); position:absolute; }
+   .be-phase-label { font-size: clamp(1.1rem,3.5vmin,1.8rem); font-weight:300; letter-spacing:.25em; text-transform:uppercase; color:rgba(255,255,255,.75); }
    ```
 
    API PUBLIQUE
@@ -925,17 +919,13 @@ class PhaseSequencer {
   }
 
   _showOverlay() {
-    ['be-phase-label','be-timer'].forEach(cls => {
-      const el = this._q(cls);
-      if (el) el.classList.add('be-visible');
-    });
+    const el = this._q('be-phase-label');
+    if (el) el.classList.add('be-visible');
   }
 
   _hideOverlay() {
-    ['be-phase-label','be-timer'].forEach(cls => {
-      const el = this._q(cls);
-      if (el) el.classList.remove('be-visible');
-    });
+    const el = this._q('be-phase-label');
+    if (el) el.classList.remove('be-visible');
   }
 
   _updateOverlayLabel(label) {
@@ -944,10 +934,7 @@ class PhaseSequencer {
   }
 
   _updateTimer(seconds) {
-    const el = this._q('be-timer');
-    if (!el) return;
-    const s = Math.ceil(seconds);
-    el.textContent = s > 0 ? s : '';
+    // Timer désactivé — pas d'affichage de chiffres
   }
 
   _updateOverlayText(label, timer) {
