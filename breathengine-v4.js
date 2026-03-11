@@ -475,6 +475,9 @@ class AnimationEngine {
     this._bgColor      = '#000000';
     this._arcMode      = 'draw';   // 'draw' = horaire croissant | 'erase' = anti-horaire décroissant
 
+    this._countdown    = null;     // null = caché | number = affiché au centre
+    this._cycleText    = null;     // null = caché | string = affiché sous le décompte
+
     this._resize();
     this._ro = new ResizeObserver(() => this._resize());
     this._ro.observe(canvas.parentElement || document.body);
@@ -495,6 +498,10 @@ class AnimationEngine {
   }
 
   setBackground(color) { this._bgColor = color; }
+
+  setCountdown(seconds) { this._countdown = seconds; }
+  setCycleText(str)     { this._cycleText  = str; }
+  clearHUD()            { this._countdown = null; this._cycleText = null; }
 
   setPhaseTarget(phaseName, phaseConfig, colorConfig, phaseIndexInCycle) {
     const c = (colorConfig && colorConfig[phaseName]) || {};
@@ -645,6 +652,30 @@ class AnimationEngine {
     }
     // Mode 'none' (preparation) : pas d'arc
 
+    // HUD canvas : décompte au centre du globe + numéro de cycle en dessous
+    if (this._countdown !== null) {
+      const sec = Math.ceil(this._countdown);
+      const fontSize = Math.round(this._baseR * 0.72);
+      ctx.save();
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font         = `100 ${fontSize}px 'Helvetica Neue', Arial, sans-serif`;
+      ctx.fillStyle    = `rgba(255,255,255,0.90)`;
+      ctx.fillText(sec > 0 ? String(sec) : '', this._cx, this._cy);
+      ctx.restore();
+    }
+
+    if (this._cycleText !== null) {
+      const cycFontSize = Math.round(this._baseR * 0.22);
+      ctx.save();
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'top';
+      ctx.font         = `300 ${cycFontSize}px 'Helvetica Neue', Arial, sans-serif`;
+      ctx.fillStyle    = `rgba(255,255,255,0.40)`;
+      ctx.fillText(this._cycleText, this._cx, this._cy + this._baseR * 0.44);
+      ctx.restore();
+    }
+
     if (this._wave) {
       this._wave.progress += 0.012;
       const wp = this._wave.progress;
@@ -771,6 +802,7 @@ class PhaseSequencer {
     this._audio.stopAll();
     this._state = 'idle';
     this._hideOverlay();
+    this._anim.clearHUD();
     this._anim.renderIdle();
     this._updateOverlayText('', '');
   }
@@ -878,6 +910,9 @@ class PhaseSequencer {
 
       const remaining = Math.max(0, (durMs - elapsedMs) / 1000);
       this._updateTimer(remaining);
+      this._anim.setCountdown(remaining);
+      const totalCyc = this._config.totalCycles > 0 ? this._config.totalCycles : '∞';
+      this._anim.setCycleText(`${this._cycle + 1} / ${totalCyc}`);
       if (this._config.onTick) this._config.onTick(this.getCurrentState());
 
       if (elapsedMs >= durMs - 16) {
@@ -910,6 +945,7 @@ class PhaseSequencer {
     this._audio.stopAll();
     this._state = 'completed';
     this._hideOverlay();
+    this._anim.clearHUD();
     this._anim.renderIdle();
     if (this._config.onComplete) this._config.onComplete();
   }
