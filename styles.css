@@ -913,6 +913,7 @@ body::before {
     height: 100%;
     display: block;
     border-radius: var(--radius-lg);
+    background: #12121a;
 }
 
 /* BreathEngine v3 — overlay texte sur le canvas */
