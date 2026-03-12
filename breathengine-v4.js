@@ -516,6 +516,16 @@ class AnimationEngine {
   setCycleText(str)     { this._cycleText  = str; }
   clearHUD()            { this._countdown = null; this._cycleText = null; }
 
+  // Prépare l'orbe en taille 1, sans arc — pour countdown et voix de départ
+  setReadyState() {
+    this._scale       = 1.0;
+    this._startScale  = 1.0;
+    this._targetScale = 1.0;
+    this._arcMode     = 'none';
+    this._pulseAmp    = 0;
+    this._wave        = null;
+  }
+
   setPhaseTarget(phaseName, phaseConfig, colorConfig, phaseIndexInCycle) {
     const c = (colorConfig && colorConfig[phaseName]) || {};
 
@@ -911,7 +921,10 @@ class PhaseSequencer {
   _beginCountdown(durationSec) {
     this._state = 'countdown';
     this._anim.setBackground(this._config.backgroundColor);
-    this._anim.renderIdle();
+    // Globe taille 1, sans arc, sans wave
+    this._anim.setReadyState();
+    this._updateOverlayLabel('Prêt');
+    this._showOverlay();
     const startTime = performance.now();
     const totalMs   = durationSec * 1000;
 
@@ -920,14 +933,11 @@ class PhaseSequencer {
       const elapsed   = now - startTime;
       const remaining = Math.max(0, (totalMs - elapsed) / 1000);
       this._anim.setCountdown(remaining);
-      // Afficher le label "Prêt" pendant le décompte
-      this._updateOverlayLabel('Prêt');
-      this._showOverlay();
-      this._anim.renderIdle();
+      // render() avec progress=0 : globe fixe taille 1, pas d'arc
+      this._anim.render(0, 0, 0);
       if (this._config.onCountdownTick) this._config.onCountdownTick(remaining);
       if (elapsed >= totalMs - 16) {
         this._anim.clearHUD();
-        this._anim.renderIdle();
         this._beginExercise();
         return;
       }
