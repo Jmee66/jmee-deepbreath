@@ -712,7 +712,7 @@ class AnimationEngine {
     }
 
     if (this._wave) {
-      this._wave.progress += 0.012;
+      this._wave.progress += 0.0096; // -20% vitesse → +20% durée visible
       const wp = this._wave.progress;
       if (wp >= 1) {
         this._wave = null;
@@ -720,7 +720,7 @@ class AnimationEngine {
         const wEase   = 1 - Math.pow(1 - wp, 2);
         const maxR    = r * 1.22;
         const wRadius = r + (maxR - r) * wEase;
-        const wAlpha  = Math.pow(1 - wp, 1.8) * 0.38;
+        const wAlpha  = Math.pow(1 - wp, 1.4) * 0.42; // décroissance plus douce, plus lumineux
         const wWidth  = 1.5 + (1 - wp) * 2.5;
         const wBlur   = wp * 20;
         // La wave suit la couleur courante de l'orbe (this._hue/sat/lit)
