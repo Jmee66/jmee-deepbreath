@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '2.27';
+const APP_VERSION = '2.28';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -2867,7 +2867,7 @@ class JmeeDeepBreathApp {
 
         return {
             totalCycles,
-            countdownDuration: 0,
+            countdownDuration: 5,
             backgroundColor: '#12121a',
             phases: v3Phases,
             volume: this.settings.soundVolume !== undefined ? this.settings.soundVolume : 0.5,
@@ -3128,7 +3128,7 @@ class JmeeDeepBreathApp {
 
             window.BreathEngine.configure({
                 totalCycles,
-                countdownDuration: 0,
+                countdownDuration: 5,
                 phases: v3Phases,
                 onPhaseChange: (phaseName) => {
                     document.getElementById('exerciseInstruction').textContent = round.instruction;
@@ -3939,7 +3939,7 @@ class JmeeDeepBreathApp {
 
             window.BreathEngine.configure({
                 totalCycles:       this._imstRepsTotal,
-                countdownDuration: 0,
+                countdownDuration: 5,
                 phases: {
                     preparation: { enabled: false, duration: 0 },
                     inhale:      { enabled: true,  duration: this._imstInhale, label: 'Inspirez fort !', easing: 'cubicInOut', silent: true },

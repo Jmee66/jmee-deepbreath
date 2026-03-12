@@ -258,6 +258,23 @@ class AudioEngine {
   setVolume(v) { this._volume = v; this._applyVolume(); }
   setMuted(m)  { this._muted  = m; this._applyVolume(); }
 
+  /* Bip court pour le décompte — freq en Hz, dur en secondes */
+  playBeep(freq, dur) {
+    if (!this._initialized || this._muted) return;
+    const ctx = this._ctx;
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type      = 'sine';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(this._volume * 0.45, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+    osc.connect(gain);
+    gain.connect(this._masterGain);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + dur + 0.02);
+    this._nodes.push(osc);
+  }
+
   stopAll() {
     for (const n of this._nodes) {
       try { n.stop(); } catch(e) {}
@@ -933,12 +950,32 @@ class PhaseSequencer {
     this._showOverlay();
     const startTime = performance.now();
     const totalMs   = durationSec * 1000;
+    let lastBeepSec = -1;   // évite les bips en double
 
     const loop = (now) => {
       if (this._state !== 'countdown') return;
       const elapsed   = now - startTime;
       const remaining = Math.max(0, (totalMs - elapsed) / 1000);
-      this._anim.setCountdown(remaining);
+
+      // Bip à chaque seconde entière (ex: 5.0, 4.0, 3.0, 2.0, 1.0)
+      const sec = Math.ceil(remaining);
+      if (sec !== lastBeepSec && remaining > 0.05) {
+        lastBeepSec = sec;
+        // Son : bip grave pour 5/4/3, bip aigu pour 2/1
+        if (sec <= 2) {
+          this._audio.playBeep(880, 0.12);   // 2, 1 → aigu, court
+        } else {
+          this._audio.playBeep(440, 0.18);   // 5, 4, 3 → grave, un peu plus long
+        }
+      }
+
+      // Affichage visuel : seulement pour 3 et au-dessus
+      if (remaining > 2.0) {
+        this._anim.setCountdown(remaining);
+      } else {
+        this._anim.setCountdown(null);  // 2, 1 → on efface le chiffre
+      }
+
       // render() avec progress=0 : globe fixe taille 1, pas d'arc
       this._anim.render(0, 0, 0);
       if (this._config.onCountdownTick) this._config.onCountdownTick(remaining);
