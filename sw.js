@@ -3,7 +3,7 @@
  * Enables offline functionality
  */
 
-const CACHE_NAME = 'jmee-deepbreath-v153';
+const CACHE_NAME = 'jmee-deepbreath-v154';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',

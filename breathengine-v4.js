@@ -491,7 +491,11 @@ class AnimationEngine {
     this._cycleText    = null;     // null = caché | string = affiché sous le décompte
 
     this._resize();
-    this._ro = new ResizeObserver(() => this._resize());
+    this._ro = new ResizeObserver(() => {
+      this._resize();
+      // Si le moteur n'est pas en train de tourner, redessiner l'idle après resize
+      if (!this._rafId) this.renderIdle();
+    });
     this._ro.observe(canvas.parentElement || document.body);
   }
 
