@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '2.23';
+const APP_VERSION = '2.24';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -2682,6 +2682,11 @@ class JmeeDeepBreathApp {
 
         // Stocker une référence pour les appels pause/resume/stop
         this.engine = window.BreathEngine;
+
+        // Le container était peut-être caché au moment du mount → _resize() avait width=0.
+        // On force un recalcul après le prochain paint pour que le globe soit visible
+        // pendant la voix de départ (brief).
+        requestAnimationFrame(() => window.BreathEngine.refresh());
 
         // Voix de départ : parler avant le countdown (reprend le comportement v2)
         const startInstruction = exercise.instructions?.start;

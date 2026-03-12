@@ -1148,6 +1148,14 @@ class BreathEngineCore {
     if (this._anim) this._anim.renderIdle();
   }
 
+  /* Force un recalcul du canvas (utile quand le container était caché au mount) */
+  refresh() {
+    if (this._anim) {
+      this._anim._resize();
+      this._anim.renderIdle();
+    }
+  }
+
   setVolume(v) { this._audio.setVolume(v); this._config.volume = v; }
   setMuted(m)  { this._audio.setMuted(m);  this._config.muted  = m; }
 
@@ -1188,6 +1196,7 @@ class BreathEngineCore {
     pause()                    { core.pause(); },
     resume()                   { core.resume(); },
     reset()                    { core.reset(); },
+    refresh()                  { core.refresh(); },
     skip()                     { core.skip(); },
     setVolume(v)               { core.setVolume(v); },
     setMuted(m)                { core.setMuted(m); },
