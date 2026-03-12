@@ -210,8 +210,14 @@ class AudioEngine {
       this._applyVolume();
       return;
     }
-    this._ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (this._ctx.state === 'suspended') await this._ctx.resume();
+    // iOS Safari : réutiliser l'AudioContext pré-créé synchroniquement dans le tap handler
+    const AC = window.AudioContext || window.webkitAudioContext;
+    this._ctx = (window._beAudioCtx && window._beAudioCtx.state !== 'closed')
+      ? window._beAudioCtx
+      : new AC();
+    if (this._ctx.state === 'suspended') {
+      try { await this._ctx.resume(); } catch(e) {}
+    }
 
     this._masterGain = this._ctx.createGain();
     this._masterGain.connect(this._ctx.destination);
@@ -434,7 +440,11 @@ class AudioEngine {
 
   destroy() {
     this.stopAll();
-    if (this._ctx) { this._ctx.close(); this._ctx = null; }
+    // Ne pas fermer le contexte partagé (_beAudioCtx) — iOS ne peut pas en recréer un sans tap
+    if (this._ctx && this._ctx !== window._beAudioCtx) {
+      this._ctx.close();
+    }
+    this._ctx = null;
     this._buffers.clear();
     this._bufferPromises.clear();
     this._initialized = false;

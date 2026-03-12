@@ -2550,6 +2550,18 @@ class JmeeDeepBreathApp {
             window.breathSounds.enabled = true;
         }
 
+        // iOS Safari : pré-créer l'AudioContext du BreathEngine synchroniquement
+        // dans le call stack du tap — avant tout await/setTimeout qui briserait le geste
+        try {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (AC && !window._beAudioCtx) {
+                window._beAudioCtx = new AC();
+            }
+            if (window._beAudioCtx && window._beAudioCtx.state === 'suspended') {
+                window._beAudioCtx.resume().catch(() => {});
+            }
+        } catch(e) {}
+
         // Show modal
         const modal = document.getElementById('exerciseModal');
         modal.classList.add('active');
