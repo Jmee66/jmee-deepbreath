@@ -743,6 +743,7 @@ class AnimationEngine {
   }
 
   renderIdle() {
+    // Rendu identique à render() à progress=0 — pas de saut visuel au démarrage
     const ctx = this._ctx;
     const w = this._canvas.width  / this._dpr;
     const h = this._canvas.height / this._dpr;
@@ -750,42 +751,47 @@ class AnimationEngine {
     ctx.fillStyle = this._bgColor;
     ctx.fillRect(0, 0, w, h);
 
-    const r = this._baseR * 1.0;
-    const hue = 215, sat = 55, lit = 55;
-    const hsl0 = `hsla(${hue},${sat}%,${lit}%,0)`;
+    const r    = this._baseR * this._scale;
+    const hue  = this._hue;
+    const sat  = this._sat;
+    const lit  = this._lit;
+    const hsl0 = `hsla(${hue},${sat}%,${lit + 10}%,0)`;
 
     if (this._hasFilter) {
       ctx.save();
-      ctx.filter = 'blur(22px)';
-      const glow1 = ctx.createRadialGradient(this._cx, this._cy, r * 0.5, this._cx, this._cy, r * 3.5);
-      glow1.addColorStop(0, `hsla(${hue},${sat}%,${lit}%,0.22)`);
+      ctx.filter = 'blur(18px)';
+      const glow1 = ctx.createRadialGradient(this._cx, this._cy, r * 0.5, this._cx, this._cy, r * 3.8);
+      glow1.addColorStop(0, `hsla(${hue},${sat}%,${lit}%,0.10)`);
       glow1.addColorStop(1, hsl0);
       ctx.fillStyle = glow1; ctx.fillRect(0, 0, w, h);
-      const glow2 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 2.0);
-      glow2.addColorStop(0, `hsla(${hue},${sat+10}%,${lit+10}%,0.28)`);
+      const glow2 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 2.2);
+      glow2.addColorStop(0, `hsla(${hue},${Math.min(100,sat+10)}%,${lit+15}%,0.14)`);
       glow2.addColorStop(1, hsl0);
       ctx.fillStyle = glow2; ctx.fillRect(0, 0, w, h);
+      const glow3 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 1.4);
+      glow3.addColorStop(0, `hsla(${hue},${Math.min(100,sat+20)}%,${lit+22}%,0.18)`);
+      glow3.addColorStop(1, hsl0);
+      ctx.fillStyle = glow3; ctx.fillRect(0, 0, w, h);
       ctx.restore();
     } else {
-      const glow1 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 3.5);
-      glow1.addColorStop(0,   `hsla(${hue},${sat}%,${lit}%,0.20)`);
-      glow1.addColorStop(0.5, `hsla(${hue},${sat}%,${lit}%,0.08)`);
+      const glow1 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 3.8);
+      glow1.addColorStop(0,   `hsla(${hue},${sat}%,${lit}%,0.12)`);
+      glow1.addColorStop(0.5, `hsla(${hue},${sat}%,${lit}%,0.05)`);
       glow1.addColorStop(1,   hsl0);
       ctx.fillStyle = glow1; ctx.fillRect(0, 0, w, h);
       const glow2 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 2.0);
-      glow2.addColorStop(0, `hsla(${hue},${sat+10}%,${lit+10}%,0.25)`);
+      glow2.addColorStop(0, `hsla(${hue},${Math.min(100,sat+10)}%,${lit+15}%,0.16)`);
       glow2.addColorStop(1, hsl0);
       ctx.fillStyle = glow2; ctx.fillRect(0, 0, w, h);
     }
 
     const bodyGrad = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r);
-    bodyGrad.addColorStop(0,    `hsla(${hue},${sat+10}%,${lit+18}%,0.95)`);
-    bodyGrad.addColorStop(0.55, `hsla(${hue},${sat}%,${lit}%,0.88)`);
+    bodyGrad.addColorStop(0,    `hsla(${hue},${Math.min(100,sat+15)}%,${Math.min(100,lit+18)}%,0.92)`);
+    bodyGrad.addColorStop(0.55, `hsla(${hue},${sat}%,${lit}%,0.85)`);
     bodyGrad.addColorStop(1,    `hsla(${hue},${sat}%,${lit}%,0)`);
     ctx.beginPath();
     ctx.arc(this._cx, this._cy, r, 0, Math.PI * 2);
     ctx.fillStyle = bodyGrad; ctx.fill();
-
   }
 
   destroy() {
