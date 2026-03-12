@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '2.28';
+const APP_VERSION = '2.29';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -2245,6 +2245,11 @@ class JmeeDeepBreathApp {
                 sections.forEach(s => s.classList.remove('active'));
                 document.getElementById(originSectionId).classList.add('active');
                 backBtn.style.display = 'none';
+                // Scroller vers la card de l'exercice d'origine
+                setTimeout(() => {
+                    const card = document.querySelector(`[data-exercise="${exerciseId}"]`);
+                    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 80);
             };
         }
 
