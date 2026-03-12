@@ -448,11 +448,13 @@ class AnimationEngine {
   constructor(canvas) {
     this._canvas  = canvas;
     this._ctx     = canvas.getContext('2d');
-    this._dpr     = window.devicePixelRatio || 1;
+    this._dpr     = Math.min(window.devicePixelRatio || 1, 2); // cap à 2 pour perf mobile
     this._size    = 0;
     this._cx      = 0;
     this._cy      = 0;
     this._baseR   = 0;
+    // iOS Safari/Chrome ne supporte pas ctx.filter — détection à la construction
+    this._hasFilter = typeof this._ctx.filter !== 'undefined';
 
     this._scale        = 1.15;
     this._hue          = 215;
@@ -487,7 +489,8 @@ class AnimationEngine {
     const parent = this._canvas.parentElement || document.body;
     const rect   = parent.getBoundingClientRect();
     const w = Math.max(rect.width,  200);
-    const h = Math.max(rect.height, 200);
+    // iOS : aspect-ratio peut donner height=0, fallback sur width
+    const h = Math.max(rect.height > 10 ? rect.height : rect.width, 200);
     this._canvas.width  = w * this._dpr;
     this._canvas.height = h * this._dpr;
     this._ctx.scale(this._dpr, this._dpr);
@@ -589,25 +592,34 @@ class AnimationEngine {
 
     const hsl0 = `hsla(${this._hue},${this._sat}%,${this._lit + 10}%,0)`;
 
-    ctx.save();
-    ctx.filter = 'blur(18px)';
-
-    const glow1 = ctx.createRadialGradient(this._cx, this._cy, r * 0.5, this._cx, this._cy, r * 3.8);
-    glow1.addColorStop(0, `hsla(${this._hue},${this._sat}%,${this._lit}%,0.10)`);
-    glow1.addColorStop(1, hsl0);
-    ctx.fillStyle = glow1; ctx.fillRect(0, 0, w, h);
-
-    const glow2 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 2.2);
-    glow2.addColorStop(0, `hsla(${this._hue},${Math.min(100,this._sat+10)}%,${this._lit+15}%,0.14)`);
-    glow2.addColorStop(1, hsl0);
-    ctx.fillStyle = glow2; ctx.fillRect(0, 0, w, h);
-
-    const glow3 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 1.4);
-    glow3.addColorStop(0, `hsla(${this._hue},${Math.min(100,this._sat+20)}%,${this._lit+22}%,0.18)`);
-    glow3.addColorStop(1, hsl0);
-    ctx.fillStyle = glow3; ctx.fillRect(0, 0, w, h);
-
-    ctx.restore();
+    if (this._hasFilter) {
+      ctx.save();
+      ctx.filter = 'blur(18px)';
+      const glow1 = ctx.createRadialGradient(this._cx, this._cy, r * 0.5, this._cx, this._cy, r * 3.8);
+      glow1.addColorStop(0, `hsla(${this._hue},${this._sat}%,${this._lit}%,0.10)`);
+      glow1.addColorStop(1, hsl0);
+      ctx.fillStyle = glow1; ctx.fillRect(0, 0, w, h);
+      const glow2 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 2.2);
+      glow2.addColorStop(0, `hsla(${this._hue},${Math.min(100,this._sat+10)}%,${this._lit+15}%,0.14)`);
+      glow2.addColorStop(1, hsl0);
+      ctx.fillStyle = glow2; ctx.fillRect(0, 0, w, h);
+      const glow3 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 1.4);
+      glow3.addColorStop(0, `hsla(${this._hue},${Math.min(100,this._sat+20)}%,${this._lit+22}%,0.18)`);
+      glow3.addColorStop(1, hsl0);
+      ctx.fillStyle = glow3; ctx.fillRect(0, 0, w, h);
+      ctx.restore();
+    } else {
+      // iOS fallback : glows via gradients sans blur
+      const glow1 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 3.8);
+      glow1.addColorStop(0,   `hsla(${this._hue},${this._sat}%,${this._lit}%,0.12)`);
+      glow1.addColorStop(0.5, `hsla(${this._hue},${this._sat}%,${this._lit}%,0.05)`);
+      glow1.addColorStop(1,   hsl0);
+      ctx.fillStyle = glow1; ctx.fillRect(0, 0, w, h);
+      const glow2 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 2.0);
+      glow2.addColorStop(0,   `hsla(${this._hue},${Math.min(100,this._sat+10)}%,${this._lit+15}%,0.16)`);
+      glow2.addColorStop(1,   hsl0);
+      ctx.fillStyle = glow2; ctx.fillRect(0, 0, w, h);
+    }
 
     const bodyGrad = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r);
     bodyGrad.addColorStop(0,    `hsla(${this._hue},${Math.min(100,this._sat+15)}%,${Math.min(100,this._lit+18)}%,0.92)`);
@@ -690,13 +702,13 @@ class AnimationEngine {
         const wBlur   = wp * 20;
         // La wave suit la couleur courante de l'orbe (this._hue/sat/lit)
         ctx.save();
-        ctx.filter = `blur(${wBlur.toFixed(1)}px)`;
+        if (this._hasFilter) ctx.filter = `blur(${wBlur.toFixed(1)}px)`;
         ctx.beginPath();
         ctx.arc(this._cx, this._cy, wRadius, 0, Math.PI * 2);
         ctx.strokeStyle = `hsla(${this._hue},${Math.min(100,this._sat+10)}%,${Math.min(100,this._lit+25)}%,${wAlpha.toFixed(3)})`;
         ctx.lineWidth   = wWidth;
         ctx.stroke();
-        ctx.filter = 'none';
+        if (this._hasFilter) ctx.filter = 'none';
         ctx.restore();
       }
     }
@@ -715,25 +727,33 @@ class AnimationEngine {
     const hue = 215, sat = 45, lit = 32;
     const hsl0 = `hsla(${hue},${sat}%,${lit+10}%,0)`;
 
-    ctx.save();
-    ctx.filter = 'blur(18px)';
-
-    const glow1 = ctx.createRadialGradient(this._cx, this._cy, r * 0.5, this._cx, this._cy, r * 3.8);
-    glow1.addColorStop(0, `hsla(${hue},${sat}%,${lit}%,0.10)`);
-    glow1.addColorStop(1, hsl0);
-    ctx.fillStyle = glow1; ctx.fillRect(0, 0, w, h);
-
-    const glow2 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 2.2);
-    glow2.addColorStop(0, `hsla(${hue},${Math.min(100,sat+10)}%,${lit+15}%,0.14)`);
-    glow2.addColorStop(1, hsl0);
-    ctx.fillStyle = glow2; ctx.fillRect(0, 0, w, h);
-
-    const glow3 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 1.4);
-    glow3.addColorStop(0, `hsla(${hue},${Math.min(100,sat+20)}%,${lit+22}%,0.18)`);
-    glow3.addColorStop(1, hsl0);
-    ctx.fillStyle = glow3; ctx.fillRect(0, 0, w, h);
-
-    ctx.restore();
+    if (this._hasFilter) {
+      ctx.save();
+      ctx.filter = 'blur(18px)';
+      const glow1 = ctx.createRadialGradient(this._cx, this._cy, r * 0.5, this._cx, this._cy, r * 3.8);
+      glow1.addColorStop(0, `hsla(${hue},${sat}%,${lit}%,0.10)`);
+      glow1.addColorStop(1, hsl0);
+      ctx.fillStyle = glow1; ctx.fillRect(0, 0, w, h);
+      const glow2 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 2.2);
+      glow2.addColorStop(0, `hsla(${hue},${Math.min(100,sat+10)}%,${lit+15}%,0.14)`);
+      glow2.addColorStop(1, hsl0);
+      ctx.fillStyle = glow2; ctx.fillRect(0, 0, w, h);
+      const glow3 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 1.4);
+      glow3.addColorStop(0, `hsla(${hue},${Math.min(100,sat+20)}%,${lit+22}%,0.18)`);
+      glow3.addColorStop(1, hsl0);
+      ctx.fillStyle = glow3; ctx.fillRect(0, 0, w, h);
+      ctx.restore();
+    } else {
+      const glow1 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 3.8);
+      glow1.addColorStop(0,   `hsla(${hue},${sat}%,${lit}%,0.12)`);
+      glow1.addColorStop(0.5, `hsla(${hue},${sat}%,${lit}%,0.05)`);
+      glow1.addColorStop(1,   hsl0);
+      ctx.fillStyle = glow1; ctx.fillRect(0, 0, w, h);
+      const glow2 = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r * 2.0);
+      glow2.addColorStop(0, `hsla(${hue},${Math.min(100,sat+10)}%,${lit+15}%,0.16)`);
+      glow2.addColorStop(1, hsl0);
+      ctx.fillStyle = glow2; ctx.fillRect(0, 0, w, h);
+    }
 
     const bodyGrad = ctx.createRadialGradient(this._cx, this._cy, 0, this._cx, this._cy, r);
     bodyGrad.addColorStop(0,    `hsla(${hue},${Math.min(100,sat+15)}%,${Math.min(100,lit+18)}%,0.92)`);
