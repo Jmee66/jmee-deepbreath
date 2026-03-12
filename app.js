@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '2.31';
+const APP_VERSION = '2.32';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -2230,27 +2230,31 @@ class JmeeDeepBreathApp {
         sections.forEach(s => s.classList.remove('active'));
         document.getElementById('settings').classList.add('active');
 
-        // Afficher le bouton retour si on vient d'une autre section
-        const backBtn = document.getElementById('btnBackToSection');
-        if (backBtn && originSectionId && originSectionId !== 'settings') {
-            backBtn.style.display = '';
-            // Libeller le bouton avec le nom de la section d'origine
+        // Afficher les boutons retour / lancer si on vient d'une autre section
+        const backWrapper = document.getElementById('btnBackToSection');
+        const backOnly    = document.getElementById('btnBackOnly');
+        const backLaunch  = document.getElementById('btnBackLaunch');
+        if (backWrapper && originSectionId && originSectionId !== 'settings') {
+            backWrapper.style.display = 'flex';
             const originLink = document.querySelector(`[data-section="${originSectionId}"]`);
-            const originLabel = originLink ? (originLink.textContent.trim() || originSectionId) : originSectionId;
-            backBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 12H5M12 5l-7 7 7 7"/></svg> ${originLabel}`;
-            backBtn.onclick = () => {
-                // Retourner à la section d'origine
+
+            const goBack = () => {
                 navLinks.forEach(l => l.classList.remove('active'));
                 if (originLink) originLink.classList.add('active');
                 sections.forEach(s => s.classList.remove('active'));
                 const originSection = document.getElementById(originSectionId);
                 originSection.classList.add('active');
-                backBtn.style.display = 'none';
-                // Scroller vers la card de l'exercice d'origine
+                backWrapper.style.display = 'none';
                 setTimeout(() => {
                     const card = originSection.querySelector(`.exercise-card[data-exercise="${exerciseId}"]`);
                     if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 80);
+            };
+
+            if (backOnly)   backOnly.onclick  = () => goBack();
+            if (backLaunch) backLaunch.onclick = () => {
+                goBack();
+                setTimeout(() => this.startExercise(exerciseId), 250);
             };
         }
 

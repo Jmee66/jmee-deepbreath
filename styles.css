@@ -975,6 +975,23 @@ body::before {
     background: rgba(255,255,255,0.13);
     color: rgba(255,255,255,0.95);
 }
+.btn-back-launch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    background: var(--accent, #4f8ef7);
+    border: none;
+    color: #fff;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    padding: 0.45em 1.1em;
+    border-radius: 2em;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-back-launch:hover {
+    background: var(--accent-hover, #3a7de8);
+}
 
 /* Legacy Breathing Circle (kept for Phase 2 special exercises) */
 .breath-circle-container {

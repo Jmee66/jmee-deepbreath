@@ -4160,12 +4160,20 @@
         <!-- Settings Section -->
         <section class="section" id="settings">
             <div class="section-header">
-                <button class="btn-back-to-section" id="btnBackToSection" style="display:none">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                        <path d="M19 12H5M12 5l-7 7 7 7"/>
-                    </svg>
-                    Retour
-                </button>
+                <div id="btnBackToSection" style="display:none; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                    <button class="btn-back-to-section" id="btnBackOnly">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <path d="M19 12H5M12 5l-7 7 7 7"/>
+                        </svg>
+                        Retour
+                    </button>
+                    <button class="btn-back-launch" id="btnBackLaunch">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        Lancer
+                    </button>
+                </div>
                 <h2>Paramètres</h2>
                 <p>Personnalisez tous les exercices selon vos capacités</p>
             </div>
@@ -6011,7 +6019,7 @@
     <script src="exercises.js" defer></script>
     <script src="voice-guide.js" defer></script>
     <script src="breath-sounds.js" defer></script>
-    <script src="breathengine-v4.js?v=232" defer></script>
+    <script src="breathengine-v4.js?v=233" defer></script>
     <!-- Chasse Guided Timer Modal -->
     <div id="chasseTimerModal" class="chasse-timer-modal">
         <div class="chasse-timer-inner">
@@ -6036,7 +6044,7 @@
     </div>
 
     <script src="wbu-timer.js"></script>
-    <script src="app.js?v=232" defer></script>
+    <script src="app.js?v=233" defer></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js" defer></script>
