@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '2.19';
+const APP_VERSION = '2.20';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';

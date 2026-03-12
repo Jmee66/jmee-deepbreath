@@ -75,7 +75,7 @@
    ----------------
    {
      totalCycles: 6,            // 0 = infini jusqu'à stop()
-     countdownDuration: 0,      // 0 = pas de countdown
+     countdownDuration: 3,      // secondes de décompte avant le début (0 = désactivé)
      backgroundColor: '#000000',
      colors: {
        preparation: { hue: 210, saturation: 60, lightness: 42 },
@@ -466,12 +466,12 @@ class AnimationEngine {
     // iOS Safari/Chrome ne supporte pas ctx.filter — détection à la construction
     this._hasFilter = typeof this._ctx.filter !== 'undefined';
 
-    this._scale        = 1.15;
+    this._scale        = 1.0;
     this._hue          = 215;
     this._sat          = 45;
     this._lit          = 32;
-    this._startScale   = 1.15;
-    this._targetScale  = 1.15;
+    this._startScale   = 1.0;
+    this._targetScale  = 1.0;
     this._previousPhase = null;
     this._startHue     = 215;
     this._targetHue    = 215;
@@ -524,29 +524,32 @@ class AnimationEngine {
     this._startSat   = this._sat;
     this._startLit   = this._lit;
 
+    // Taille 1 (base) = 1.0  — idle / preparation / début
+    // Taille 2 (+50%) = 1.50 — inhale max, holdFull
+    // Taille 3 (-50%) = 0.50 — exhale max, holdEmpty, recovery
     switch (phaseName) {
       case 'preparation':
-        this._targetScale = 0.85;
+        this._targetScale = 1.0;
         this._pulseAmp = 0; this._pulseFreq = 0;
         break;
       case 'inhale':
-        this._targetScale = 1.15;
+        this._targetScale = 1.50;
         this._pulseAmp = 0; this._pulseFreq = 0;
         break;
       case 'holdFull':
-        this._targetScale = this._scale;
+        this._targetScale = 1.50;
         this._pulseAmp = 0.013; this._pulseFreq = 0.4;
         break;
       case 'exhale':
-        this._targetScale = 0.85;
+        this._targetScale = 0.50;
         this._pulseAmp = 0; this._pulseFreq = 0;
         break;
       case 'holdEmpty':
-        this._targetScale = this._scale;
+        this._targetScale = 0.50;
         this._pulseAmp = 0.008; this._pulseFreq = 0.25;
         break;
       case 'recovery':
-        this._targetScale = 0.85;
+        this._targetScale = 0.50;
         this._pulseAmp = 0.008; this._pulseFreq = 0.25;
         break;
     }
@@ -654,7 +657,7 @@ class AnimationEngine {
         ctx.beginPath();
         ctx.arc(this._cx, this._cy, arcR, TOP, arcEnd);
         ctx.strokeStyle = `hsla(${this._hue},100%,88%,0.75)`;
-        ctx.lineWidth   = 11;
+        ctx.lineWidth   = 8;
         ctx.lineCap     = 'round';
         ctx.stroke();
       }
@@ -667,7 +670,7 @@ class AnimationEngine {
         ctx.beginPath();
         ctx.arc(this._cx, this._cy, arcR, arcStart, arcEnd);
         ctx.strokeStyle = `hsla(${this._hue},100%,88%,0.75)`;
-        ctx.lineWidth   = 11;
+        ctx.lineWidth   = 8;
         ctx.lineCap     = 'round';
         ctx.stroke();
       }
@@ -733,7 +736,7 @@ class AnimationEngine {
     ctx.fillStyle = this._bgColor;
     ctx.fillRect(0, 0, w, h);
 
-    const r = this._baseR * 1.15;
+    const r = this._baseR * 1.0;
     const hue = 215, sat = 45, lit = 32;
     const hsl0 = `hsla(${hue},${sat}%,${lit+10}%,0)`;
 
@@ -793,6 +796,7 @@ class PhaseSequencer {
     this._config = null;
     this._enabledPhases = [];
     this._rafId         = null;
+    this._cdRafId       = null;
     this._phaseIndex    = 0;
     this._cycle         = 0;
     this._phaseStartTime    = 0;
@@ -824,10 +828,17 @@ class PhaseSequencer {
     this._phaseIndex       = 0;
     this._cycle            = 0;
     this._exercisePausedMs = 0;
-    this._beginExercise();
+    const cd = this._config && this._config.countdownDuration > 0
+      ? this._config.countdownDuration : 0;
+    if (cd > 0) {
+      this._beginCountdown(cd);
+    } else {
+      this._beginExercise();
+    }
   }
 
   stop() {
+    this._cancelCdRaf();
     this._cancelRaf();
     this._audio.stopAll();
     this._state = 'idle';
@@ -895,6 +906,38 @@ class PhaseSequencer {
 
   _q(cls) {
     return this._overlayEl ? this._overlayEl.querySelector('.' + cls) : document.getElementById('be-' + cls.replace('-',''));
+  }
+
+  _beginCountdown(durationSec) {
+    this._state = 'countdown';
+    this._anim.setBackground(this._config.backgroundColor);
+    this._anim.renderIdle();
+    const startTime = performance.now();
+    const totalMs   = durationSec * 1000;
+
+    const loop = (now) => {
+      if (this._state !== 'countdown') return;
+      const elapsed   = now - startTime;
+      const remaining = Math.max(0, (totalMs - elapsed) / 1000);
+      this._anim.setCountdown(remaining);
+      // Afficher le label "Prêt" pendant le décompte
+      this._updateOverlayLabel('Prêt');
+      this._showOverlay();
+      this._anim.renderIdle();
+      if (this._config.onCountdownTick) this._config.onCountdownTick(remaining);
+      if (elapsed >= totalMs - 16) {
+        this._anim.clearHUD();
+        this._anim.renderIdle();
+        this._beginExercise();
+        return;
+      }
+      this._cdRafId = requestAnimationFrame(loop);
+    };
+    this._cdRafId = requestAnimationFrame(loop);
+  }
+
+  _cancelCdRaf() {
+    if (this._cdRafId) { cancelAnimationFrame(this._cdRafId); this._cdRafId = null; }
   }
 
   _beginExercise() {
@@ -1026,6 +1069,7 @@ class PhaseSequencer {
   }
 
   destroy() {
+    this._cancelCdRaf();
     this._cancelRaf();
     document.removeEventListener('visibilitychange', this._onVisibilityChange);
   }
