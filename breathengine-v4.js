@@ -564,11 +564,11 @@ class AnimationEngine {
         this._pulseAmp = 0; this._pulseFreq = 0;
         break;
       case 'inhale':
-        this._targetScale = 1.275;
+        this._targetScale = 1.53;
         this._pulseAmp = 0; this._pulseFreq = 0;
         break;
       case 'holdFull':
-        this._targetScale = 1.275;
+        this._targetScale = 1.53;
         this._pulseAmp = 0.013; this._pulseFreq = 0.4;
         break;
       case 'exhale':
