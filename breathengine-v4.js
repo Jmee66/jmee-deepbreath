@@ -572,15 +572,15 @@ class AnimationEngine {
         this._pulseAmp = 0.013; this._pulseFreq = 0.4;
         break;
       case 'exhale':
-        this._targetScale = 0.75;
+        this._targetScale = 0.90;
         this._pulseAmp = 0; this._pulseFreq = 0;
         break;
       case 'holdEmpty':
-        this._targetScale = 0.75;
+        this._targetScale = 0.90;
         this._pulseAmp = 0.008; this._pulseFreq = 0.25;
         break;
       case 'recovery':
-        this._targetScale = 0.75;
+        this._targetScale = 0.90;
         this._pulseAmp = 0.008; this._pulseFreq = 0.25;
         break;
     }
