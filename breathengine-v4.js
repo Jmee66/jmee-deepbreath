@@ -556,8 +556,8 @@ class AnimationEngine {
     this._startLit   = this._lit;
 
     // Taille 1 (base) = 1.0   — idle / preparation / début
-    // Taille 2 (+27.5%) = 1.275 — inhale max, holdFull  (était 1.50, -15%)
-    // Taille 3 (-42.5%) = 0.575 — exhale max, holdEmpty, recovery (était 0.50, +15%)
+    // Taille 2 (+27.5%) = 1.275 — inhale max, holdFull
+    // Taille 3 (-25%) = 0.75  — exhale max, holdEmpty, recovery (+30% vs ancien 0.575)
     switch (phaseName) {
       case 'preparation':
         this._targetScale = 1.0;
@@ -572,15 +572,15 @@ class AnimationEngine {
         this._pulseAmp = 0.013; this._pulseFreq = 0.4;
         break;
       case 'exhale':
-        this._targetScale = 0.575;
+        this._targetScale = 0.75;
         this._pulseAmp = 0; this._pulseFreq = 0;
         break;
       case 'holdEmpty':
-        this._targetScale = 0.575;
+        this._targetScale = 0.75;
         this._pulseAmp = 0.008; this._pulseFreq = 0.25;
         break;
       case 'recovery':
-        this._targetScale = 0.575;
+        this._targetScale = 0.75;
         this._pulseAmp = 0.008; this._pulseFreq = 0.25;
         break;
     }
