@@ -46,6 +46,18 @@ const SoundEngine = (() => {
         } catch (e) {}
     }
 
+    // Synchronise les closures breath/voice depuis settings
+    // Appelée après loadSettings() une fois que les layers sont créés
+    function _applySettingsToLayers() {
+        breath.setVolume(settings.breathVolume);
+        breath.setTheme(settings.breathTheme);
+        breath.enabled = settings.breathEnabled;
+        voice.setVolume(settings.voiceVolume);
+        voice.setRate(settings.voiceRate);
+        voice.setVoice(settings.voiceSelectedName);
+        voice.enabled = settings.voiceEnabled;
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // AUDIO CONTEXT — singleton, créé uniquement après geste utilisateur
     // ─────────────────────────────────────────────────────────────────────────
@@ -735,18 +747,15 @@ const SoundEngine = (() => {
     // PUBLIC API
     // ─────────────────────────────────────────────────────────────────────────
     async function init() {
-        loadSettings();
-        breath.setVolume(settings.breathVolume);
-        breath.setTheme(settings.breathTheme);
-        breath.enabled = settings.breathEnabled;
-        voice.setVolume(settings.voiceVolume);
-        voice.setRate(settings.voiceRate);
-        voice.setVoice(settings.voiceSelectedName);
-        voice.enabled = settings.voiceEnabled;
+        // Ne recharge pas les settings depuis localStorage ici :
+        // loadSettings() est déjà appelé au démarrage de l'app (SoundEngine.loadSettings())
+        // et les états enabled/volume sont gérés en temps réel par les toggles/sliders.
+        // Ré-appeler loadSettings() ici écraserait les changements faits par l'utilisateur
+        // entre l'init de l'app et le démarrage de l'exercice.
 
         await ensureRunning();
 
-        if (settings.oceanEnabled) {
+        if (settings.oceanEnabled && !ocean.isPlaying) {
             await ocean.start();
         }
     }
@@ -764,7 +773,11 @@ const SoundEngine = (() => {
         voice,
         setMasterVolume,
         saveSettings,
-        loadSettings,
+        // loadSettings public : charge depuis localStorage ET synchronise les layers
+        loadSettings() {
+            loadSettings();
+            _applySettingsToLayers();
+        },
         get context() { return ctx; }
     };
 
