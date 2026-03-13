@@ -284,8 +284,13 @@ const SoundEngine = (() => {
         }
 
         function toggle() {
-            if (isPlaying) stop(); else start();
-            return isPlaying;
+            if (isPlaying) {
+                stop();
+                return false;
+            } else {
+                start(); // async — isPlaying sera true après ensureRunning()
+                return true;
+            }
         }
 
         function setVolume(val) {
