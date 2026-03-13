@@ -69,6 +69,8 @@ const SoundEngine = (() => {
     function _createContext() {
         if (ctx) return;
         ctx = new (window.AudioContext || window.webkitAudioContext)();
+        // Partager le contexte avec BreathEngine v4 (iOS : évite un 2e AudioContext suspended)
+        window._beAudioCtx = ctx;
         masterGainNode = ctx.createGain();
         masterGainNode.gain.value = settings.masterVolume;
         masterGainNode.connect(ctx.destination);

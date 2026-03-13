@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '2.34';
+const APP_VERSION = '2.35';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -2684,6 +2684,12 @@ class JmeeDeepBreathApp {
         // pendant la voix de départ (brief).
         requestAnimationFrame(() => window.BreathEngine.refresh());
 
+        // Pré-init audio BreathEngine maintenant (dans le contexte du tap)
+        // iOS : l'AudioContext doit être créé/résumé dans un geste direct.
+        // On force l'init ici (sync avec le tap via SoundEngine qui a déjà créé le ctx),
+        // puis on démarre après la voix de départ.
+        window.BreathEngine.init().catch(() => {});
+
         // Voix de départ : parler avant le countdown (reprend le comportement v2)
         const startInstruction = exercise.instructions?.start;
         if (window.voiceGuide && startInstruction) {
@@ -2858,8 +2864,8 @@ class JmeeDeepBreathApp {
             countdownDuration: 5,
             backgroundColor: '#12121a',
             phases: v3Phases,
-            volume: this.settings.soundVolume !== undefined ? this.settings.soundVolume : 0.5,
-            muted: !(this.settings.soundEnabled !== false),
+            volume: SoundEngine.breath.volume,
+            muted: !SoundEngine.breath.enabled,
             onPhaseChange:   callbacks.onPhaseChange   || null,
             onCycleComplete: callbacks.onCycleComplete || null,
             onComplete:      callbacks.onComplete      || null,
