@@ -2657,10 +2657,17 @@ class JmeeDeepBreathApp {
                     window.voiceGuide.speakWithDelay(label, 300);
                 }
 
-                // Cyclic Sighing : deuxième inspire → son spécial
-                if (v2Phase && v2Phase.name === 'Inspirez +' && window.breathSounds && !exercise.isKapalabhati) {
+                // Sons de respiration via SoundEngine (audio interne BreathEngine désactivé)
+                if (window.breathSounds && !exercise.isKapalabhati) {
                     window.breathSounds.stop();
-                    window.breathSounds.playSecondInhale();
+                    if (v2Phase && v2Phase.name === 'Inspirez +') {
+                        // Cyclic Sighing : deuxième inspire → son spécial
+                        window.breathSounds.playSecondInhale();
+                    } else {
+                        // Mapper les noms v3 → noms attendus par SoundEngine.breath.playPhase
+                        const soundPhase = phaseName === 'holdFull' ? 'hold' : phaseName;
+                        window.breathSounds.playPhase(soundPhase, duration);
+                    }
                 }
             },
             onCycleComplete: (cycleNumber) => {
@@ -2683,12 +2690,6 @@ class JmeeDeepBreathApp {
         // On force un recalcul après le prochain paint pour que le globe soit visible
         // pendant la voix de départ (brief).
         requestAnimationFrame(() => window.BreathEngine.refresh());
-
-        // Pré-init audio BreathEngine maintenant (dans le contexte du tap)
-        // iOS : l'AudioContext doit être créé/résumé dans un geste direct.
-        // On force l'init ici (sync avec le tap via SoundEngine qui a déjà créé le ctx),
-        // puis on démarre après la voix de départ.
-        window.BreathEngine.init().catch(() => {});
 
         // Voix de départ : parler avant le countdown (reprend le comportement v2)
         const startInstruction = exercise.instructions?.start;
@@ -2772,6 +2773,12 @@ class JmeeDeepBreathApp {
                 document.getElementById('exerciseInstruction').textContent = label;
                 if (window.voiceGuide && label && this.currentCycle <= 2) {
                     window.voiceGuide.speakWithDelay(label, 300);
+                }
+                // Sons de respiration via SoundEngine
+                if (window.breathSounds) {
+                    window.breathSounds.stop();
+                    const soundPhase = phaseName === 'holdFull' ? 'hold' : phaseName;
+                    window.breathSounds.playPhase(soundPhase, duration);
                 }
             },
             onCycleComplete: (cycleNumber) => {
@@ -2864,8 +2871,8 @@ class JmeeDeepBreathApp {
             countdownDuration: 5,
             backgroundColor: '#12121a',
             phases: v3Phases,
-            volume: SoundEngine.breath.volume,
-            muted: !SoundEngine.breath.enabled,
+            volume: 0,
+            muted: true, // audio interne BE désactivé — sons routés via SoundEngine.breath
             onPhaseChange:   callbacks.onPhaseChange   || null,
             onCycleComplete: callbacks.onCycleComplete || null,
             onComplete:      callbacks.onComplete      || null,
