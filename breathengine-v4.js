@@ -528,7 +528,7 @@ class AnimationEngine {
     this._size  = Math.min(w, h);
     this._cx    = w / 2;
     this._cy    = h / 2;
-    this._baseR = this._size * 0.32;
+    this._baseR = this._size * 0.384;
   }
 
   setBackground(color) { this._bgColor = color; }
