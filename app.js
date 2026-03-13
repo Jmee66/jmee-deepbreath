@@ -3,7 +3,7 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '2.35';
+const APP_VERSION = '2.36';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
@@ -858,6 +858,7 @@ class JmeeDeepBreathApp {
                 const vol = e.target.value / 100;
                 SoundEngine.ocean.setVolume(vol);
                 if (oceanVolumeValue) oceanVolumeValue.textContent = e.target.value + '%';
+                _flashSaved();
             });
         }
 
@@ -876,6 +877,7 @@ class JmeeDeepBreathApp {
                 const vol = e.target.value / 100;
                 SoundEngine.breath.setVolume(vol);
                 if (breathVolumeValue) breathVolumeValue.textContent = e.target.value + '%';
+                _flashSaved();
             });
         }
 
@@ -885,6 +887,51 @@ class JmeeDeepBreathApp {
                 const vol = e.target.value / 100;
                 SoundEngine.voice.setVolume(vol);
                 if (voiceVolumeValue) voiceVolumeValue.textContent = e.target.value + '%';
+                _flashSaved();
+            });
+        }
+
+        // ── Indicateur "Sauvé ✓" ──────────────────────────────────────────────
+        const savedIndicator = document.getElementById('volumeSavedIndicator');
+        let _savedTimer = null;
+        function _flashSaved() {
+            if (!savedIndicator) return;
+            savedIndicator.style.opacity = '1';
+            if (_savedTimer) clearTimeout(_savedTimer);
+            _savedTimer = setTimeout(() => { savedIndicator.style.opacity = '0'; }, 1500);
+        }
+
+        // Flash sur les toggles ocean et breath
+        if (soundToggle) soundToggle.addEventListener('click', _flashSaved);
+        if (breathSoundToggle) breathSoundToggle.addEventListener('click', _flashSaved);
+
+        // ── Bouton Sauvegarder ────────────────────────────────────────────────
+        const audioSaveBtn = document.getElementById('audioSaveBtn');
+        if (audioSaveBtn) {
+            audioSaveBtn.addEventListener('click', () => {
+                SoundEngine.saveSettings();
+                _flashSaved();
+                audioSaveBtn.textContent = '✓ Sauvegardé';
+                setTimeout(() => { audioSaveBtn.textContent = '💾 Sauvegarder'; }, 1800);
+            });
+        }
+
+        // ── Bouton Réinitialiser ──────────────────────────────────────────────
+        const audioResetBtn = document.getElementById('audioResetBtn');
+        if (audioResetBtn) {
+            audioResetBtn.addEventListener('click', () => {
+                // Remettre les valeurs par défaut
+                SoundEngine.ocean.setVolume(0.2);
+                SoundEngine.breath.setVolume(0.4);
+                SoundEngine.voice.setVolume(0.5);
+                // Mettre à jour les sliders
+                if (oceanVolumeRange)  { oceanVolumeRange.value  = 20; }
+                if (oceanVolumeValue)  { oceanVolumeValue.textContent  = '20%'; }
+                if (breathVolumeRange) { breathVolumeRange.value = 40; }
+                if (breathVolumeValue) { breathVolumeValue.textContent = '40%'; }
+                if (voiceVolumeRange)  { voiceVolumeRange.value  = 50; }
+                if (voiceVolumeValue)  { voiceVolumeValue.textContent  = '50%'; }
+                _flashSaved();
             });
         }
     }

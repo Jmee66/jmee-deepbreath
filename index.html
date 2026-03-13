@@ -99,6 +99,7 @@
     <div class="volume-panel" id="volumePanel" style="display:none">
         <div class="volume-panel-header">
             <span>🔊 Volumes</span>
+            <span class="volume-saved-indicator" id="volumeSavedIndicator" style="font-size:0.75rem;color:#4ade80;opacity:0;transition:opacity 0.4s;">✓ Sauvé</span>
             <button class="volume-panel-close" id="volumePanelClose">✕</button>
         </div>
         <div class="volume-panel-body">
@@ -169,6 +170,11 @@
                     <input type="range" min="50" max="120" value="78" id="voiceRateRange" class="volume-slider">
                     <span class="volume-value" id="voiceRateValue">78%</span>
                 </div>
+            </div>
+            <div style="border-top:1px solid var(--border-color,rgba(255,255,255,0.1));margin:8px 0 4px;"></div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;">
+                <button id="audioResetBtn" style="padding:5px 12px;font-size:0.78rem;background:transparent;color:var(--text-secondary,#aaa);border:1px solid var(--border-color,rgba(255,255,255,0.15));border-radius:6px;cursor:pointer;">↺ Défauts</button>
+                <button id="audioSaveBtn" style="padding:5px 12px;font-size:0.78rem;background:var(--accent-color,#6c63ff);color:#fff;border:none;border-radius:6px;cursor:pointer;">💾 Sauvegarder</button>
             </div>
         </div>
     </div>
@@ -6058,7 +6064,7 @@
     </div>
 
     <script src="wbu-timer.js"></script>
-    <script src="app.js?v=235" defer></script>
+    <script src="app.js?v=236" defer></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js" defer></script>
