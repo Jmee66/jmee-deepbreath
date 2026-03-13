@@ -73,7 +73,7 @@
             </svg>
         </button>
         <button class="audio-btn active" id="breathSoundToggle" title="Sons de respiration" aria-label="Sons de respiration">B</button>
-        <button class="audio-btn" id="soundToggle" title="Son océan" aria-label="Son océan">O</button>
+        <button class="audio-btn active" id="soundToggle" title="Son océan" aria-label="Son océan">O</button>
         <button class="sync-status-btn sync-disconnected" id="syncStatusBtn" title="Sync non configurée" aria-label="Synchronisation">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
                 <path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/>
@@ -102,33 +102,49 @@
             <button class="volume-panel-close" id="volumePanelClose">✕</button>
         </div>
         <div class="volume-panel-body">
-            <div class="volume-row">
-                <label class="volume-label">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                    </svg>
-                    Voix guidée
-                </label>
-                <div class="volume-slider-row">
-                    <input type="range" min="0" max="100" value="70" id="breathVolumeRange" class="volume-slider">
-                    <span class="volume-value" id="breathVolumeValue">70%</span>
-                </div>
-            </div>
+            <!-- Sons de respiration -->
             <div class="volume-row">
                 <label class="volume-label">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                         <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
                         <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
                     </svg>
-                    Sons de respiration
+                    Sons respiration
                 </label>
                 <div class="volume-slider-row">
-                    <input type="range" min="0" max="100" value="50" id="volumeRange" class="volume-slider">
-                    <span class="volume-value" id="volumeRangeValue">50%</span>
+                    <input type="range" min="0" max="100" value="40" id="breathVolumeRange" class="volume-slider">
+                    <span class="volume-value" id="breathVolumeValue">40%</span>
+                </div>
+            </div>
+            <!-- Son océan -->
+            <div class="volume-row">
+                <label class="volume-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M2 12c1.5-3 3.5-4.5 6-4.5s4.5 1.5 6 4.5 3.5 4.5 6 4.5"/>
+                        <path d="M2 17c1.5-3 3.5-4.5 6-4.5s4.5 1.5 6 4.5 3.5 4.5 6 4.5"/>
+                    </svg>
+                    Son océan
+                </label>
+                <div class="volume-slider-row">
+                    <input type="range" min="0" max="100" value="20" id="oceanVolumeRange" class="volume-slider">
+                    <span class="volume-value" id="oceanVolumeValue">20%</span>
                 </div>
             </div>
             <div style="border-top:1px solid var(--border-color,rgba(255,255,255,0.1));margin:8px 0;"></div>
+            <!-- Voix guidée -->
+            <div class="volume-row">
+                <label class="volume-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    </svg>
+                    Volume voix
+                </label>
+                <div class="volume-slider-row">
+                    <input type="range" min="0" max="100" value="50" id="voiceVolumeRange" class="volume-slider">
+                    <span class="volume-value" id="voiceVolumeValue">50%</span>
+                </div>
+            </div>
             <div class="volume-row">
                 <label class="volume-label">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
@@ -6015,10 +6031,8 @@
     </div>
 
     <script src="sync.js" defer></script>
-    <script src="ocean-sound.js" defer></script>
+    <script src="sound-engine.js" defer></script>
     <script src="exercises.js" defer></script>
-    <script src="voice-guide.js" defer></script>
-    <script src="breath-sounds.js" defer></script>
     <script src="breathengine-v4.js?v=234" defer></script>
     <!-- Chasse Guided Timer Modal -->
     <div id="chasseTimerModal" class="chasse-timer-modal">
@@ -6044,7 +6058,7 @@
     </div>
 
     <script src="wbu-timer.js"></script>
-    <script src="app.js?v=234" defer></script>
+    <script src="app.js?v=234b" defer></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js" defer></script>

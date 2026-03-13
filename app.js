@@ -3,14 +3,14 @@
  * Main application logic for breathing, visualization, and apnea training
  */
 
-const APP_VERSION = '2.33';
+const APP_VERSION = '2.34';
 
 // PIN universel — hash SHA-256 (PIN + salt)
 const APP_PIN_HASH = 'a901ad9a879a52cc86938876ae060f26cec5b31e848e96248720a0dc95c11238';
 
 class JmeeDeepBreathApp {
     constructor() {
-        this.oceanSound = new OceanSound();
+        this.oceanSound = SoundEngine.ocean;
         this.currentExercise = null;
         this.isRunning = false;
         this.isPaused = false;
@@ -298,6 +298,7 @@ class JmeeDeepBreathApp {
     }
 
     initApp() {
+        SoundEngine.loadSettings();
         this.setupNavigation();
         this.setupSoundControls();
         this.setupVoiceControls();
@@ -388,18 +389,9 @@ class JmeeDeepBreathApp {
         // Re-acquire wake lock (browser releases it when page goes hidden)
         this.requestWakeLock();
 
-        // Resume AudioContext for breath sounds
-        if (window.breathSounds && window.breathSounds.audioContext) {
-            if (window.breathSounds.audioContext.state === 'suspended') {
-                window.breathSounds.audioContext.resume();
-            }
-        }
-
-        // Resume AudioContext for ocean sound
-        if (this.oceanSound && this.oceanSound.audioContext) {
-            if (this.oceanSound.audioContext.state === 'suspended') {
-                this.oceanSound.audioContext.resume();
-            }
+        // Resume AudioContext via SoundEngine (handles all layers)
+        if (window.SoundEngine && SoundEngine.context && SoundEngine.context.state === 'suspended') {
+            SoundEngine.context.resume();
         }
 
         // Resume speech synthesis
@@ -821,62 +813,72 @@ class JmeeDeepBreathApp {
     // ==========================================
 
     setupSoundControls() {
-        const soundToggle = document.getElementById('soundToggle');
-        const volumeRange = document.getElementById('volumeRange');
-        const breathSoundToggle = document.getElementById('breathSoundToggle');
-        const breathVolumeRange = document.getElementById('breathVolumeRange');
+        const soundToggle      = document.getElementById('soundToggle');
+        const oceanVolumeRange = document.getElementById('oceanVolumeRange');
+        const oceanVolumeValue = document.getElementById('oceanVolumeValue');
+        const breathSoundToggle  = document.getElementById('breathSoundToggle');
+        const breathVolumeRange  = document.getElementById('breathVolumeRange');
+        const breathVolumeValue  = document.getElementById('breathVolumeValue');
+        const voiceVolumeRange   = document.getElementById('voiceVolumeRange');
+        const voiceVolumeValue   = document.getElementById('voiceVolumeValue');
 
-        // Ocean sound toggle
+        // ── Sync sliders from SoundEngine (source of truth) ──────────────────
+        const oceanPct  = Math.round(SoundEngine.ocean.volume * 100);
+        const breathPct = Math.round(SoundEngine.breath.volume * 100);
+        const voicePct  = Math.round(SoundEngine.voice.volume * 100);
+
+        if (oceanVolumeRange)  { oceanVolumeRange.value  = oceanPct;  }
+        if (oceanVolumeValue)  { oceanVolumeValue.textContent  = oceanPct  + '%'; }
+        if (breathVolumeRange) { breathVolumeRange.value = breathPct; }
+        if (breathVolumeValue) { breathVolumeValue.textContent = breathPct + '%'; }
+        if (voiceVolumeRange)  { voiceVolumeRange.value  = voicePct;  }
+        if (voiceVolumeValue)  { voiceVolumeValue.textContent  = voicePct  + '%'; }
+
+        // Sync toggle button states
+        if (soundToggle)      soundToggle.classList.toggle('active', SoundEngine.ocean.isPlaying);
+        if (breathSoundToggle) breathSoundToggle.classList.toggle('active', SoundEngine.breath.enabled);
+
+        // ── Ocean toggle ──────────────────────────────────────────────────────
         if (soundToggle) {
             soundToggle.addEventListener('click', () => {
-                const isPlaying = this.oceanSound.toggle();
+                const isPlaying = SoundEngine.ocean.toggle();
                 soundToggle.classList.toggle('active', isPlaying);
             });
         }
 
-        // Ocean volume
-        if (volumeRange) {
-            volumeRange.addEventListener('input', (e) => {
-                this.oceanSound.setVolume(e.target.value / 100);
+        // ── Ocean volume ──────────────────────────────────────────────────────
+        if (oceanVolumeRange) {
+            oceanVolumeRange.addEventListener('input', (e) => {
+                const vol = e.target.value / 100;
+                SoundEngine.ocean.setVolume(vol);
+                if (oceanVolumeValue) oceanVolumeValue.textContent = e.target.value + '%';
             });
         }
 
-        // Breath sound toggle
+        // ── Breath sound toggle ───────────────────────────────────────────────
         if (breathSoundToggle) {
-            breathSoundToggle.addEventListener('click', function() {
-                // Toggle state
-                if (window.breathSounds) {
-                    window.breathSounds.enabled = !window.breathSounds.enabled;
-                    breathSoundToggle.classList.toggle('active', window.breathSounds.enabled);
-
-                    // Play test sound when enabling
-                    if (window.breathSounds.enabled) {
-                        window.breathSounds.testSound();
-                    }
-                }
+            breathSoundToggle.addEventListener('click', () => {
+                const enabled = SoundEngine.breath.toggle();
+                breathSoundToggle.classList.toggle('active', enabled);
+                if (enabled) SoundEngine.breath.testSound();
             });
         }
 
-        // Breath sound volume
-        if (breathVolumeRange && window.breathSounds) {
-            // Initialize volume from slider value (slider is 0-100, we want 0-1)
-            const initialVolume = breathVolumeRange.value / 100;
-            window.breathSounds.setVolume(initialVolume);
-
+        // ── Breath volume ─────────────────────────────────────────────────────
+        if (breathVolumeRange) {
             breathVolumeRange.addEventListener('input', (e) => {
                 const vol = e.target.value / 100;
-                window.breathSounds.setVolume(vol);
-                const valEl = document.getElementById('volumeRangeValue');
-                if (valEl) valEl.textContent = Math.round(vol * 100) + '%';
+                SoundEngine.breath.setVolume(vol);
+                if (breathVolumeValue) breathVolumeValue.textContent = e.target.value + '%';
             });
         }
 
-        // breath volume value display
-        const breathValEl = document.getElementById('breathVolumeValue');
-        if (breathValEl && breathVolumeRange) {
-            breathValEl.textContent = breathVolumeRange.value + '%';
-            breathVolumeRange.addEventListener('input', (e) => {
-                breathValEl.textContent = e.target.value + '%';
+        // ── Voice volume ──────────────────────────────────────────────────────
+        if (voiceVolumeRange) {
+            voiceVolumeRange.addEventListener('input', (e) => {
+                const vol = e.target.value / 100;
+                SoundEngine.voice.setVolume(vol);
+                if (voiceVolumeValue) voiceVolumeValue.textContent = e.target.value + '%';
             });
         }
     }
@@ -2172,17 +2174,7 @@ class JmeeDeepBreathApp {
             if (startBtn) {
                 startBtn.addEventListener('click', async () => {
                     // Initialize audio on user click (required by browsers)
-                    if (window.breathSounds) {
-                        // Create AudioContext synchronously on click
-                        if (!window.breathSounds.audioContext) {
-                            window.breathSounds.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                        }
-                        if (window.breathSounds.audioContext.state === 'suspended') {
-                            await window.breathSounds.audioContext.resume();
-                        }
-                        // Make sure sounds are enabled
-                        window.breathSounds.enabled = true;
-                    }
+                    await SoundEngine.init();
                     this.startExercise(exerciseId);
                 });
             }
@@ -2419,15 +2411,7 @@ class JmeeDeepBreathApp {
         const startBtn = clone.querySelector('.btn-start');
         if (startBtn) {
             startBtn.addEventListener('click', async () => {
-                if (window.breathSounds) {
-                    if (!window.breathSounds.audioContext) {
-                        window.breathSounds.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    }
-                    if (window.breathSounds.audioContext.state === 'suspended') {
-                        await window.breathSounds.audioContext.resume();
-                    }
-                    window.breathSounds.enabled = true;
-                }
+                await SoundEngine.init();
                 this.startExercise(exerciseId);
             });
         }
@@ -2565,31 +2549,8 @@ class JmeeDeepBreathApp {
         // Prevent screen from sleeping during exercise
         this.requestWakeLock();
 
-        // Initialize breath sounds - ensure AudioContext is running
-        if (window.breathSounds) {
-            // Create AudioContext if it doesn't exist
-            if (!window.breathSounds.audioContext) {
-                window.breathSounds.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            // Resume if suspended — MUST await on mobile
-            if (window.breathSounds.audioContext.state === 'suspended') {
-                try { await window.breathSounds.audioContext.resume(); } catch(e) {}
-            }
-            // Force enable sounds
-            window.breathSounds.enabled = true;
-        }
-
-        // iOS Safari : pré-créer l'AudioContext du BreathEngine synchroniquement
-        // dans le call stack du tap — avant tout await/setTimeout qui briserait le geste
-        try {
-            const AC = window.AudioContext || window.webkitAudioContext;
-            if (AC && !window._beAudioCtx) {
-                window._beAudioCtx = new AC();
-            }
-            if (window._beAudioCtx && window._beAudioCtx.state === 'suspended') {
-                window._beAudioCtx.resume().catch(() => {});
-            }
-        } catch(e) {}
+        // Initialize SoundEngine — single AudioContext for all audio
+        await SoundEngine.init();
 
         // Show modal
         const modal = document.getElementById('exerciseModal');
@@ -2760,16 +2721,8 @@ class JmeeDeepBreathApp {
         // Prevent screen sleep
         this.requestWakeLock();
 
-        // Initialize breath sounds
-        if (window.breathSounds) {
-            if (!window.breathSounds.audioContext) {
-                window.breathSounds.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (window.breathSounds.audioContext.state === 'suspended') {
-                try { await window.breathSounds.audioContext.resume(); } catch(e) {}
-            }
-            window.breathSounds.enabled = true;
-        }
+        // Initialize SoundEngine — single AudioContext for all audio
+        await SoundEngine.init();
 
         // Show exercise modal
         const modal = document.getElementById('exerciseModal');
@@ -4029,7 +3982,7 @@ class JmeeDeepBreathApp {
 
     _imstPlayBip() {
         try {
-            const ctx = window.breathSounds?.audioContext;
+            const ctx = SoundEngine.context;
             if (!ctx || ctx.state === 'suspended') return;
             const osc  = ctx.createOscillator();
             const gain = ctx.createGain();

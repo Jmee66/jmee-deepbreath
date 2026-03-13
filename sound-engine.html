@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoundEngine v1 — Test</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0a1a;
+    color: #c8d8f0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #4facfe;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: #607090;
+    margin-bottom: 28px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    max-width: 980px;
+  }
+
+  .card {
+    background: #111428;
+    border: 1px solid #1e2a4a;
+    border-radius: 12px;
+    padding: 18px;
+  }
+
+  .card h2 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4facfe;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2 .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #1e2a4a;
+    transition: background 0.3s;
+  }
+  .card h2 .dot.active { background: #4facfe; box-shadow: 0 0 6px #4facfe88; }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .row label {
+    min-width: 80px;
+    font-size: 12px;
+    color: #8090b0;
+  }
+
+  button {
+    background: #1a2440;
+    border: 1px solid #2a3a60;
+    border-radius: 8px;
+    color: #c8d8f0;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 7px 14px;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  button:hover  { background: #22304e; border-color: #4facfe55; }
+  button:active { background: #2a3a60; }
+  button.active { background: #0d2a4a; border-color: #4facfe; color: #4facfe; }
+  button.danger { border-color: #ff4466; color: #ff4466; }
+  button.danger:hover { background: #2a0d16; }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: #1e2a4a;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #4facfe;
+    cursor: pointer;
+  }
+
+  .vol-label {
+    font-size: 12px;
+    color: #4facfe;
+    min-width: 34px;
+    text-align: right;
+  }
+
+  select {
+    background: #1a2440;
+    border: 1px solid #2a3a60;
+    border-radius: 6px;
+    color: #c8d8f0;
+    font-size: 13px;
+    padding: 5px 8px;
+    flex: 1;
+    cursor: pointer;
+  }
+
+  textarea {
+    background: #0d1628;
+    border: 1px solid #1e2a4a;
+    border-radius: 8px;
+    color: #c8d8f0;
+    font-size: 13px;
+    padding: 8px 10px;
+    resize: vertical;
+    width: 100%;
+    font-family: inherit;
+  }
+  textarea:focus { outline: none; border-color: #4facfe55; }
+
+  .phase-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .log {
+    background: #080e1c;
+    border: 1px solid #1e2a4a;
+    border-radius: 8px;
+    font-size: 11px;
+    font-family: 'SF Mono', Consolas, monospace;
+    color: #607090;
+    padding: 10px;
+    height: 120px;
+    overflow-y: auto;
+    max-width: 980px;
+    margin-top: 20px;
+  }
+  .log .entry { margin-bottom: 3px; }
+  .log .entry.ok   { color: #4facfe; }
+  .log .entry.warn { color: #f0a020; }
+  .log .entry.err  { color: #ff4466; }
+
+  .status-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    font-size: 12px;
+    color: #607090;
+    flex-wrap: wrap;
+  }
+  .status-bar span { display: flex; align-items: center; gap: 6px; }
+  .status-bar .pill {
+    background: #1a2440;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 11px;
+  }
+  .status-bar .pill.ok  { background: #0d2a4a; color: #4facfe; }
+  .status-bar .pill.err { background: #2a0d16; color: #ff4466; }
+
+  .seq-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  #seq-status {
+    font-size: 12px;
+    color: #4facfe;
+    margin-top: 8px;
+    min-height: 18px;
+  }
+</style>
+</head>
+<body>
+
+<h1>SoundEngine v1 — Test</h1>
+<p class="subtitle">Moteur audio unifié pour DeepBreath · AudioContext partagé · Auto-ducking · Volumes persistés</p>
+
+<!-- Status -->
+<div class="status-bar">
+  <span>AudioContext <span id="ctx-state" class="pill err">non initialisé</span></span>
+  <span>Ocean <span id="ocean-state" class="pill">off</span></span>
+  <span>Voix <span id="voice-state" class="pill">prêt</span></span>
+  <span>Ducking <span id="duck-state" class="pill">off</span></span>
+</div>
+
+<div class="grid">
+
+  <!-- MASTER -->
+  <div class="card">
+    <h2><span class="dot active" id="dot-master"></span>Master</h2>
+    <div class="row">
+      <button id="btn-init" onclick="doInit()">Initialiser</button>
+      <button onclick="SoundEngine.voice.stop(); SoundEngine.breath.stop(); SoundEngine.ocean.stop();" class="danger">Stop tout</button>
+    </div>
+    <div class="row">
+      <label>Master vol</label>
+      <input type="range" min="0" max="100" value="100" oninput="SoundEngine.setMasterVolume(this.value/100); this.nextElementSibling.textContent=this.value+'%'">
+      <span class="vol-label">100%</span>
+    </div>
+  </div>
+
+  <!-- OCEAN -->
+  <div class="card">
+    <h2><span class="dot" id="dot-ocean"></span>Ocean Layer</h2>
+    <div class="row">
+      <button id="btn-ocean" onclick="toggleOcean()">Démarrer</button>
+    </div>
+    <div class="row">
+      <label>Volume</label>
+      <input type="range" min="0" max="100" value="50" id="ocean-vol"
+             oninput="SoundEngine.ocean.setVolume(this.value/100); this.nextElementSibling.textContent=this.value+'%'">
+      <span class="vol-label">50%</span>
+    </div>
+    <div class="row" style="font-size:11px; color:#4a5a7a; margin-top:4px;">
+      6 couches de bruit brun · modulation vague réaliste<br>
+      Duck auto quand la voix parle
+    </div>
+  </div>
+
+  <!-- BREATH SOUNDS -->
+  <div class="card">
+    <h2><span class="dot" id="dot-breath"></span>Breath Layer</h2>
+    <div class="row">
+      <label>Thème</label>
+      <select onchange="SoundEngine.breath.setTheme(this.value); log('Thème: '+this.value)">
+        <option value="zen">Zen (bols tibétains)</option>
+        <option value="harp">Harp (arpèges)</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Volume</label>
+      <input type="range" min="0" max="100" value="50" id="breath-vol"
+             oninput="SoundEngine.breath.setVolume(this.value/100); this.nextElementSibling.textContent=this.value+'%'">
+      <span class="vol-label">50%</span>
+    </div>
+    <div class="phase-grid">
+      <button onclick="SoundEngine.breath.playPhase('inhale', 4); log('Inhale 4s')">Inhale (4s)</button>
+      <button onclick="SoundEngine.breath.playPhase('exhale', 6); log('Exhale 6s')">Exhale (6s)</button>
+      <button onclick="SoundEngine.breath.playPhase('hold', 4); log('Hold 4s')">Hold (4s)</button>
+      <button onclick="SoundEngine.breath.playPhase('holdEmpty', 3); log('HoldEmpty 3s')">Hold Empty (3s)</button>
+    </div>
+    <div class="row">
+      <button onclick="SoundEngine.breath.playTransition(); log('Transition')">Transition</button>
+      <button onclick="SoundEngine.breath.playComplete(); log('Complete')">Complet</button>
+      <button onclick="SoundEngine.breath.playSecondInhale(); log('2e Inhale')">2e Inhale</button>
+    </div>
+    <div class="row">
+      <button onclick="SoundEngine.breath.testSound(); log('Test son')">Test son</button>
+      <button onclick="SoundEngine.breath.stop(); log('Stop breath')" class="danger">Stop</button>
+    </div>
+  </div>
+
+  <!-- VOICE -->
+  <div class="card">
+    <h2><span class="dot" id="dot-voice"></span>Voice Layer (TTS)</h2>
+    <div class="row">
+      <label>Voix</label>
+      <select id="voice-select" onchange="SoundEngine.voice.setVoice(this.value); log('Voix: '+this.value)">
+        <option value="">Auto (priorité)</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Volume</label>
+      <input type="range" min="0" max="100" value="80" id="voice-vol"
+             oninput="SoundEngine.voice.setVolume(this.value/100); this.nextElementSibling.textContent=this.value+'%'">
+      <span class="vol-label">80%</span>
+    </div>
+    <div class="row">
+      <label>Vitesse</label>
+      <input type="range" min="50" max="120" value="78" id="voice-rate"
+             oninput="SoundEngine.voice.setRate(this.value/100); this.nextElementSibling.textContent=this.value+'%'">
+      <span class="vol-label">78%</span>
+    </div>
+    <div class="row">
+      <button id="btn-voice-toggle" onclick="toggleVoice()">Voix ON</button>
+    </div>
+    <textarea id="voice-text" rows="2" placeholder="Texte à lire...">Inspirez lentement par le nez.</textarea>
+    <div class="row" style="margin-top:8px;">
+      <button onclick="doSpeak()">Parler</button>
+      <button onclick="SoundEngine.voice.speakWithDelay(document.getElementById('voice-text').value, 1000); log('Parler +1s')">Parler +1s</button>
+      <button onclick="SoundEngine.voice.stop(); log('Stop voice')" class="danger">Stop</button>
+    </div>
+    <div style="font-size:11px; color:#4a5a7a; margin-top:8px;">
+      Duck auto: l'océan baisse pendant la voix
+    </div>
+  </div>
+
+  <!-- SÉQUENCE TEST -->
+  <div class="card" style="grid-column: 1 / -1;">
+    <h2><span class="dot" id="dot-seq"></span>Séquence complète</h2>
+    <p style="font-size:12px; color:#607090; margin-bottom:12px;">
+      Simule un cycle de respiration cohérente : voix + sons de phase + océan en fond
+    </p>
+    <div class="seq-controls">
+      <button onclick="runSequence('coherent')">Cohérente (4/8)</button>
+      <button onclick="runSequence('box')">Box breathing (4/4/4/4)</button>
+      <button onclick="runSequence('478')">4-7-8</button>
+      <button onclick="stopSequence()" class="danger">Stop séquence</button>
+    </div>
+    <div id="seq-status"></div>
+  </div>
+
+</div>
+
+<!-- LOG -->
+<div class="log" id="log"></div>
+
+<script src="sound-engine.js"></script>
+<script>
+
+let seqTimer = null;
+let seqRunning = false;
+
+// ── Log ──────────────────────────────────────────────────────────────────
+function log(msg, type = 'ok') {
+    const el = document.getElementById('log');
+    const ts = new Date().toLocaleTimeString('fr-FR', { hour12: false });
+    const div = document.createElement('div');
+    div.className = 'entry ' + type;
+    div.textContent = `[${ts}] ${msg}`;
+    el.prepend(div);
+    if (el.children.length > 80) el.lastChild.remove();
+}
+
+// ── Status polling ────────────────────────────────────────────────────────
+function updateStatus() {
+    const ctx = SoundEngine.context;
+    document.getElementById('ctx-state').textContent  = ctx ? ctx.state : 'non initialisé';
+    document.getElementById('ctx-state').className    = 'pill ' + (ctx && ctx.state === 'running' ? 'ok' : 'err');
+
+    const oceanOn = SoundEngine.ocean.isPlaying;
+    document.getElementById('ocean-state').textContent = oceanOn ? 'on' : 'off';
+    document.getElementById('ocean-state').className   = 'pill ' + (oceanOn ? 'ok' : '');
+    document.getElementById('dot-ocean').className     = 'dot ' + (oceanOn ? 'active' : '');
+    document.getElementById('btn-ocean').textContent   = oceanOn ? 'Arrêter' : 'Démarrer';
+    document.getElementById('btn-ocean').className     = oceanOn ? 'active' : '';
+
+    const voiceOn = SoundEngine.voice.enabled;
+    document.getElementById('voice-state').textContent = voiceOn ? (SoundEngine.voice.speaking ? 'parle…' : 'prêt') : 'off';
+    document.getElementById('voice-state').className   = 'pill ' + (SoundEngine.voice.speaking ? 'ok' : (voiceOn ? '' : 'err'));
+    document.getElementById('dot-voice').className     = 'dot ' + (SoundEngine.voice.speaking ? 'active' : '');
+
+    const duckEl = document.getElementById('duck-state');
+    // We can infer ducking by checking if ocean gain < base (approximation)
+    duckEl.textContent = SoundEngine.voice.speaking ? 'actif' : 'off';
+    duckEl.className   = 'pill ' + (SoundEngine.voice.speaking ? 'ok' : '');
+}
+setInterval(updateStatus, 300);
+
+// ── Init ─────────────────────────────────────────────────────────────────
+async function doInit() {
+    await SoundEngine.init();
+    log('SoundEngine initialisé · AudioContext: ' + SoundEngine.context.state);
+    document.getElementById('btn-init').classList.add('active');
+    populateVoices();
+}
+
+function populateVoices() {
+    const voices = SoundEngine.voice.getAvailableVoices();
+    const sel = document.getElementById('voice-select');
+    sel.innerHTML = '<option value="">Auto (priorité)</option>';
+    voices.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.name;
+        opt.textContent = `${v.name} (${v.lang})${v.localService ? ' ★' : ''}`;
+        sel.appendChild(opt);
+    });
+    if (voices.length > 0) log(`${voices.length} voix disponibles`);
+}
+
+SoundEngine.voice.onVoicesChanged = populateVoices;
+
+// ── Ocean ────────────────────────────────────────────────────────────────
+async function toggleOcean() {
+    if (!SoundEngine.context) await doInit();
+    SoundEngine.ocean.toggle();
+    log(SoundEngine.ocean.isPlaying ? 'Ocean démarré' : 'Ocean arrêté');
+}
+
+// ── Voice ────────────────────────────────────────────────────────────────
+function toggleVoice() {
+    const on = SoundEngine.voice.toggle();
+    document.getElementById('btn-voice-toggle').textContent = on ? 'Voix ON' : 'Voix OFF';
+    document.getElementById('btn-voice-toggle').className = on ? '' : 'active';
+    log('Voice: ' + (on ? 'activée' : 'désactivée'));
+}
+
+function doSpeak() {
+    const text = document.getElementById('voice-text').value;
+    if (!text.trim()) return;
+    log('Parler: "' + text.substring(0, 40) + (text.length > 40 ? '…' : '') + '"');
+    SoundEngine.voice.speak(text, () => log('Voix terminée'));
+}
+
+// ── Sequences ────────────────────────────────────────────────────────────
+function stopSequence() {
+    seqRunning = false;
+    if (seqTimer) { clearTimeout(seqTimer); seqTimer = null; }
+    SoundEngine.breath.stop();
+    SoundEngine.voice.stop();
+    document.getElementById('seq-status').textContent = '';
+    document.getElementById('dot-seq').className = 'dot';
+    log('Séquence arrêtée', 'warn');
+}
+
+async function runSequence(type) {
+    if (!SoundEngine.context) await doInit();
+    stopSequence();
+    seqRunning = true;
+    document.getElementById('dot-seq').className = 'dot active';
+
+    const setStatus = (t) => { document.getElementById('seq-status').textContent = t; };
+
+    const cycles = {
+        coherent: [
+            { phase: 'inhale', dur: 5, label: 'Inspirez…' },
+            { phase: 'exhale', dur: 5, label: 'Expirez…' }
+        ],
+        box: [
+            { phase: 'inhale',    dur: 4, label: 'Inspirez…' },
+            { phase: 'hold',      dur: 4, label: 'Retenez…' },
+            { phase: 'exhale',    dur: 4, label: 'Expirez…' },
+            { phase: 'holdEmpty', dur: 4, label: 'Poumons vides…' }
+        ],
+        '478': [
+            { phase: 'inhale',    dur: 4, label: 'Inspirez 4s…' },
+            { phase: 'hold',      dur: 7, label: 'Retenez 7s…' },
+            { phase: 'exhale',    dur: 8, label: 'Expirez 8s…' }
+        ]
+    };
+
+    const steps = cycles[type] || cycles.coherent;
+    let cycleCount = 0;
+    const maxCycles = 3;
+
+    const runStep = (stepIdx) => {
+        if (!seqRunning) return;
+        if (stepIdx >= steps.length) {
+            cycleCount++;
+            if (cycleCount >= maxCycles) {
+                SoundEngine.breath.playComplete();
+                setStatus(`✓ ${maxCycles} cycles terminés`);
+                document.getElementById('dot-seq').className = 'dot';
+                log(`Séquence ${type} terminée (${maxCycles} cycles)`);
+                seqRunning = false;
+                return;
+            }
+            runStep(0);
+            return;
+        }
+
+        const step = steps[stepIdx];
+        setStatus(`Cycle ${cycleCount + 1}/${maxCycles} · ${step.label}`);
+        log(`${step.phase} ${step.dur}s`);
+
+        SoundEngine.breath.playPhase(step.phase, step.dur);
+        SoundEngine.voice.speak(step.label);
+
+        seqTimer = setTimeout(() => runStep(stepIdx + 1), step.dur * 1000);
+    };
+
+    log(`Démarrage séquence: ${type}`);
+    runStep(0);
+}
+
+// Pré-charger les voix au plus tôt
+if (window.speechSynthesis) {
+    window.speechSynthesis.getVoices();
+}
+
+log('Page chargée · Cliquer "Initialiser" pour démarrer', 'warn');
+</script>
+</body>
+</html>
