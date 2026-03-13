@@ -2700,8 +2700,22 @@ class JmeeDeepBreathApp {
                 document.getElementById('exerciseInstruction').textContent = label;
 
                 // Voix guide — 2 premiers cycles seulement
+                // On attend que la voix précédente soit finie avant de parler
                 if (window.voiceGuide && label && this.currentCycle <= 2) {
-                    window.voiceGuide.speakWithDelay(label, 300);
+                    if (window.voiceGuide.speaking) {
+                        // Voix de départ encore en cours → attendre qu'elle finisse
+                        const waitAndSpeak = () => {
+                            if (!this.isRunning) return;
+                            if (window.voiceGuide.speaking) {
+                                setTimeout(waitAndSpeak, 150);
+                            } else {
+                                window.voiceGuide.speakWithDelay(label, 200);
+                            }
+                        };
+                        setTimeout(waitAndSpeak, 150);
+                    } else {
+                        window.voiceGuide.speakWithDelay(label, 300);
+                    }
                 }
 
                 // Sons de respiration via SoundEngine (audio interne BreathEngine désactivé)
@@ -2819,7 +2833,16 @@ class JmeeDeepBreathApp {
                     : '';
                 document.getElementById('exerciseInstruction').textContent = label;
                 if (window.voiceGuide && label && this.currentCycle <= 2) {
-                    window.voiceGuide.speakWithDelay(label, 300);
+                    if (window.voiceGuide.speaking) {
+                        const waitAndSpeak = () => {
+                            if (!this.isRunning) return;
+                            if (window.voiceGuide.speaking) setTimeout(waitAndSpeak, 150);
+                            else window.voiceGuide.speakWithDelay(label, 200);
+                        };
+                        setTimeout(waitAndSpeak, 150);
+                    } else {
+                        window.voiceGuide.speakWithDelay(label, 300);
+                    }
                 }
                 // Sons de respiration via SoundEngine
                 if (window.breathSounds) {
