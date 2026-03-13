@@ -835,7 +835,13 @@ class JmeeDeepBreathApp {
         if (voiceVolumeValue)  { voiceVolumeValue.textContent  = voicePct  + '%'; }
 
         // Sync toggle button states
-        if (soundToggle)      soundToggle.classList.toggle('active', SoundEngine.ocean.isPlaying);
+        // Ocean: lire oceanEnabled depuis localStorage car ocean.start() est async (pas encore jouant)
+        let oceanEnabledOnStart = true; // default
+        try {
+            const se = JSON.parse(localStorage.getItem('soundengine_settings') || '{}');
+            if (se.oceanEnabled !== undefined) oceanEnabledOnStart = se.oceanEnabled;
+        } catch (e) {}
+        if (soundToggle)       soundToggle.classList.toggle('active', oceanEnabledOnStart);
         if (breathSoundToggle) breathSoundToggle.classList.toggle('active', SoundEngine.breath.enabled);
 
         // ── Ocean toggle ──────────────────────────────────────────────────────
